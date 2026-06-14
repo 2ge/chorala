@@ -31,3 +31,27 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase0] Pinned tooling at the latest stable majors from SPEC §4: biome 2,
   turbo 2, typescript 5. `docker-compose.yml` ships only postgres(+pgvector) and redis
   in Phase 0; the api/dashboard/worker/caddy services are added in Phase 8.
+
+## Phase 1
+- [phase1] Internal packages export TypeScript **source** directly (`main`/`exports` →
+  `./src/index.ts`) and `build` = `tsc --noEmit` (typecheck only), over compiling each to
+  `dist`. Reason: the whole stack is bundler-driven (tsx, esbuild, Next, tsup, vitest), so
+  source consumption removes a build-ordering tax and keeps dev iteration instant. tsconfig
+  base therefore uses `module: Preserve` + `moduleResolution: Bundler`.
+- [phase1] Did **not** use `drizzle-zod`; the `packages/types` zod contract is hand-written
+  so the package depends only on `zod` and stays safe for the MIT widget/mcp/sdk packages to
+  consume (CLAUDE.md §code-conventions / SPEC §3).
+- [phase1] Vitest pinned to **3.2.6** (SPEC §4 locks major 3) even though 4.x is out.
+- [phase1] Enum-like columns modeled as Drizzle `text().$type<...>()` rather than Postgres
+  `pgEnum`, to avoid enum-alter migration friction; zod schemas enforce the allowed values.
+- [phase1] Better Auth core tables (`users/sessions/accounts/verifications`) are defined in
+  the Drizzle schema now (plural names) so migrations create them in Phase 1; Better Auth is
+  configured to map its models to these tables in Phase 2.
+- [phase1] Seed creates the admin `user` + `member` (owner) rows but defers the password
+  **credential** to Phase 2, where Better Auth's hasher is available. `SEED_ADMIN`
+  (admin@heed.dev / heedadmin123) is exported from the seed for Phase 2 to consume.
+- [phase1] Prepended `CREATE EXTENSION IF NOT EXISTS vector;` to migration `0000` (drizzle-kit
+  does not emit it) so a fresh DB / CI provisions pgvector self-sufficiently.
+- [phase1] `db:push` needs a TTY to confirm, so the canonical apply path is
+  `db:generate` (committed SQL migrations, a BUILD_PLAN deliverable) + `db:migrate`
+  (non-interactive). `db:push` remains for quick local iteration.

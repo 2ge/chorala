@@ -1,12 +1,37 @@
 {
   "name": "@heed/db",
   "version": "0.0.0",
-  "private": false,
+  "private": true,
   "type": "module",
   "license": "AGPL-3.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
   "scripts": {
-    "build": "echo 'build @heed/db (stub — implemented in its phase)'",
+    "build": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "biome check .",
-    "typecheck": "echo 'typecheck @heed/db (stub)'"
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/seed.ts",
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@heed/config": "workspace:*",
+    "drizzle-orm": "0.45.2",
+    "nanoid": "5.1.11",
+    "postgres": "3.4.9"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.9",
+    "drizzle-kit": "0.31.10",
+    "tsx": "4.22.4",
+    "typescript": "5.9.3",
+    "vitest": "3.2.6"
   }
 }

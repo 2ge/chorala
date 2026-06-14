@@ -1,0 +1,79 @@
+import { z } from 'zod'
+
+/** A prefixed-nanoid id, e.g. `post_V1Stgx...`. */
+export const prefixedId = (prefix: string) =>
+  z.string().regex(new RegExp(`^${prefix}_[0-9A-Za-z_-]+$`), `expected a ${prefix}_ id`)
+
+/** ISO-8601 timestamp string (the serialized form sent over the API). */
+export const isoDate = z.string()
+
+/** Fields present on (almost) every entity in the serialized API contract. */
+export const timestamps = z.object({
+  createdAt: isoDate,
+  updatedAt: isoDate,
+})
+
+// --- Enums (mirror SPEC §7) ---
+export const orgPlan = z.enum(['free', 'starter', 'pro'])
+export const memberRole = z.enum(['owner', 'admin', 'member'])
+export const boardKind = z.enum(['feature', 'bug', 'general'])
+export const statusKind = z.enum(['open', 'planned', 'in_progress', 'complete', 'closed'])
+export const changelogStatus = z.enum(['draft', 'published'])
+export const integrationType = z.enum(['slack', 'linear', 'github'])
+export const aiJobKind = z.enum(['embed', 'dedup', 'cluster', 'summarize', 'translate'])
+export const aiJobStatus = z.enum(['queued', 'running', 'done', 'error'])
+export const webhookEvent = z.enum([
+  'post.created',
+  'post.status_changed',
+  'post.merged',
+  'comment.created',
+  'changelog.published',
+  'vote.created',
+])
+export const postSort = z.enum(['top', 'new', 'trending', 'oldest'])
+
+export type OrgPlan = z.infer<typeof orgPlan>
+export type MemberRole = z.infer<typeof memberRole>
+export type BoardKind = z.infer<typeof boardKind>
+export type StatusKind = z.infer<typeof statusKind>
+export type ChangelogStatus = z.infer<typeof changelogStatus>
+export type IntegrationType = z.infer<typeof integrationType>
+export type AiJobKind = z.infer<typeof aiJobKind>
+export type AiJobStatus = z.infer<typeof aiJobStatus>
+export type WebhookEvent = z.infer<typeof webhookEvent>
+export type PostSort = z.infer<typeof postSort>
+
+/** Standard cursor/offset pagination query. */
+export const paginationQuery = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  cursor: z.string().optional(),
+})
+export type PaginationQuery = z.infer<typeof paginationQuery>
+
+/** A paginated list envelope. */
+export const paginated = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    data: z.array(item),
+    nextCursor: z.string().nullable(),
+    total: z.number().int().optional(),
+  })
+
+/** The JSON error body returned by the API error middleware. */
+export const apiError = z.object({
+  error: z.object({
+    code: z.string(),
+    message: z.string(),
+    details: z.unknown().optional(),
+  }),
+})
+export type ApiError = z.infer<typeof apiError>
+
+/** The end-user identity JWT payload the host app signs (SPEC §8.2). */
+export const endUserJwtPayload = z.object({
+  id: z.string().min(1),
+  email: z.email().optional(),
+  name: z.string().optional(),
+  avatar: z.url().optional(),
+  segment: z.record(z.string(), z.unknown()).optional(),
+})
+export type EndUserJwtPayload = z.infer<typeof endUserJwtPayload>
