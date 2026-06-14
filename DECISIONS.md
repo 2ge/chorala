@@ -122,3 +122,29 @@ choice. Format: `- [phase] chose X over Y because Z`.
   disabled only for `mount.tsx`'s modal backdrop (standard dismiss-on-backdrop pattern); a
   real Escape-to-close handler + the keyboard-focusable × button preserve accessibility.
   `widget-demo.html` is excluded from Biome (it intentionally uses `!important` host CSS).
+
+## Phase 5
+- [phase5] Dashboard pinned to **Next 15.5.19** + **React 19** (SPEC §4 locks Next major 15;
+  16 is out). Tailwind 4 via `@tailwindcss/postcss`.
+- [phase5] Used hand-built shadcn-style Tailwind components (`components/ui.tsx`, CVA variants)
+  instead of running the shadcn CLI / Radix — keeps the dependency surface small and the build
+  fast while matching the shadcn look. Logged as a deviation from SPEC §4's "shadcn/ui".
+- [phase5] The dashboard is **server-component-first**: pages call `@heed/core` services
+  directly (it's an AGPL server app) and mutations are **server actions** (`lib/actions.ts`)
+  that resolve the session→AuthContext and call core, then `revalidatePath`. No HTTP round-trip
+  to the API for admin data.
+- [phase5] Auth: the dashboard runs its own Better Auth instance with the **same secret + DB +
+  cookie scheme** as the API. On the shared host `idea.2pu.net`, sign-in POSTs to the API's
+  Better Auth (haproxy routes `/api/*` → :8787), which sets the session cookie; the dashboard
+  (:3015) reads it. Both key `useSecureCookies` off `HEED_PUBLIC_URL`'s scheme so the cookie
+  name/flags match across backends — without this the dashboard looked for a differently-prefixed
+  cookie and never saw the session (caught + fixed via Playwright). Note: this means admin auth
+  works on the shared host, not across distinct localhost ports.
+- [phase5] Public portal lives under `/portal/[projectId]`, server-rendered from `publicFeed`,
+  themed by the project's `widgetSettings.primaryColor`; portal voting calls the public API
+  client-side with the project key (same-origin on idea.2pu.net).
+- [phase5] E2E: a committed Playwright spec (`apps/dashboard/e2e/journey.spec.ts`) drives the
+  full SPEC §13 journey against a live stack (BASE_URL, default idea.2pu.net) — **passes**.
+  Also verified interactively via the Playwright MCP (real Chromium).
+- [phase5] Biome: excluded `*.css` (Tailwind 4 at-rules aren't parseable by Biome's CSS parser)
+  and disabled `a11y/noLabelWithoutControl` for the dashboard (reusable Label component).

@@ -33,6 +33,9 @@ export const auth = betterAuth({
   }),
   emailAndPassword: { enabled: true, autoSignIn: true },
   trustedOrigins: [env.HEED_PUBLIC_URL, env.HEED_API_URL],
+  // Same scheme decision as the dashboard (both read HEED_PUBLIC_URL) so the session
+  // cookie name/flags match across the api (:8787) and dashboard (:3015) backends.
+  advanced: { useSecureCookies: env.HEED_PUBLIC_URL.startsWith('https://') },
   socialProviders,
 })
 

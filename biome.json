@@ -15,7 +15,9 @@
       "!**/.turbo",
       "!LICENSE",
       "!**/*.gen.ts",
-      "!**/widget-demo.html"
+      "!**/widget-demo.html",
+      "!**/*.css",
+      "!**/next-env.d.ts"
     ]
   },
   "formatter": {
@@ -52,6 +54,10 @@
           }
         }
       }
+    },
+    {
+      "includes": ["apps/dashboard/**"],
+      "linter": { "rules": { "a11y": { "noLabelWithoutControl": "off" } } }
     }
   ]
 }

@@ -5,8 +5,35 @@
   "type": "module",
   "license": "AGPL-3.0",
   "scripts": {
-    "build": "echo 'build @heed/dashboard (stub — implemented in its phase)'",
+    "dev": "next dev -p 3015",
+    "build": "next build",
+    "start": "next start -p 3015",
+    "typecheck": "tsc --noEmit",
     "lint": "biome check .",
-    "typecheck": "echo 'typecheck @heed/dashboard (stub)'"
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@heed/config": "workspace:*",
+    "@heed/core": "workspace:*",
+    "@heed/db": "workspace:*",
+    "@heed/types": "workspace:*",
+    "better-auth": "1.6.18",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "next": "15.5.19",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "tailwind-merge": "3.6.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "@tailwindcss/postcss": "4.3.1",
+    "@types/node": "22.18.9",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "postcss": "8.5.15",
+    "tailwindcss": "4.3.1",
+    "typescript": "5.9.3"
   }
 }

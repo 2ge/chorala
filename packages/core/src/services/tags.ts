@@ -9,6 +9,16 @@ export async function listTags(ctx: AuthContext, projectId: string) {
   return db.select().from(tags).where(eq(tags.projectId, projectId))
 }
 
+/** Tags currently attached to a post. */
+export async function listPostTags(ctx: AuthContext, projectId: string, postId: string) {
+  await getProject(ctx, projectId)
+  return db
+    .select({ id: tags.id, name: tags.name, color: tags.color })
+    .from(postTags)
+    .innerJoin(tags, eq(tags.id, postTags.tagId))
+    .where(eq(postTags.postId, postId))
+}
+
 export async function createTag(ctx: AuthContext, projectId: string, input: CreateTagInput) {
   await getProject(ctx, projectId)
   const [dupe] = await db
