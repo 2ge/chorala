@@ -26,7 +26,8 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const cookieTheme = (await cookies()).get('chorala-theme')?.value
-  const theme = cookieTheme && THEME_IDS.includes(cookieTheme) ? cookieTheme : 'paper'
+  // No saved theme → omit data-theme so CSS `prefers-color-scheme` decides (auto dark).
+  const theme = cookieTheme && THEME_IDS.includes(cookieTheme) ? cookieTheme : undefined
 
   return (
     <html lang="en" data-theme={theme} className={`${sans.variable} ${display.variable}`}>

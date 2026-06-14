@@ -9,7 +9,7 @@ import { requireAuthContext } from '@/lib/session'
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const ctx = await requireAuthContext()
   const projects = await projectService.listProjects(ctx)
-  const theme = (await cookies()).get('chorala-theme')?.value ?? 'paper'
+  const theme = (await cookies()).get('chorala-theme')?.value ?? 'auto'
 
   return (
     <div className="min-h-screen">

@@ -38,6 +38,23 @@
   --color-accent-hover: #e3962a;
   --color-accent-soft: #2c2414;
 }
+
+/* Auto dark: a visitor with NO saved theme + a dark OS gets Midnight — pure CSS, no flash. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --color-paper: #14120d;
+    --color-raised: #1f1b14;
+    --color-ink: #f4ede0;
+    --color-ink-soft: #b3a791;
+    --color-ink-faint: #786d59;
+    --color-line: #2b261d;
+    --color-line-strong: #3b3427;
+    --color-accent: #f0a63a;
+    --color-accent-hover: #e3962a;
+    --color-accent-soft: #2c2414;
+  }
+}
 :root[data-theme='forest'] {
   --color-paper: #eef2e9;
   --color-raised: #fbfcf8;
