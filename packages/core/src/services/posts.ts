@@ -1,4 +1,5 @@
 import {
+  aiJobs,
   and,
   asc,
   boards,
@@ -6,6 +7,7 @@ import {
   desc,
   eq,
   ilike,
+  inArray,
   newId,
   or,
   posts,
@@ -242,4 +244,34 @@ export async function deletePost(ctx: AuthContext, projectId: string, id: string
   await getPost(ctx, projectId, id)
   await db.delete(posts).where(eq(posts.id, id))
   return { id, deleted: true }
+}
+
+export type DedupSuggestion = { postId: string; title: string; similarity: number }
+
+/** Possible-duplicate suggestions for a post (from the AI dedup task; admin confirms). */
+export async function getDedupSuggestions(
+  ctx: AuthContext,
+  projectId: string,
+  postId: string,
+): Promise<DedupSuggestion[]> {
+  await getProject(ctx, projectId)
+  const [job] = await db
+    .select({ result: aiJobs.result })
+    .from(aiJobs)
+    .where(
+      and(eq(aiJobs.projectId, projectId), eq(aiJobs.kind, 'dedup'), eq(aiJobs.inputRef, postId)),
+    )
+    .orderBy(desc(aiJobs.createdAt))
+    .limit(1)
+  const raw = (job?.result as { suggestions?: DedupSuggestion[] } | null)?.suggestions ?? []
+  if (raw.length === 0) return []
+
+  // Keep only suggestions whose target still exists and isn't itself merged away.
+  const ids = raw.map((s) => s.postId)
+  const live = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(inArray(posts.id, ids), sql`${posts.mergedIntoPostId} is null`))
+  const liveIds = new Set(live.map((p) => p.id))
+  return raw.filter((s) => s.postId !== postId && liveIds.has(s.postId))
 }

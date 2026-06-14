@@ -1,10 +1,70 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { type FormEvent, useState, useTransition } from 'react'
-import { Badge, Button, Select, Textarea } from '@/components/ui'
+import { Badge, Button, Card, Select, Textarea } from '@/components/ui'
 import { addComment, mergePost, setPostTags } from '@/lib/actions'
 
 type Tag = { id: string; name: string; color: string }
+
+export function DedupSuggestions({
+  projectId,
+  postId,
+  suggestions,
+}: {
+  projectId: string
+  postId: string
+  suggestions: { postId: string; title: string; similarity: number }[]
+}) {
+  const router = useRouter()
+  const [pending, start] = useTransition()
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const visible = suggestions.filter((s) => !dismissed.has(s.postId))
+  if (visible.length === 0) return null
+
+  return (
+    <Card className="border-amber-200 bg-amber-50 p-5">
+      <p className="mb-1 text-sm font-semibold text-amber-800">Possible duplicates</p>
+      <p className="mb-3 text-xs text-amber-700">
+        AI found similar ideas. Merging keeps votes on the canonical post — it never happens
+        automatically.
+      </p>
+      <div className="space-y-2">
+        {visible.map((s) => (
+          <div key={s.postId} className="rounded-lg border border-amber-200 bg-white p-2">
+            <div className="flex items-center gap-2">
+              <span className="grow truncate text-sm font-medium">{s.title}</span>
+              <Badge className="bg-amber-100 text-amber-700">
+                {Math.round(s.similarity * 100)}%
+              </Badge>
+            </div>
+            <div className="mt-2 flex gap-2">
+              <Button
+                size="sm"
+                disabled={pending}
+                onClick={() =>
+                  start(async () => {
+                    await mergePost(projectId, postId, s.postId)
+                    router.push(`/admin/${projectId}/posts/${s.postId}`)
+                  })
+                }
+              >
+                Merge into this
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setDismissed((d) => new Set(d).add(s.postId))}
+              >
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
+}
 
 export function CommentForm({ projectId, postId }: { projectId: string; postId: string }) {
   const [body, setBody] = useState('')

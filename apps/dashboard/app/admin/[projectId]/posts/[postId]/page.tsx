@@ -5,7 +5,12 @@ import {
   tags as tagSvc,
 } from '@heed/core'
 import Link from 'next/link'
-import { CommentForm, MergeControl, TagEditor } from '@/components/detail-controls'
+import {
+  CommentForm,
+  DedupSuggestions,
+  MergeControl,
+  TagEditor,
+} from '@/components/detail-controls'
 import { PinButton, StatusSelect } from '@/components/post-controls'
 import { Badge, Card } from '@/components/ui'
 import { requireAuthContext } from '@/lib/session'
@@ -17,14 +22,17 @@ export default async function PostDetail({
 }) {
   const { projectId, postId } = await params
   const ctx = await requireAuthContext()
-  const [post, statuses, allTags, postTags, thread, allPosts] = await Promise.all([
-    postSvc.getPost(ctx, projectId, postId),
-    statusSvc.listStatuses(ctx, projectId),
-    tagSvc.listTags(ctx, projectId),
-    tagSvc.listPostTags(ctx, projectId, postId),
-    commentSvc.listComments(projectId, postId, { includeInternal: true }),
-    postSvc.listPosts(ctx, projectId, {}),
-  ])
+  const [post, statuses, allTags, postTags, thread, allPosts, dedupSuggestions] = await Promise.all(
+    [
+      postSvc.getPost(ctx, projectId, postId),
+      statusSvc.listStatuses(ctx, projectId),
+      tagSvc.listTags(ctx, projectId),
+      tagSvc.listPostTags(ctx, projectId, postId),
+      commentSvc.listComments(projectId, postId, { includeInternal: true }),
+      postSvc.listPosts(ctx, projectId, {}),
+      postSvc.getDedupSuggestions(ctx, projectId, postId),
+    ],
+  )
   const candidates = allPosts
     .filter((p) => p.id !== postId)
     .map((p) => ({ id: p.id, title: p.title }))
@@ -69,6 +77,7 @@ export default async function PostDetail({
       </div>
 
       <div className="space-y-5">
+        <DedupSuggestions projectId={projectId} postId={postId} suggestions={dedupSuggestions} />
         <Card className="space-y-3 p-5">
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-500">Status</p>
