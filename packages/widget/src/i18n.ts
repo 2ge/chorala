@@ -1,0 +1,89 @@
+type Dict = Record<string, string>
+
+const STRINGS: Record<string, Dict> = {
+  en: {
+    feedback: 'Feedback',
+    board: 'Board',
+    roadmap: 'Roadmap',
+    changelog: 'Changelog',
+    submitIdea: 'Submit an idea',
+    title: 'Title',
+    titlePlaceholder: 'A short, clear title',
+    details: 'Details',
+    detailsPlaceholder: 'Describe your idea (optional)',
+    submit: 'Submit',
+    cancel: 'Cancel',
+    vote: 'Vote',
+    comments: 'comments',
+    addComment: 'Add a comment…',
+    send: 'Send',
+    noPosts: 'No posts yet — be the first!',
+    nothingHere: 'Nothing here yet.',
+    loading: 'Loading…',
+    poweredBy: 'Powered by Heed',
+    back: 'Back',
+    close: 'Close',
+  },
+  es: {
+    feedback: 'Sugerencias',
+    board: 'Ideas',
+    roadmap: 'Hoja de ruta',
+    changelog: 'Novedades',
+    submitIdea: 'Enviar una idea',
+    title: 'Título',
+    titlePlaceholder: 'Un título breve y claro',
+    details: 'Detalles',
+    detailsPlaceholder: 'Describe tu idea (opcional)',
+    submit: 'Enviar',
+    cancel: 'Cancelar',
+    vote: 'Votar',
+    comments: 'comentarios',
+    addComment: 'Añadir un comentario…',
+    send: 'Enviar',
+    noPosts: 'Aún no hay ideas — ¡sé el primero!',
+    nothingHere: 'Todavía no hay nada.',
+    loading: 'Cargando…',
+    poweredBy: 'Con tecnología de Heed',
+    back: 'Atrás',
+    close: 'Cerrar',
+  },
+  fr: {
+    feedback: 'Suggestions',
+    board: 'Idées',
+    roadmap: 'Feuille de route',
+    changelog: 'Nouveautés',
+    submitIdea: 'Proposer une idée',
+    title: 'Titre',
+    titlePlaceholder: 'Un titre court et clair',
+    details: 'Détails',
+    detailsPlaceholder: 'Décrivez votre idée (facultatif)',
+    submit: 'Envoyer',
+    cancel: 'Annuler',
+    vote: 'Voter',
+    comments: 'commentaires',
+    addComment: 'Ajouter un commentaire…',
+    send: 'Envoyer',
+    noPosts: 'Aucune idée pour le moment — soyez le premier !',
+    nothingHere: 'Rien pour le moment.',
+    loading: 'Chargement…',
+    poweredBy: 'Propulsé par Heed',
+    back: 'Retour',
+    close: 'Fermer',
+  },
+}
+
+export type Translator = (key: string) => string
+
+/** Resolve `auto` → navigator.language, then fall back base-language → English. */
+export function resolveLocale(locale: string | undefined): string {
+  let l = locale
+  if (!l || l === 'auto') l = typeof navigator !== 'undefined' ? navigator.language : 'en'
+  return l || 'en'
+}
+
+export function makeTranslator(locale: string): Translator {
+  const lang = STRINGS[locale] ? locale : STRINGS[locale.slice(0, 2)] ? locale.slice(0, 2) : 'en'
+  const dict = STRINGS[lang] ?? STRINGS.en
+  const en = STRINGS.en as Dict
+  return (key: string) => (dict as Dict)[key] ?? en[key] ?? key
+}

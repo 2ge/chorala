@@ -2,6 +2,7 @@ import { env } from '@heed/config'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { auth } from './auth.ts'
+import { DEMO_HTML, readFileSafe, WIDGET_JS, WIDGET_MAP } from './lib/assets.ts'
 import { requireAuth } from './middleware/auth.ts'
 import { notFoundHandler, onError } from './middleware/error.ts'
 import { analyticsRoutes } from './routes/analytics.ts'
@@ -17,9 +18,8 @@ import { statusesRoutes } from './routes/statuses.ts'
 import { tagsRoutes } from './routes/tags.ts'
 import type { AppEnv } from './types.ts'
 
-const WIDGET_STUB = `/* Heed widget — Phase 0 stub. The real Preact/Shadow-DOM bundle lands in Phase 4. */
-console.warn('[heed] widget.js is a stub until Phase 4');
-window.Heed = window.Heed || function(){ (window.Heed.q = window.Heed.q || []).push(arguments) };
+const WIDGET_STUB = `/* Heed widget bundle not built. Run \`pnpm --filter @heed/widget build\`. */
+console.error('[heed] widget.js not built');
 `
 
 export function createApp() {
@@ -31,10 +31,26 @@ export function createApp() {
     c.json({ ok: true, service: 'heed-api', deployment: env.HEED_DEPLOYMENT }),
   )
 
-  // Served by the API per HEED_WIDGET_CDN_URL; real bundle in Phase 4.
+  // The embeddable widget bundle (served per HEED_WIDGET_CDN_URL). Loadable cross-origin.
   app.get('/widget.js', (c) => {
+    const js = readFileSafe(WIDGET_JS) ?? WIDGET_STUB
     c.header('content-type', 'application/javascript; charset=utf-8')
-    return c.body(WIDGET_STUB)
+    c.header('access-control-allow-origin', '*')
+    c.header('cache-control', 'public, max-age=300')
+    return c.body(js)
+  })
+  app.get('/widget.js.map', (c) => {
+    const map = readFileSafe(WIDGET_MAP)
+    if (!map) return c.notFound()
+    c.header('content-type', 'application/json; charset=utf-8')
+    return c.body(map)
+  })
+
+  // Dev convenience: serve the widget demo page (also shipped in the dashboard, Phase 5).
+  app.get('/widget-demo.html', (c) => {
+    const html = readFileSafe(DEMO_HTML)
+    if (!html) return c.notFound()
+    return c.html(html)
   })
 
   const api = new Hono<AppEnv>()

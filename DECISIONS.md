@@ -101,3 +101,24 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase3] Public API integration tests run in-process via `app.request` against the seeded
   `acme` project (signs real JWTs with jose); they add a little data to that project per run
   (acceptable — seed is re-runnable).
+
+## Phase 4
+- [phase4] The widget (`@heed/widget`) is fully **standalone** — depends only on `preact`,
+  defines its own response types, and imports no `@heed/*` packages. This keeps the MIT
+  embed surface from importing the AGPL `@heed/types` (resolving the §3/§5 vs CLAUDE.md
+  tension in favor of "MIT must not import AGPL") and keeps the bundle tiny/self-contained.
+- [phase4] Bundled with **tsup** (esbuild) → a single IIFE `widget.js` with Preact inlined.
+  Result: 30KB raw / **11.6KB gzip** (target <40KB). Loader is **365B** (target <2KB).
+- [phase4] Rendered into a **Shadow DOM** root with all CSS scoped inside (`:host { all: initial }`
+  + class-prefixed rules). Verified in a real browser (Playwright): hostile host CSS
+  (`* { color: crimson !important; font-family: Comic Sans !important }`, lime buttons) does
+  not penetrate, and widget styles do not leak out.
+- [phase4] The widget derives the public API base from its own `<script src=".../widget.js">`
+  origin (override via `init({ apiUrl })`), so a host only pastes the snippet + project key.
+- [phase4] API serves the built bundle at `/widget.js` (ACAO `*`, cached) by reading
+  `packages/widget/dist/widget.js`; falls back to an error stub if not built. It also serves
+  the demo at `/widget-demo.html` (dev convenience; the page also ships in the dashboard).
+- [phase4] Two Biome a11y rules (`noStaticElementInteractions`, `useKeyWithClickEvents`) are
+  disabled only for `mount.tsx`'s modal backdrop (standard dismiss-on-backdrop pattern); a
+  real Escape-to-close handler + the keyboard-focusable × button preserve accessibility.
+  `widget-demo.html` is excluded from Biome (it intentionally uses `!important` host CSS).

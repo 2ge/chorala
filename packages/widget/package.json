@@ -4,9 +4,23 @@
   "private": false,
   "type": "module",
   "license": "MIT",
+  "exports": {
+    "./widget.js": "./dist/widget.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "echo 'build @heed/widget (stub — implemented in its phase)'",
-    "lint": "biome check .",
-    "typecheck": "echo 'typecheck @heed/widget (stub)'"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome check ."
+  },
+  "dependencies": {
+    "preact": "10.29.2"
+  },
+  "devDependencies": {
+    "tsup": "8.5.1",
+    "typescript": "5.9.3"
   }
 }

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Heed widget demo</title>
+    <style>
+      /* Deliberately hostile host-page CSS — proves the Shadow DOM widget is immune. */
+      * { color: crimson !important; font-family: "Comic Sans MS", cursive !important; }
+      body { background: repeating-linear-gradient(45deg, #fee, #fee 20px, #fff 20px, #fff 40px); margin: 0; padding: 2rem; }
+      button { background: lime !important; border: 4px dashed magenta !important; padding: 1rem !important; }
+      h1 { letter-spacing: 4px; }
+      .card { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 1.5rem; max-width: 680px; margin: 0 auto; }
+      input { padding: .5rem; width: 60%; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Acme — host page</h1>
+      <p>
+        Everything on this page is styled aggressively (Comic Sans, crimson, lime buttons).
+        The Heed widget below renders inside a Shadow DOM, so none of it leaks in or out.
+      </p>
+      <p>
+        <label>Project public key:
+          <input id="key" placeholder="pk_..." />
+        </label>
+        <button id="apply">Load widget</button>
+      </p>
+      <p>Or use the floating launcher (bottom-right) once loaded.</p>
+      <h2>Inline embed</h2>
+      <div id="inline-mount"></div>
+    </div>
+
+    <script>
+      // Minimal inline loader (the queue stub the real loader.js also provides).
+      (function (w) {
+        if (w.Heed) return;
+        var q = [];
+        var Heed = function () { q.push([].slice.call(arguments)); };
+        Heed.q = q;
+        w.Heed = Heed;
+      })(window);
+
+      function boot(key) {
+        Heed('init', {
+          projectKey: key,
+          locale: 'auto',
+          settings: { mode: 'floating', primaryColor: '#6366f1', theme: 'light' },
+        });
+        Heed('render', '#inline-mount', { view: 'board' });
+        // load the widget bundle (same origin as this demo)
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = '/widget.js';
+        document.head.appendChild(s);
+      }
+
+      // key from ?key=pk_... or the input box
+      var params = new URLSearchParams(location.search);
+      var qKey = params.get('key');
+      if (qKey) {
+        document.getElementById('key').value = qKey;
+        boot(qKey);
+      }
+      document.getElementById('apply').addEventListener('click', () => {
+        var k = document.getElementById('key').value.trim();
+        if (k) boot(k);
+      });
+    </script>
+  </body>
+</html>
