@@ -17,7 +17,8 @@
       "!**/*.gen.ts",
       "!**/widget-demo.html",
       "!**/*.css",
-      "!**/next-env.d.ts"
+      "!**/next-env.d.ts",
+      "!**/openapi.json"
     ]
   },
   "formatter": {

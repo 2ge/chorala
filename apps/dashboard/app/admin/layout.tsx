@@ -37,6 +37,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </nav>
 
           <div className="ml-auto flex items-center gap-3">
+            <a
+              href="/docs"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden text-sm text-ink-soft transition hover:text-ink sm:inline"
+            >
+              API ↗
+            </a>
             <span className="hidden rounded-full border border-line bg-raised px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-soft sm:inline">
               {ctx.role}
             </span>

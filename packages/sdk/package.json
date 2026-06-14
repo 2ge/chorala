@@ -1,0 +1,27 @@
+{
+  "name": "@chorala/sdk",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "description": "Typed TypeScript client for the Chorala API, generated from its OpenAPI spec.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "generate": "openapi-typescript ./openapi.json -o ./src/schema.gen.ts",
+    "build": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome check ."
+  },
+  "dependencies": {
+    "openapi-fetch": "0.14.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.9.1",
+    "typescript": "5.9.3"
+  }
+}
