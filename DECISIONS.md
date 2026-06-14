@@ -32,6 +32,18 @@ choice. Format: `- [phase] chose X over Y because Z`.
   haproxy `is_chorala` → `idea_api`(`:8787`)/`idea_app`(`:3015`). Mirrors `musicaha.com`
   exactly; no lb1/lb2 net-new components. (aidev SSH egress to lb1:2223 was opened for this.)
 
+## Embed: one-tag self-configuring widget (2026-06-14)
+- [widget] Adopted the modern Plausible/Umami-style embed: a single
+  `<script async src=".../widget.js" data-chorala-key="pk_…">` self-inits the widget — no
+  IIFE, no queue stub, no `init()` call. SSO fits the same tag via `data-jwt`; JS-computed
+  config uses a `window.choralaSettings` object. The self-init runs only if no `Chorala('init')`
+  was queued programmatically, so existing/queue embeds still work. `document.currentScript`
+  is null for async scripts, so it falls back to `querySelector('script[data-chorala-key]')`.
+- [widget] **Removed `packages/widget-loader`** (deviates from SPEC §3/§5, which is now stale).
+  It was unused — nothing imported it, the API never served a `loader.js`, and the queue
+  support it duplicated already lives in `widget.js`. The one-tag form makes a standalone
+  loader obsolete. Dropping it keeps zero backward-compat cost.
+
 ## Setup / host adaptation
 - [setup] Build in-place at repo root (no nested `chorala/` dir) over a `chorala/`
   subfolder, because this dev host already routes `idea.2pu.net` to this project

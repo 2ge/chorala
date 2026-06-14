@@ -63,7 +63,7 @@ deliverable email, custom domains, SSO, and EU data residency.
 - **Repository root + server-side code (`apps/*`, `packages/db|core|ai|email|billing|config`):
   AGPL-3.0.** Add `LICENSE` at root.
 - **Permissive (MIT) — each gets its own `LICENSE` file:**
-  `packages/widget`, `packages/widget-loader`, `packages/mcp`, `packages/sdk-react-native`.
+  `packages/widget`, `packages/mcp`, `packages/sdk-react-native`.
   Rationale: companies will not paste AGPL JavaScript into their apps; the embed/SDK/MCP
   surfaces must be MIT or the "embed everywhere" promise fails legal review.
 - Add a `NOTICE` file and per-package `package.json` `"license"` fields matching the above.
@@ -123,7 +123,6 @@ chorala/
     config/               # zod-validated env loader, shared constants (AGPL)
     types/                # shared zod schemas = the API contract (AGPL)
     widget/               # embeddable Preact widget, Shadow DOM (MIT)
-    widget-loader/        # the tiny <script> snippet / loader (MIT)
     mcp/                  # MCP server (MIT)
     sdk-react-native/     # stub + README only for v1 (MIT)
     tsconfig/             # shared tsconfig bases
@@ -303,7 +302,7 @@ the worker with retries/backoff.
 
 ---
 
-## 9. The widget (`packages/widget` + `packages/widget-loader`) — MIT
+## 9. The widget (`packages/widget`) — MIT
 
 This is the "embed everywhere" surface. Requirements:
 - **Loader**: a <2KB snippet that defines `window.Chorala` (a command queue), injects

@@ -56,7 +56,7 @@ Open the dashboard (`:3015`), sign in, and load the widget demo at
 apps/        api (Hono :8787) · dashboard+portal (Next 15 :3015) · worker (BullMQ)
 packages/    db (Drizzle+pgvector) · core (domain services) · ai (LLM providers + tasks)
              email · billing (Stripe, cloud-only) · config · types          (AGPL)
-             widget · widget-loader · mcp · sdk-react-native (stub)          (MIT)
+             widget · mcp · sdk-react-native (stub)          (MIT)
 docker/      Dockerfile.{api,dashboard,worker} · Caddyfile
 ```
 
@@ -77,15 +77,16 @@ One tag — the floating widget self-configures from `data-*` attributes:
 Optional: `data-mode` (`floating`|`inline`|`manual`), `data-locale`, `data-view`
 (`board`|`roadmap`|`changelog`), `data-color`.
 
-For SSO or inline embeds, set a config object before the script (no queue, no IIFE):
+SSO is still one tag — pass the signed JWT as `data-jwt`:
 
 ```html
-<script>window.choralaSettings = { projectKey: 'pk_live_xxx', user: { jwt } }</script>
-<script async src="https://feedback.example.com/widget.js"></script>
+<script async src="https://feedback.example.com/widget.js"
+        data-chorala-key="pk_live_xxx" data-jwt="eyJhbGci…"></script>
 ```
 
-Full programmatic control is still available via `Chorala(cmd, …)` — commands: `init`,
-`identify(user)`, `open(view?)`, `close`, `render(selector, {view})`, `on(event, cb)`.
+If the JWT is computed in JS, set `window.choralaSettings = { projectKey, user: { jwt } }`
+before the script instead. Inline embeds and runtime control use the `Chorala(cmd, …)` API:
+`init`, `identify(user)`, `open(view?)`, `close`, `render(selector, {view})`, `on(event, cb)`.
 
 ## End-user identity (SSO)
 
@@ -134,7 +135,7 @@ db:migrate | db:seed` — all wired through Turborepo.
 Mixed open-core layout (see [`NOTICE`](NOTICE)):
 
 - **AGPL-3.0** — repo root + server code (`apps/*`, `packages/{db,core,ai,email,billing,config,types}`). See [`LICENSE`](LICENSE).
-- **MIT** — the embed/SDK/MCP surfaces (`packages/{widget,widget-loader,mcp,sdk-react-native}`),
+- **MIT** — the embed/SDK/MCP surfaces (`packages/{widget,mcp,sdk-react-native}`),
   each with its own `LICENSE`, so companies can embed them without AGPL obligations. These
   packages import no AGPL code.
 

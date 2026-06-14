@@ -38,7 +38,7 @@ truth for *what* to build; `BUILD_PLAN.md` is the ordered list of *how*; this fi
 - Every package has its own `package.json`, `tsconfig.json` extending `packages/tsconfig`,
   and a `README.md` stub.
 - Respect the licensing split (SPEC §3): MIT packages must not import AGPL packages.
-  The widget, widget-loader, mcp, and sdk packages depend only on `packages/types`
+  The widget, mcp, and sdk packages depend only on `packages/types`
   (which must therefore stay dependency-light and safe to consume).
 
 ## Commands you should keep working

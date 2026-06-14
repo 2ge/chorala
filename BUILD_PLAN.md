@@ -44,7 +44,6 @@ failures, commit, then continue. Do not ask the human between phases.
   read/create/vote/comment; CORS rejects a disallowed origin; rate limit triggers.
 
 ## Phase 4 — Widget (embed everywhere)
-- `packages/widget-loader`: <2KB queue+loader snippet.
 - `packages/widget`: Preact app in Shadow DOM — board view (list/submit/vote/comment),
   roadmap view, changelog view, floating + inline + manual modes, theming, i18n strings,
   `locale: auto`. tsup build → IIFE `widget.js`, served by API.
