@@ -22,6 +22,34 @@ export function magicLinkEmail(url: string): Email {
   }
 }
 
+const button = (url: string, label: string) =>
+  `<p><a href="${url}" style="display:inline-block;background:#d9512a;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600">${label}</a></p>`
+
+export function resetPasswordEmail(url: string): Email {
+  return {
+    subject: 'Reset your Chorala password',
+    text: `Reset your Chorala password: ${url}`,
+    html: layout(
+      'Reset your password',
+      `<p>We received a request to reset your Chorala password. Click below to choose a new one — this link expires shortly.</p>
+       ${button(url, 'Reset password')}
+       <p style="font-size:12px;color:#94a3b8">If you didn’t request this, you can safely ignore this email.</p>`,
+    ),
+  }
+}
+
+export function verifyEmail(url: string): Email {
+  return {
+    subject: 'Verify your email for Chorala',
+    text: `Verify your email for Chorala: ${url}`,
+    html: layout(
+      'Welcome to Chorala 👋',
+      `<p>Confirm your email address to finish setting up your account.</p>
+       ${button(url, 'Verify email')}`,
+    ),
+  }
+}
+
 export function changelogPublishedEmail(args: {
   projectName: string
   title: string

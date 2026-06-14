@@ -1,5 +1,7 @@
+import { randomBytes } from 'node:crypto'
 import { env } from '@heed/config'
-import { db, schema } from '@heed/db'
+import { db, newId, schema } from '@heed/db'
+import { resetPasswordEmail, sendEmail, verifyEmail } from '@heed/email'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 
@@ -31,7 +33,57 @@ export const auth = betterAuth({
       verification: schema.verifications,
     },
   }),
-  emailAndPassword: { enabled: true, autoSignIn: true },
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: true,
+    sendResetPassword: async ({ user, token }) => {
+      const url = `${env.HEED_PUBLIC_URL}/reset?token=${token}`
+      try {
+        await sendEmail({ to: user.email, ...resetPasswordEmail(url) })
+      } catch (e) {
+        console.error('[auth] reset email failed:', (e as Error).message)
+      }
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, token }) => {
+      const cb = encodeURIComponent('/login?verified=1')
+      const url = `${env.HEED_PUBLIC_URL}/api/v1/auth/verify-email?token=${token}&callbackURL=${cb}`
+      try {
+        await sendEmail({ to: user.email, ...verifyEmail(url) })
+      } catch (e) {
+        console.error('[auth] verification email failed:', (e as Error).message)
+      }
+    },
+  },
+  // New signups get a personal org (owner) so the dashboard always has a home to land in.
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user: { id: string; email: string; name?: string }) => {
+          const seed = (user.name || user.email.split('@')[0] || 'workspace')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 24)
+          const slug = `${seed || 'workspace'}-${randomBytes(3).toString('hex')}`
+          const orgId = newId('organization')
+          await db.insert(schema.organizations).values({
+            id: orgId,
+            slug,
+            name: user.name ? `${user.name}'s workspace` : 'My workspace',
+            plan: 'free',
+            defaultLocale: 'en',
+            locales: ['en'],
+            settings: {},
+          })
+          await db.insert(schema.members).values({ orgId, userId: user.id, role: 'owner' })
+        },
+      },
+    },
+  },
   // Canonical is HEED_PUBLIC_URL (chorala.com); keep the www + dev-alias origins trusted
   // so admin login works on all hosts that haproxy routes to this app.
   trustedOrigins: [

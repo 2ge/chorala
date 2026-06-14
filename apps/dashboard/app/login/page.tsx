@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getSessionUser } from '@/lib/session'
 import { LoginForm } from './login-form'
@@ -25,6 +26,14 @@ export default async function LoginPage() {
           <p className="mt-1 text-sm text-ink-soft">Sign in to triage your feedback.</p>
         </div>
         <LoginForm />
+        <div className="mt-4 flex items-center justify-between text-xs">
+          <Link href="/register" className="font-medium text-accent hover:underline">
+            Create an account
+          </Link>
+          <Link href="/forgot" className="text-ink-soft transition hover:text-ink">
+            Forgot password?
+          </Link>
+        </div>
         <p className="mt-5 text-center text-xs text-ink-faint">
           Live demo — explore a real dashboard:{' '}
           <span className="font-medium text-ink-soft">demo@chorala.com</span> ·{' '}

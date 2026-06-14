@@ -32,6 +32,9 @@ importers:
       '@heed/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@heed/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@heed/types':
         specifier: workspace:*
         version: link:../../packages/types

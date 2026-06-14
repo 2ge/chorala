@@ -23,6 +23,7 @@
     "@heed/config": "workspace:*",
     "@heed/core": "workspace:*",
     "@heed/db": "workspace:*",
+    "@heed/email": "workspace:*",
     "@heed/types": "workspace:*",
     "@hono/node-server": "2.0.4",
     "better-auth": "1.6.18",
