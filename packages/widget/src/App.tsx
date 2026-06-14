@@ -145,7 +145,7 @@ export function App(props: Props) {
       </div>
 
       <div class="heed-footer">
-        <a class="heed-credit" href="https://heed.dev" target="_blank" rel="noreferrer">
+        <a class="heed-credit" href="https://chorala.com" target="_blank" rel="noreferrer">
           {t('poweredBy')}
         </a>
       </div>

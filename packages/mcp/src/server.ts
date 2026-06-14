@@ -6,9 +6,9 @@ const json = (data: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }],
 })
 
-/** Build the Heed MCP server with all SPEC §10 tools, backed by the HTTP client. */
+/** Build the Chorala MCP server with all SPEC §10 tools, backed by the HTTP client. */
 export function createServer(client: HeedClient): McpServer {
-  const server = new McpServer({ name: 'heed', version: '0.1.0' })
+  const server = new McpServer({ name: 'chorala', version: '0.1.0' })
   const pid = () => client.getProjectId()
 
   server.registerTool(

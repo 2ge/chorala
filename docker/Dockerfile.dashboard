@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Heed dashboard + portal (Next.js 15).
+# Chorala dashboard + portal (Next.js 15).
 FROM node:22-slim AS base
 RUN corepack enable
 WORKDIR /app

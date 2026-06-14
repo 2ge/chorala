@@ -129,7 +129,7 @@ export function PortalShell({
       </header>
       <main className="mx-auto max-w-3xl px-5 py-8 rise">{children}</main>
       <footer className="mx-auto max-w-3xl px-5 pb-10 pt-4 text-xs text-ink-faint">
-        Powered by <span className="font-display text-sm text-ink-soft">Heed</span>
+        Powered by <span className="font-display text-sm text-ink-soft">Chorala</span>
       </footer>
     </div>
   )

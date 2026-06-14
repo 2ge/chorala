@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Heed widget demo</title>
+    <title>Chorala widget demo</title>
     <style>
       /* Deliberately hostile host-page CSS — proves the Shadow DOM widget is immune. */
       * { color: crimson !important; font-family: "Comic Sans MS", cursive !important; }
@@ -19,7 +19,7 @@
       <h1>Acme — host page</h1>
       <p>
         Everything on this page is styled aggressively (Comic Sans, crimson, lime buttons).
-        The Heed widget below renders inside a Shadow DOM, so none of it leaks in or out.
+        The Chorala widget below renders inside a Shadow DOM, so none of it leaks in or out.
       </p>
       <p>
         <label>Project public key:
@@ -35,20 +35,20 @@
     <script>
       // Minimal inline loader (the queue stub the real loader.js also provides).
       (function (w) {
-        if (w.Heed) return;
+        if (w.Chorala) return;
         var q = [];
-        var Heed = function () { q.push([].slice.call(arguments)); };
-        Heed.q = q;
-        w.Heed = Heed;
+        var Chorala = function () { q.push([].slice.call(arguments)); };
+        Chorala.q = q;
+        w.Chorala = Chorala;
       })(window);
 
       function boot(key) {
-        Heed('init', {
+        Chorala('init', {
           projectKey: key,
           locale: 'auto',
           settings: { mode: 'floating', primaryColor: '#6366f1', theme: 'light' },
         });
-        Heed('render', '#inline-mount', { view: 'board' });
+        Chorala('render', '#inline-mount', { view: 'board' });
         // load the widget bundle (same origin as this demo)
         var s = document.createElement('script');
         s.async = true;

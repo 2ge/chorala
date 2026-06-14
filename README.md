@@ -1,12 +1,13 @@
-# Heed
+# Chorala
 
-> **Heed** is an open-core, embeddable, multilingual, AI-native product-feedback
+> **Chorala** is an open-core, embeddable, multilingual, AI-native product-feedback
 > platform — a self-hostable alternative to Canny / Featurebase / Frill.
 >
 > **We never charge you for your users voting.** Cloud pricing is flat per-admin;
 > end-users and votes are always unlimited.
 
-`Heed` is a placeholder brand token (package scope `@heed/*`, env prefix `HEED_`).
+**Chorala** is the product (chorala.com). Internally the code keeps the `@heed/*` package
+scope and `HEED_` env prefix as stable identifiers (not user-visible).
 
 - **Embeddable everywhere** — a tiny Preact widget in a Shadow DOM (≈12KB gzip) drops
   into any site with zero CSS leakage, plus a hosted portal, roadmap, and changelog.
@@ -33,7 +34,7 @@ automatic HTTPS). The API auto-runs migrations on boot. Create the first admin w
 ```bash
 docker compose exec api pnpm db:seed            # demo org + admin + sample data
 docker compose exec api pnpm --filter @heed/api seed:admin
-# → admin@heed.dev / heedadmin123
+# → admin@chorala.com / heedadmin123
 ```
 
 ### Local development
@@ -72,11 +73,11 @@ Paste two scripts on any page:
 ```html
 <script>
   (function (w, d, s) {
-    w.Heed = w.Heed || function () { (w.Heed.q = w.Heed.q || []).push(arguments) };
+    w.Chorala = w.Chorala || function () { (w.Chorala.q = w.Chorala.q || []).push(arguments) };
     s = d.createElement('script'); s.async = 1;
     s.src = 'https://feedback.example.com/widget.js'; d.head.appendChild(s);
   })(window, document);
-  Heed('init', { projectKey: 'pk_live_xxx', locale: 'auto' });
+  Chorala('init', { projectKey: 'pk_live_xxx', locale: 'auto' });
 </script>
 ```
 
@@ -96,7 +97,7 @@ const token = await new SignJWT({ id: user.id, email: user.email, name: user.nam
   .sign(new TextEncoder().encode(END_USER_JWT_SECRET))
 ```
 
-Pass it to the widget: `Heed('init', { projectKey, user: { jwt: token } })`. Anonymous
+Pass it to the widget: `Chorala('init', { projectKey, user: { jwt: token } })`. Anonymous
 visitors fall back to a signed cookie. `segment` powers prioritization (e.g. weight votes
 by MRR). Mirrors Canny/Featurebase SSO.
 

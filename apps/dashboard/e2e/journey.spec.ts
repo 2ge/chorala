@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const ADMIN = { email: 'admin@heed.dev', password: 'heedadmin123' }
+const ADMIN = { email: 'admin@chorala.com', password: 'choraladmin123' }
 
 /**
  * SPEC §13 end-to-end journey:

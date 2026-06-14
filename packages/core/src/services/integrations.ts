@@ -109,7 +109,7 @@ export async function createGithubIssue(
     headers: ghHeaders(gh.token),
     body: JSON.stringify({
       title: post.title,
-      body: `${post.body || '_No description._'}\n\n— ${post.voteCount} vote(s) on Heed`,
+      body: `${post.body || '_No description._'}\n\n— ${post.voteCount} vote(s) on Chorala`,
       labels: ['heed'],
     }),
   })
@@ -138,7 +138,7 @@ export async function syncGithubIssue(projectId: string, postId: string, statusK
     method: 'POST',
     headers: ghHeaders(gh.token),
     body: JSON.stringify({
-      body: `Status on Heed changed to **${statusKind.replace('_', ' ')}**.`,
+      body: `Status on Chorala changed to **${statusKind.replace('_', ' ')}**.`,
     }),
   })
   const state = statusKind === 'complete' || statusKind === 'closed' ? 'closed' : 'open'

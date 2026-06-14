@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "license": "AGPL-3.0",
-  "description": "Heed — open-core, embeddable, multilingual, AI-native product-feedback platform.",
+  "description": "Chorala — open-core, embeddable, multilingual, AI-native product-feedback platform.",
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=22"

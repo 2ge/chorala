@@ -17,9 +17,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-5 px-6">
           <Link href="/admin" className="group flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-accent font-display text-[17px] leading-none text-white shadow-[0_6px_14px_-6px_rgba(217,81,42,0.9)]">
-              H
+              C
             </span>
-            <span className="font-display text-[22px] leading-none tracking-[-0.02em]">Heed</span>
+            <span className="font-display text-[22px] leading-none tracking-[-0.02em]">
+              Chorala
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-1 sm:flex">

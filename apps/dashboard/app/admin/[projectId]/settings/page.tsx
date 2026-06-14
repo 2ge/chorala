@@ -17,9 +17,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
   const cdn = env.HEED_WIDGET_CDN_URL
 
   const snippet = `<script>
-  (function(w,d,s){w.Heed=w.Heed||function(){(w.Heed.q=w.Heed.q||[]).push(arguments)};
+  (function(w,d,s){w.Chorala=w.Chorala||function(){(w.Chorala.q=w.Chorala.q||[]).push(arguments)};
    s=d.createElement('script');s.async=1;s.src='${cdn}';d.head.appendChild(s);})(window,document);
-  Heed('init', { projectKey: '${project.publicKey}', locale: 'auto' });
+  Chorala('init', { projectKey: '${project.publicKey}', locale: 'auto' });
 </script>`
 
   return (
@@ -62,7 +62,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
       <Card className="space-y-3 p-5">
         <h2 className="text-sm font-semibold text-slate-500">Keys</h2>
         <div>
-          <Label>Public key (X-Heed-Key)</Label>
+          <Label>Public key</Label>
           <code className="block rounded bg-slate-50 p-2 text-xs">{project.publicKey}</code>
         </div>
         <div>

@@ -6,7 +6,7 @@ import { Button, Card, Input, Label } from '@/components/ui'
 
 export function LoginForm() {
   const router = useRouter()
-  const [email, setEmail] = useState('admin@heed.dev')
+  const [email, setEmail] = useState('admin@chorala.com')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)

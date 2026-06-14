@@ -8,7 +8,7 @@ import { createServer } from './server.ts'
 const apiUrl = process.env.HEED_API_URL ?? 'http://localhost:8787'
 const apiKey = process.env.HEED_MCP_API_KEY ?? process.env.HEED_API_KEY
 if (!apiKey) {
-  console.error('Set HEED_MCP_API_KEY to a Heed admin API key (hk_...).')
+  console.error('Set HEED_MCP_API_KEY to a Chorala admin API key (hk_...).')
   process.exit(1)
 }
 

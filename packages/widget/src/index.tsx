@@ -50,7 +50,7 @@ function handle(cmd: Cmd) {
     case 'init': {
       config = a1 as InitOptions
       if (!config?.projectKey) {
-        console.error('[heed] init requires { projectKey }')
+        console.error('[chorala] init requires { projectKey }')
         return
       }
       const api = buildApi()
@@ -98,13 +98,15 @@ function handle(cmd: Cmd) {
       break
     }
     default:
-      console.warn('[heed] unknown command:', name)
+      console.warn('[chorala] unknown command:', name)
   }
 }
 
 // Replace the loader's queue stub with the real processor and replay queued commands.
-const w = window as unknown as { Heed?: { q?: unknown[][] } }
-const queued: unknown[][] = w.Heed?.q ?? []
-const heed = (...args: unknown[]) => handle(args as Cmd)
-;(w as unknown as { Heed: unknown }).Heed = heed
+// Supports both the `Chorala` global and the legacy `Heed` alias (same queue).
+const w = window as unknown as { Chorala?: { q?: unknown[][] }; Heed?: { q?: unknown[][] } }
+const queued: unknown[][] = w.Chorala?.q ?? w.Heed?.q ?? []
+const run = (...args: unknown[]) => handle(args as Cmd)
+;(w as unknown as { Chorala: unknown; Heed: unknown }).Chorala = run
+;(w as unknown as { Chorala: unknown; Heed: unknown }).Heed = run
 for (const c of queued) handle(c as Cmd)

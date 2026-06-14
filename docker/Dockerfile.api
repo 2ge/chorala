@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Heed API (Hono). Internal packages export TS source, so the API runs via tsx.
+# Chorala API (Hono). Internal packages export TS source, so the API runs via tsx.
 FROM node:22-slim AS base
 RUN corepack enable
 WORKDIR /app

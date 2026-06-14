@@ -1,4 +1,4 @@
-// PM2 process definitions for the Heed stack on this host.
+// PM2 process definitions for the Chorala stack on this host.
 // Secrets/config come from the repo-root .env (loaded by @heed/config at runtime);
 // only NODE_ENV is set here. Start with: pm2 start ecosystem.config.cjs && pm2 save
 const ROOT = '/home/claude/projects/idea'

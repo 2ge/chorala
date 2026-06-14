@@ -1,10 +1,10 @@
-# @heed/mcp — Heed MCP server (MIT)
+# @heed/mcp — Chorala MCP server (MIT)
 
-Expose your Heed feedback to AI clients (Claude Desktop, Claude Code, Cursor) as
+Expose your Chorala feedback to AI clients (Claude Desktop, Claude Code, Cursor) as
 [Model Context Protocol](https://modelcontextprotocol.io) tools. Triage feedback,
 search semantically, and draft changelogs from inside your assistant.
 
-This package is **MIT** and talks to the Heed HTTP API over the network with an
+This package is **MIT** and talks to the Chorala HTTP API over the network with an
 admin API key (`hk_…`) — it imports none of the server code.
 
 ## Tools
@@ -25,9 +25,9 @@ admin API key (`hk_…`) — it imports none of the server code.
 
 Two env vars:
 
-- `HEED_MCP_API_KEY` — a Heed API key (`hk_…`), created in **Project → API keys**.
+- `HEED_MCP_API_KEY` — a Chorala API key (`hk_…`), created in **Project → API keys**.
   It is scoped to a single project.
-- `HEED_API_URL` — base URL of the Heed API (default `http://localhost:8787`).
+- `HEED_API_URL` — base URL of the Chorala API (default `http://localhost:8787`).
 
 ## Claude Desktop
 
@@ -36,7 +36,7 @@ Add to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "heed": {
+    "chorala": {
       "command": "npx",
       "args": ["-y", "tsx", "/absolute/path/to/packages/mcp/src/index.ts"],
       "env": {
@@ -51,7 +51,7 @@ Add to `claude_desktop_config.json`:
 ## Claude Code
 
 ```bash
-claude mcp add heed \
+claude mcp add chorala \
   --env HEED_MCP_API_KEY=hk_live_xxx \
   --env HEED_API_URL=https://feedback.yourcompany.com \
   -- npx -y tsx /absolute/path/to/packages/mcp/src/index.ts

@@ -1,13 +1,14 @@
-# Heed — Master Specification
+# Chorala — Master Specification
 
 > **This document is the single source of truth.** Every architectural decision is made
 > here. If something seems ambiguous, choose the **simplest option consistent with this
 > document**, implement it, and record the choice in `DECISIONS.md`. Do not stop to ask.
 
-> **Codename:** `Heed`. The product name is a placeholder. Everywhere you see `heed`,
-> `Heed`, or `HEED_`, treat it as the brand token. (The human will find/replace these
-> later.) Use exactly these casings: package scope `@heed/*`, env prefix `HEED_`,
-> display name `Heed`.
+> **Product name:** `Chorala` (chorala.com). The display brand is **Chorala** throughout
+> the UI, docs, and embed snippet. The internal package scope `@heed/*` and env prefix
+> `HEED_` are retained as stable code identifiers (not user-visible), as are the wire-protocol
+> tokens `window.Heed`/`heed:engaged`/`X-Heed-Key` (kept as back-compat aliases for existing
+> embeds; new code uses `window.Chorala`/`chorala:engaged`).
 
 ---
 
@@ -306,12 +307,12 @@ the worker with retries/backoff.
 ## 9. The widget (`packages/widget` + `packages/widget-loader`) — MIT
 
 This is the "embed everywhere" surface. Requirements:
-- **Loader**: a <2KB snippet that defines `window.Heed` (a command queue), injects
+- **Loader**: a <2KB snippet that defines `window.Chorala` (a command queue), injects
   `widget.js`, and replays queued commands. Public API:
   ```html
   <script>
     (function(w,d,s){ /* queue + async load from HEED_WIDGET_CDN_URL */ })(window,document,'script');
-    Heed('init', { projectKey: 'pk_live_xxx', locale: 'auto', user: { jwt: 'eyJ...' } });
+    Chorala('init', { projectKey: 'pk_live_xxx', locale: 'auto', user: { jwt: 'eyJ...' } });
   </script>
   ```
 - **Commands**: `init`, `identify(user)`, `open(boardSlug?)`, `close`, `render(selector, {view})`,

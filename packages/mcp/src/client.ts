@@ -1,4 +1,4 @@
-/** Tiny HTTP client for the Heed admin API, authenticated with an `hk_...` API key.
+/** Tiny HTTP client for the Chorala admin API, authenticated with an `hk_...` API key.
  *  Kept dependency-free so this MIT package never imports the AGPL server code. */
 export type HeedClientConfig = { apiUrl: string; apiKey: string }
 
@@ -17,7 +17,7 @@ export function createClient(cfg: HeedClientConfig) {
     })
     if (!res.ok) {
       const detail = await res.text().catch(() => '')
-      throw new Error(`Heed API ${res.status} on ${path}: ${detail.slice(0, 200)}`)
+      throw new Error(`Chorala API ${res.status} on ${path}: ${detail.slice(0, 200)}`)
     }
     return (res.status === 204 ? null : await res.json()) as T
   }

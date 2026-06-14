@@ -1,4 +1,4 @@
-# Heed — full self-host stack. One command:
+# Chorala — full self-host stack. One command:
 #
 #   cp .env.example .env   # set HEED_AUTH_SECRET (openssl rand -base64 32)
 #   docker compose up

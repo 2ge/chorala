@@ -19,8 +19,8 @@ import { statusesRoutes } from './routes/statuses.ts'
 import { tagsRoutes } from './routes/tags.ts'
 import type { AppEnv } from './types.ts'
 
-const WIDGET_STUB = `/* Heed widget bundle not built. Run \`pnpm --filter @heed/widget build\`. */
-console.error('[heed] widget.js not built');
+const WIDGET_STUB = `/* Chorala widget bundle not built. Run \`pnpm --filter @heed/widget build\`. */
+console.error('[chorala] widget.js not built');
 `
 
 export function createApp() {
@@ -65,7 +65,13 @@ export function createApp() {
   api.route('/public', publicRoutes)
 
   // Admin surface: dashboard-origin CORS, then auth. Applies only to the routes below.
-  api.use('*', cors({ origin: [env.HEED_PUBLIC_URL], credentials: true }))
+  api.use(
+    '*',
+    cors({
+      origin: [env.HEED_PUBLIC_URL, 'https://www.chorala.com', 'https://idea.2pu.net'],
+      credentials: true,
+    }),
+  )
   api.use('*', requireAuth)
   api.route('/projects', projectsRoutes)
   api.route('/projects/:projectId/boards', boardsRoutes)

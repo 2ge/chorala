@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Heed background worker (BullMQ): AI tasks, webhook delivery, email.
+# Chorala background worker (BullMQ): AI tasks, webhook delivery, email.
 FROM node:22-slim AS base
 RUN corepack enable
 WORKDIR /app

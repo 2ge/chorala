@@ -21,7 +21,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: 'Free',
     adminSeats: 1,
     monthly: 0,
-    features: ['1 admin', 'Heed branding', 'unlimited end-users & votes'],
+    features: ['1 admin', 'Chorala branding', 'unlimited end-users & votes'],
     priceId: () => undefined,
   },
   starter: {

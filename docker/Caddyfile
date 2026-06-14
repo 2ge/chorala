@@ -1,4 +1,4 @@
-# Heed edge proxy. Caddy terminates TLS (auto-HTTPS for a real domain) and routes:
+# Chorala edge proxy. Caddy terminates TLS (auto-HTTPS for a real domain) and routes:
 #   /api/*, /widget.js  -> api:8787
 #   everything else      -> dashboard:3015 (admin + portal)
 #

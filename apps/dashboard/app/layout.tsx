@@ -19,8 +19,8 @@ const display = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: 'Heed — Admin',
-  description: 'Heed feedback platform dashboard',
+  title: 'Chorala — Admin',
+  description: 'Chorala feedback platform dashboard',
   robots: { index: false, follow: false },
 }
 

@@ -1,6 +1,6 @@
 # Contributor License Agreement
 
-Heed is open-core software. To keep the option of dual-licensing the project in
+Chorala is open-core software. To keep the option of dual-licensing the project in
 the future (e.g. offering a commercial license alongside the AGPL), all
 contributors are asked to sign a Contributor License Agreement (CLA) before
 their first contribution is merged.

@@ -6,16 +6,16 @@ const layout = (heading: string, bodyHtml: string) => `<!doctype html>
     <h1 style="font-size:18px;margin:0 0 12px">${heading}</h1>
     ${bodyHtml}
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0"/>
-    <p style="font-size:12px;color:#94a3b8">Powered by Heed</p>
+    <p style="font-size:12px;color:#94a3b8">Powered by Chorala</p>
   </div>
 </body></html>`
 
 export function magicLinkEmail(url: string): Email {
   return {
-    subject: 'Your Heed sign-in link',
-    text: `Sign in to Heed: ${url}`,
+    subject: 'Your Chorala sign-in link',
+    text: `Sign in to Chorala: ${url}`,
     html: layout(
-      'Sign in to Heed',
+      'Sign in to Chorala',
       `<p>Click the button below to sign in. This link expires shortly.</p>
        <p><a href="${url}" style="display:inline-block;background:#6366f1;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Sign in</a></p>`,
     ),

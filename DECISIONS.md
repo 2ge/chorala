@@ -1,7 +1,36 @@
 # DECISIONS.md
 
-Audit trail of judgement calls made while building Heed where SPEC.md left a
+Audit trail of judgement calls made while building Chorala where SPEC.md left a
 choice. Format: `- [phase] chose X over Y because Z`.
+
+## Rebrand → Chorala (2026-06-14)
+- [brand] Named the product **Chorala** (chorala.com) — registered, CF zone active. Chosen
+  over keeping "Heed" because `heed.com` is owned by a third party (a search for the brand
+  would leak elsewhere); "Chorala" (a coined word, from *chorus* — many voices) is an
+  exact-match domain the project fully owns.
+- [brand] Renamed all **user-visible** brand surfaces to Chorala (titles, login/admin chrome,
+  widget "Powered by", portal footer, email/MCP/billing copy, docs, `heed.dev`→`chorala.com`).
+- [brand] **Kept** the invisible internals: `@heed/*` package scope, `HEED_*` env-var names,
+  the `heed` Postgres DB/role, internal `heed-*` shadow-DOM CSS classes, BullMQ prefix. They
+  never surface to users and renaming them on a live deploy is pure risk for no benefit.
+- [brand] **Kept the wire-protocol tokens** `window.Heed`, `heed:engaged`, `postMessage
+  source:'heed'`, and the `X-Heed-Key` header — they are hard-coded in MusicAha's *deployed*
+  page; renaming would break the live reward integration. Added `window.Chorala` /
+  `chorala:engaged` / `source:'chorala'` as the new primary, emitted **alongside** the legacy
+  ones (dual-emit), so new embeds are Chorala-branded while existing embeds keep working.
+- [brand] Canonical URL is now `https://chorala.com` (`HEED_PUBLIC_URL` value); `idea.2pu.net`
+  + `www.chorala.com` kept as trusted origins/admin hosts so all routes still log in.
+- [brand] Migrated the live seeded admin `admin@heed.dev`→`admin@chorala.com` and re-hashed
+  its password (`choraladmin123`) **in place** (no user delete) to avoid cascading the live
+  posts/members authored by that admin.
+- [brand] Customer feedback portals (`/site/*`) now set their own indexable, project-named
+  metadata instead of inheriting the admin dashboard's `Chorala — Admin` + noindex.
+
+## Infra: chorala.com routing (2026-06-14)
+- [infra] `chorala.com` rides the existing path: Cloudflare (2ge account, Flexible SSL) →
+  lb2 (`172.20.10.12`) `20-frontend.cfg` `aidev` backend (`172.20.111.111:80`) → this box's
+  haproxy `is_chorala` → `idea_api`(`:8787`)/`idea_app`(`:3015`). Mirrors `musicaha.com`
+  exactly; no lb1/lb2 net-new components. (aidev SSH egress to lb1:2223 was opened for this.)
 
 ## Setup / host adaptation
 - [setup] Build in-place at repo root (no nested `heed/` dir) over a `heed/`
@@ -49,7 +78,7 @@ choice. Format: `- [phase] chose X over Y because Z`.
   configured to map its models to these tables in Phase 2.
 - [phase1] Seed creates the admin `user` + `member` (owner) rows but defers the password
   **credential** to Phase 2, where Better Auth's hasher is available. `SEED_ADMIN`
-  (admin@heed.dev / heedadmin123) is exported from the seed for Phase 2 to consume.
+  (admin@chorala.com / heedadmin123) is exported from the seed for Phase 2 to consume.
 - [phase1] Prepended `CREATE EXTENSION IF NOT EXISTS vector;` to migration `0000` (drizzle-kit
   does not emit it) so a fresh DB / CI provisions pgvector self-sufficiently.
 - [phase1] `db:push` needs a TTY to confirm, so the canonical apply path is
@@ -175,7 +204,7 @@ choice. Format: `- [phase] chose X over Y because Z`.
   live worker boots and consumes an enqueued job end-to-end (producer→Redis→worker→transport).
 
 ## Phase 7
-- [phase7] `packages/mcp` (MIT) is a **standalone HTTP client** of the Heed admin API
+- [phase7] `packages/mcp` (MIT) is a **standalone HTTP client** of the Chorala admin API
   (Bearer `hk_…` key) — it imports `@modelcontextprotocol/sdk` + `zod` only, never the AGPL
   server code, honoring SPEC §3's "MIT must not import AGPL". It defines its own minimal types.
 - [phase7] To back the AI-powered MCP tools, added a small admin API surface

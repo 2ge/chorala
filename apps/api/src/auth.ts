@@ -32,7 +32,14 @@ export const auth = betterAuth({
     },
   }),
   emailAndPassword: { enabled: true, autoSignIn: true },
-  trustedOrigins: [env.HEED_PUBLIC_URL, env.HEED_API_URL],
+  // Canonical is HEED_PUBLIC_URL (chorala.com); keep the www + dev-alias origins trusted
+  // so admin login works on all hosts that haproxy routes to this app.
+  trustedOrigins: [
+    env.HEED_PUBLIC_URL,
+    env.HEED_API_URL,
+    'https://www.chorala.com',
+    'https://idea.2pu.net',
+  ],
   // Same scheme decision as the dashboard (both read HEED_PUBLIC_URL) so the session
   // cookie name/flags match across the api (:8787) and dashboard (:3015) backends.
   advanced: { useSecureCookies: env.HEED_PUBLIC_URL.startsWith('https://') },

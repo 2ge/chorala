@@ -2,7 +2,13 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 /** Hosts that serve the admin app + /portal/[id]. Anything else is a project custom
  *  domain (e.g. feedback.musicaha.com) and is rewritten to the host-resolved portal. */
-const ADMIN_HOSTS = new Set(['idea.2pu.net', 'localhost', '127.0.0.1'])
+const ADMIN_HOSTS = new Set([
+  'chorala.com',
+  'www.chorala.com',
+  'idea.2pu.net',
+  'localhost',
+  '127.0.0.1',
+])
 
 export function middleware(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase().split(':')[0] ?? ''

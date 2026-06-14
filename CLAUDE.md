@@ -1,6 +1,6 @@
 # CLAUDE.md — working agreement for this repo
 
-You are building **Heed**, an open-core feedback platform. `SPEC.md` is the source of
+You are building **Chorala**, an open-core feedback platform. `SPEC.md` is the source of
 truth for *what* to build; `BUILD_PLAN.md` is the ordered list of *how*; this file is
 *how to behave*.
 
