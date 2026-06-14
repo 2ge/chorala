@@ -1,0 +1,6 @@
+# syntax=docker/dockerfile:1
+# Dockerfile.worker — STUB (implemented in Phase 8).
+# Multi-stage pnpm build of @heed/worker will land here.
+FROM node:22-slim
+WORKDIR /app
+CMD ["node", "-e", "console.log('heed worker image is a Phase 0 stub')"]

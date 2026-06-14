@@ -1,0 +1,21 @@
+Heed
+Copyright (c) 2026 Heed contributors
+
+This product is open-core software with a mixed-license layout:
+
+  * The repository root and all server-side code are licensed under the
+    GNU Affero General Public License v3.0 (AGPL-3.0). See LICENSE.
+    This covers: apps/*, and packages/{db,core,ai,email,billing,config,types}.
+
+  * The embed / SDK / integration surfaces are licensed under the MIT License,
+    so they can be freely embedded into proprietary host applications. Each of
+    these packages ships its own LICENSE file:
+      - packages/widget
+      - packages/widget-loader
+      - packages/mcp
+      - packages/sdk-react-native
+
+"Heed" is a placeholder brand token (package scope @heed/*, env prefix HEED_).
+
+This software bundles third-party open-source components, each retaining its
+own license; see the respective package manifests and node_modules for details.

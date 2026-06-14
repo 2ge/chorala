@@ -1,0 +1,40 @@
+# Heed — Docker Compose.
+#
+# Phase 0: brings up the stateful dev dependencies (Postgres + pgvector, Redis)
+# so `pnpm db:push && pnpm db:seed && pnpm dev` works against them.
+#
+# Phase 8 adds the app services (api, dashboard, worker) and a Caddy edge so that
+# `docker compose up` from a clean checkout yields a full working instance.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: heed
+      POSTGRES_PASSWORD: heed
+      POSTGRES_DB: heed
+    ports:
+      - "5432:5432"
+    volumes:
+      - heed_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U heed -d heed"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - heed_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  heed_pgdata:
+  heed_redisdata:

@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main, build]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: heed
+          POSTGRES_PASSWORD: heed
+          POSTGRES_DB: heed
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U heed -d heed"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://heed:heed@localhost:5432/heed
+      REDIS_URL: redis://localhost:6379
+      HEED_AUTH_SECRET: ci_test_secret_at_least_32_bytes_long_xx
+      HEED_AI_PROVIDER: none
+      HEED_EMAIL_TRANSPORT: none
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm test

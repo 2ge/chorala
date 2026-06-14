@@ -1,0 +1,10 @@
+# Caddyfile — STUB (implemented in Phase 8).
+# Terminates TLS for the self-host stack and reverse-proxies:
+#   /api/*, /widget.js -> api:8787
+#   everything else     -> dashboard:3000
+{
+	admin off
+}
+:80 {
+	respond "heed Caddyfile is a Phase 0 stub" 200
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@heed/tsconfig",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "files": [
+    "base.json"
+  ],
+  "scripts": {
+    "build": "echo 'build @heed/tsconfig (config-only)'",
+    "lint": "echo 'lint @heed/tsconfig (config-only)'"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "heed",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0",
+  "description": "Heed — open-core, embeddable, multilingual, AI-native product-feedback platform.",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "pnpm --filter @heed/db db:generate",
+    "db:push": "pnpm --filter @heed/db db:push",
+    "db:migrate": "pnpm --filter @heed/db db:migrate",
+    "db:seed": "pnpm --filter @heed/db db:seed"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.4",
+    "turbo": "2.9.18",
+    "typescript": "5.9.3"
+  }
+}
