@@ -18,7 +18,7 @@ import {
 import type { AdminCreatePostInput, PostSort, UpdatePostInput } from '@heed/types'
 import type { AuthContext } from '../context.ts'
 import { badRequest, conflict, notFound } from '../errors.ts'
-import { enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
+import { enqueueIntegrationSync, enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
 import { getProject } from './projects.ts'
 
 /** Post columns excluding the (large, internal) embedding vector — never serialized to clients. */
@@ -176,15 +176,18 @@ export async function changeStatus(
   statusId: string | null,
 ) {
   await getPost(ctx, projectId, id)
+  let statusKind: string | null = null
   if (statusId) {
     const [s] = await db
-      .select({ id: statuses.id })
+      .select({ id: statuses.id, kind: statuses.kind })
       .from(statuses)
       .where(and(eq(statuses.id, statusId), eq(statuses.projectId, projectId)))
     if (!s) throw badRequest('Status does not belong to this project')
+    statusKind = s.kind
   }
   await db.update(posts).set({ statusId }).where(eq(posts.id, id))
   await enqueueWebhookEvent(projectId, 'post.status_changed', { postId: id, statusId })
+  if (statusKind) await enqueueIntegrationSync(projectId, id, statusKind)
   return getPost(ctx, projectId, id)
 }
 

@@ -5,6 +5,7 @@ import {
   boards,
   changelog,
   comments,
+  integrations,
   members,
   posts,
   projects,
@@ -174,6 +175,30 @@ export async function revokeApiKey(projectId: string, id: string) {
   const ctx = await requireAuthContext()
   await apiKeys.revokeApiKey(ctx, projectId, id)
   revalidatePath(`${adminPath(projectId)}/keys`)
+}
+
+// --- GitHub integration ---
+export async function connectGithub(formData: FormData) {
+  const ctx = await requireAuthContext()
+  const projectId = String(formData.get('projectId'))
+  await integrations.setGithubIntegration(ctx, projectId, {
+    repo: String(formData.get('repo')).trim(),
+    token: String(formData.get('token') ?? '').trim() || undefined,
+  })
+  revalidatePath(`${adminPath(projectId)}/settings`)
+}
+
+export async function disconnectGithub(projectId: string) {
+  const ctx = await requireAuthContext()
+  await integrations.removeGithubIntegration(ctx, projectId)
+  revalidatePath(`${adminPath(projectId)}/settings`)
+}
+
+export async function createGithubIssue(projectId: string, postId: string) {
+  const ctx = await requireAuthContext()
+  const link = await integrations.createGithubIssue(ctx, projectId, postId)
+  revalidatePath(`${adminPath(projectId)}/posts/${postId}`)
+  return link
 }
 
 // --- Statuses (for reorder/roadmap toggle) ---

@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto'
 import { clusterThemes, createProvider, processPost, summarizePost } from '@heed/ai'
 import { env } from '@heed/config'
-import { QUEUE_PREFIX } from '@heed/core'
+import { integrations, QUEUE_PREFIX } from '@heed/core'
 import { and, db, eq, webhooks } from '@heed/db'
 import { sendEmail } from '@heed/email'
 import { type ConnectionOptions, type Job, Worker } from 'bullmq'
@@ -62,10 +62,23 @@ const webhookWorker = new Worker('webhooks', (job: Job) => deliverWebhooks(job.d
 // --- Email delivery ---
 const emailWorker = new Worker('email', (job: Job) => sendEmail(job.data), opts)
 
+// --- Integrations (GitHub issue sync on status change) ---
+const integrationWorker = new Worker(
+  'integrations',
+  (job: Job) => {
+    if (job.name === 'github-sync') {
+      return integrations.syncGithubIssue(job.data.projectId, job.data.postId, job.data.statusKind)
+    }
+    return Promise.resolve()
+  },
+  opts,
+)
+
 for (const [name, worker] of [
   ['ai', aiWorker],
   ['webhooks', webhookWorker],
   ['email', emailWorker],
+  ['integrations', integrationWorker],
 ] as const) {
   worker.on('failed', (job, err) =>
     console.error(`[worker:${name}] job ${job?.id} failed:`, err.message),
@@ -77,7 +90,12 @@ console.log(
 )
 
 async function shutdown() {
-  await Promise.all([aiWorker.close(), webhookWorker.close(), emailWorker.close()])
+  await Promise.all([
+    aiWorker.close(),
+    webhookWorker.close(),
+    emailWorker.close(),
+    integrationWorker.close(),
+  ])
   await redis.quit()
   process.exit(0)
 }

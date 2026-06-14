@@ -5,7 +5,12 @@ import { Redis } from 'ioredis'
 
 /** Shared queue names + key prefix (matches the host's `heed` redis convention). */
 export const QUEUE_PREFIX = 'heed'
-export const QUEUES = { ai: 'ai', webhooks: 'webhooks', email: 'email' } as const
+export const QUEUES = {
+  ai: 'ai',
+  webhooks: 'webhooks',
+  email: 'email',
+  integrations: 'integrations',
+} as const
 
 let connection: Redis | null = null
 let queues: Record<string, Queue> | null = null
@@ -66,4 +71,13 @@ export async function enqueueEmail(data: {
   text: string
 }) {
   await safeAdd(QUEUES.email, 'send', data)
+}
+
+/** Sync a post's linked GitHub issue after a status change. */
+export async function enqueueIntegrationSync(
+  projectId: string,
+  postId: string,
+  statusKind: string,
+) {
+  await safeAdd(QUEUES.integrations, 'github-sync', { projectId, postId, statusKind })
 }

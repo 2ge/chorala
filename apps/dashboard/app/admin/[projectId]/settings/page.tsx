@@ -1,5 +1,6 @@
 import { env } from '@heed/config'
-import { projects as projectSvc } from '@heed/core'
+import { integrations, projects as projectSvc } from '@heed/core'
+import { GithubIntegrationCard } from '@/components/integration-card'
 import { Button, Card, Input, Label, Textarea } from '@/components/ui'
 import { updateProjectSettings } from '@/lib/actions'
 import { requireAuthContext } from '@/lib/session'
@@ -8,6 +9,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
   const { projectId } = await params
   const ctx = await requireAuthContext()
   const project = await projectSvc.getProject(ctx, projectId)
+  const ints = await integrations.listIntegrations(ctx, projectId)
+  const githubRepo = (
+    ints.find((i) => i.type === 'github')?.config as { repo?: string } | undefined
+  )?.repo
   const widget = project.widgetSettings as { primaryColor?: string; theme?: string; mode?: string }
   const cdn = env.HEED_WIDGET_CDN_URL
 
@@ -73,6 +78,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
         <pre className="overflow-x-auto rounded bg-slate-900 p-3 text-xs text-slate-100">
           {snippet}
         </pre>
+      </Card>
+
+      <Card className="p-5">
+        <GithubIntegrationCard projectId={projectId} repo={githubRepo} />
       </Card>
     </div>
   )

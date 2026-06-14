@@ -232,6 +232,7 @@ export const posts = pgTable(
       onDelete: 'set null',
     }),
     eta: timestamp('eta', { withTimezone: true }),
+    metadata: jsonb('metadata').$type<Json>().default({}).notNull(),
     ...ts,
   },
   (t) => [

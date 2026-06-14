@@ -1,5 +1,6 @@
 import {
   comments as commentSvc,
+  integrations,
   posts as postSvc,
   statuses as statusSvc,
   tags as tagSvc,
@@ -12,6 +13,7 @@ import {
   MergeControl,
   TagEditor,
 } from '@/components/detail-controls'
+import { GithubIssueButton } from '@/components/github-button'
 import { PinButton, StatusSelect } from '@/components/post-controls'
 import { Badge, Card, VotePill } from '@/components/ui'
 import { requireAuthContext } from '@/lib/session'
@@ -29,8 +31,8 @@ export default async function PostDetail({
 }) {
   const { projectId, postId } = await params
   const ctx = await requireAuthContext()
-  const [post, statuses, allTags, postTags, thread, allPosts, dedupSuggestions] = await Promise.all(
-    [
+  const [post, statuses, allTags, postTags, thread, allPosts, dedupSuggestions, ints, issue] =
+    await Promise.all([
       postSvc.getPost(ctx, projectId, postId),
       statusSvc.listStatuses(ctx, projectId),
       tagSvc.listTags(ctx, projectId),
@@ -38,8 +40,10 @@ export default async function PostDetail({
       commentSvc.listComments(projectId, postId, { includeInternal: true }),
       postSvc.listPosts(ctx, projectId, {}),
       postSvc.getDedupSuggestions(ctx, projectId, postId),
-    ],
-  )
+      integrations.listIntegrations(ctx, projectId),
+      integrations.getPostIssue(ctx, projectId, postId),
+    ])
+  const githubConnected = ints.some((i) => i.type === 'github')
   const candidates = allPosts
     .filter((p) => p.id !== postId)
     .map((p) => ({ id: p.id, title: p.title }))
@@ -128,6 +132,16 @@ export default async function PostDetail({
           <Card className="p-5">
             <SectionLabel>Merge duplicate</SectionLabel>
             <MergeControl projectId={projectId} postId={postId} candidates={candidates} />
+          </Card>
+
+          <Card className="space-y-2 p-5">
+            <SectionLabel>GitHub</SectionLabel>
+            <GithubIssueButton
+              projectId={projectId}
+              postId={postId}
+              connected={githubConnected}
+              issue={issue}
+            />
           </Card>
         </div>
       </div>
