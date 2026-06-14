@@ -1,5 +1,5 @@
 {
-  "name": "@heed/billing",
+  "name": "@chorala/billing",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,8 +16,8 @@
     "lint": "biome check ."
   },
   "dependencies": {
-    "@heed/config": "workspace:*",
-    "@heed/db": "workspace:*",
+    "@chorala/config": "workspace:*",
+    "@chorala/db": "workspace:*",
     "stripe": "22.2.1"
   },
   "devDependencies": {

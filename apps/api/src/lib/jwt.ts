@@ -1,4 +1,4 @@
-import { type EndUserJwtPayload, endUserJwtPayload } from '@heed/types'
+import { type EndUserJwtPayload, endUserJwtPayload } from '@chorala/types'
 import { jwtVerify } from 'jose'
 
 /**

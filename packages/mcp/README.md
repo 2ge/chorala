@@ -1,4 +1,4 @@
-# @heed/mcp — Chorala MCP server (MIT)
+# @chorala/mcp — Chorala MCP server (MIT)
 
 Expose your Chorala feedback to AI clients (Claude Desktop, Claude Code, Cursor) as
 [Model Context Protocol](https://modelcontextprotocol.io) tools. Triage feedback,
@@ -25,9 +25,9 @@ admin API key (`hk_…`) — it imports none of the server code.
 
 Two env vars:
 
-- `HEED_MCP_API_KEY` — a Chorala API key (`hk_…`), created in **Project → API keys**.
+- `CHORALA_MCP_API_KEY` — a Chorala API key (`hk_…`), created in **Project → API keys**.
   It is scoped to a single project.
-- `HEED_API_URL` — base URL of the Chorala API (default `http://localhost:8787`).
+- `CHORALA_API_URL` — base URL of the Chorala API (default `http://localhost:8787`).
 
 ## Claude Desktop
 
@@ -40,8 +40,8 @@ Add to `claude_desktop_config.json`:
       "command": "npx",
       "args": ["-y", "tsx", "/absolute/path/to/packages/mcp/src/index.ts"],
       "env": {
-        "HEED_MCP_API_KEY": "hk_live_xxx",
-        "HEED_API_URL": "https://feedback.yourcompany.com"
+        "CHORALA_MCP_API_KEY": "hk_live_xxx",
+        "CHORALA_API_URL": "https://feedback.yourcompany.com"
       }
     }
   }
@@ -52,19 +52,19 @@ Add to `claude_desktop_config.json`:
 
 ```bash
 claude mcp add chorala \
-  --env HEED_MCP_API_KEY=hk_live_xxx \
-  --env HEED_API_URL=https://feedback.yourcompany.com \
+  --env CHORALA_MCP_API_KEY=hk_live_xxx \
+  --env CHORALA_API_URL=https://feedback.yourcompany.com \
   -- npx -y tsx /absolute/path/to/packages/mcp/src/index.ts
 ```
 
 ## Transports
 
 - **stdio** (default) — for local Claude Desktop / Claude Code / Cursor.
-- **streamable HTTP** — set `HEED_MCP_TRANSPORT=http` (and optionally `HEED_MCP_PORT`,
+- **streamable HTTP** — set `CHORALA_MCP_TRANSPORT=http` (and optionally `CHORALA_MCP_PORT`,
   default `8788`) for remote clients.
 
 ## Run locally
 
 ```bash
-HEED_MCP_API_KEY=hk_xxx HEED_API_URL=http://localhost:8787 pnpm --filter @heed/mcp start
+CHORALA_MCP_API_KEY=hk_xxx CHORALA_API_URL=http://localhost:8787 pnpm --filter @chorala/mcp start
 ```

@@ -17,8 +17,8 @@ import {
   sql,
   statuses,
   votes,
-} from '@heed/db'
-import type { CreateCommentInput, CreatePostInput, PostSort } from '@heed/types'
+} from '@chorala/db'
+import type { CreateCommentInput, CreatePostInput, PostSort } from '@chorala/types'
 import { badRequest, notFound } from '../errors.ts'
 import { enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
 import { createComment, listComments } from './comments.ts'

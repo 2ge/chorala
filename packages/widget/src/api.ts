@@ -14,9 +14,9 @@ export function createApi(cfg: ApiConfig) {
   const base = cfg.apiBase.replace(/\/+$/, '')
 
   function headers(json = false): Record<string, string> {
-    const h: Record<string, string> = { 'x-heed-key': cfg.projectKey }
+    const h: Record<string, string> = { 'x-chorala-key': cfg.projectKey }
     if (json) h['content-type'] = 'application/json'
-    if (cfg.jwt) h['x-heed-user'] = cfg.jwt
+    if (cfg.jwt) h['x-chorala-user'] = cfg.jwt
     return h
   }
 

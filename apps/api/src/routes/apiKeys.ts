@@ -1,5 +1,5 @@
-import { apiKeys } from '@heed/core'
-import { createApiKeyInput } from '@heed/types'
+import { apiKeys } from '@chorala/core'
+import { createApiKeyInput } from '@chorala/types'
 import { Hono } from 'hono'
 import type { AppEnv } from '../types.ts'
 import { reqParam } from '../util.ts'

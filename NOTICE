@@ -15,7 +15,7 @@ This product is open-core software with a mixed-license layout:
       - packages/mcp
       - packages/sdk-react-native
 
-The internal package scope @heed/* and env prefix HEED_ are retained as stable code
+The internal package scope @chorala/* and env prefix CHORALA_ are retained as stable code
 identifiers and are not user-visible.
 
 This software bundles third-party open-source components, each retaining its

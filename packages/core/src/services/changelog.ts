@@ -1,5 +1,5 @@
-import { and, changelogEntries, db, desc, eq, newId } from '@heed/db'
-import type { CreateChangelogInput, UpdateChangelogInput } from '@heed/types'
+import { and, changelogEntries, db, desc, eq, newId } from '@chorala/db'
+import type { CreateChangelogInput, UpdateChangelogInput } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { notFound } from '../errors.ts'
 import { enqueueWebhookEvent } from '../queues.ts'

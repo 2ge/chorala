@@ -1,4 +1,4 @@
-import { VECTOR_DIM } from '@heed/config'
+import { VECTOR_DIM } from '@chorala/config'
 import { sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,

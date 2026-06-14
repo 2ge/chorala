@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
-  "globalEnv": ["NODE_ENV", "HEED_DEPLOYMENT"],
+  "globalEnv": ["NODE_ENV", "CHORALA_DEPLOYMENT"],
   "globalDependencies": [".env", "packages/tsconfig/base.json"],
   "tasks": {
     "build": {

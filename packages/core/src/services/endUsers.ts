@@ -1,4 +1,4 @@
-import { and, db, endUsers, eq, newId } from '@heed/db'
+import { and, db, endUsers, eq, newId } from '@chorala/db'
 import { badRequest } from '../errors.ts'
 
 /** Identity claims carried by the host-signed end-user JWT (SPEC §8.2). */

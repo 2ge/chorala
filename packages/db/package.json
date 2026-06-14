@@ -1,5 +1,5 @@
 {
-  "name": "@heed/db",
+  "name": "@chorala/db",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -22,7 +22,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@heed/config": "workspace:*",
+    "@chorala/config": "workspace:*",
     "drizzle-orm": "0.45.2",
     "nanoid": "5.1.11",
     "postgres": "3.4.9"

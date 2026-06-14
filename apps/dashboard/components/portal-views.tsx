@@ -1,4 +1,4 @@
-import { publicFeed } from '@heed/core'
+import { publicFeed } from '@chorala/core'
 import { PortalVote, SubscribeForm } from '@/components/portal-client'
 
 type Props = { projectId: string; publicKey: string; locale?: string }

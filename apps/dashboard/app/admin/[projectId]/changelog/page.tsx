@@ -1,4 +1,4 @@
-import { changelog as changelogSvc } from '@heed/core'
+import { changelog as changelogSvc } from '@chorala/core'
 import { Badge, Button, Card, Input, Label, Textarea } from '@/components/ui'
 import { saveChangelog } from '@/lib/actions'
 import { requireAuthContext } from '@/lib/session'

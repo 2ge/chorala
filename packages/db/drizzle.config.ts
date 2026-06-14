@@ -1,4 +1,4 @@
-import { env } from '@heed/config'
+import { env } from '@chorala/config'
 import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({

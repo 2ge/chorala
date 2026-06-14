@@ -1,5 +1,5 @@
 {
-  "name": "@heed/widget",
+  "name": "@chorala/widget",
   "version": "0.0.0",
   "private": false,
   "type": "module",
@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "biome check ."
   },
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "tsup": "8.5.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "3.2.6"
   }
 }

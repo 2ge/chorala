@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const cookieTheme = (await cookies()).get('heed-theme')?.value
+  const cookieTheme = (await cookies()).get('chorala-theme')?.value
   const theme = cookieTheme && THEME_IDS.includes(cookieTheme) ? cookieTheme : 'paper'
 
   return (

@@ -1,4 +1,4 @@
-import { DEFAULT_STATUSES } from '@heed/config'
+import { DEFAULT_STATUSES } from '@chorala/config'
 import { sql } from 'drizzle-orm'
 import { client, db } from './client.ts'
 import { generatePublicKey, generateSecret, newId } from './ids.ts'

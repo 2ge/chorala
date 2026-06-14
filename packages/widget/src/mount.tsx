@@ -28,7 +28,7 @@ export function mountWidget(opts: MountOpts): Instance {
 
   // Shadow DOM root → host CSS can never leak in or out (SPEC §9).
   const host = document.createElement('div')
-  host.setAttribute('data-heed-widget', '')
+  host.setAttribute('data-chorala-widget', '')
   const shadow = host.attachShadow({ mode: 'open' })
   const styleEl = document.createElement('style')
   styleEl.textContent = buildStyles(opts.settings)
@@ -67,23 +67,23 @@ export function mountWidget(opts: MountOpts): Instance {
       />
     )
 
-    if (opts.mode === 'inline') return <div class="heed-root">{panel}</div>
+    if (opts.mode === 'inline') return <div class="chorala-root">{panel}</div>
 
     return (
-      <div class="heed-root">
+      <div class="chorala-root">
         {opts.mode === 'floating' && !open && (
-          <button type="button" class="heed-launcher" onClick={() => setOpen(true)}>
+          <button type="button" class="chorala-launcher" onClick={() => setOpen(true)}>
             💬 {t('feedback')}
           </button>
         )}
         {open && (
           <div
-            class="heed-overlay"
+            class="chorala-overlay"
             onClick={(e) => {
               if (e.target === e.currentTarget) setOpen(false)
             }}
           >
-            <div class="heed-panel">{panel}</div>
+            <div class="chorala-panel">{panel}</div>
           </div>
         )}
       </div>

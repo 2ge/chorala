@@ -4,25 +4,25 @@ Audit trail of judgement calls made while building Chorala where SPEC.md left a
 choice. Format: `- [phase] chose X over Y because Z`.
 
 ## Rebrand → Chorala (2026-06-14)
-- [brand] Named the product **Chorala** (chorala.com) — registered, CF zone active. Chosen
-  over keeping "Heed" because `heed.com` is owned by a third party (a search for the brand
-  would leak elsewhere); "Chorala" (a coined word, from *chorus* — many voices) is an
-  exact-match domain the project fully owns.
-- [brand] Renamed all **user-visible** brand surfaces to Chorala (titles, login/admin chrome,
-  widget "Powered by", portal footer, email/MCP/billing copy, docs, `heed.dev`→`chorala.com`).
-- [brand] **Kept** the invisible internals: `@heed/*` package scope, `HEED_*` env-var names,
-  the `heed` Postgres DB/role, internal `heed-*` shadow-DOM CSS classes, BullMQ prefix. They
-  never surface to users and renaming them on a live deploy is pure risk for no benefit.
-- [brand] **Kept the wire-protocol tokens** `window.Heed`, `heed:engaged`, `postMessage
-  source:'heed'`, and the `X-Heed-Key` header — they are hard-coded in MusicAha's *deployed*
-  page; renaming would break the live reward integration. Added `window.Chorala` /
-  `chorala:engaged` / `source:'chorala'` as the new primary, emitted **alongside** the legacy
-  ones (dual-emit), so new embeds are Chorala-branded while existing embeds keep working.
-- [brand] Canonical URL is now `https://chorala.com` (`HEED_PUBLIC_URL` value); `idea.2pu.net`
+- [brand] Named the product **Chorala** (chorala.com) — registered, CF zone active. The original
+  build-time codename was a common dictionary word whose `.com` was already owned by a third
+  party (a search for the brand would leak elsewhere); "Chorala" (a coined word, from *chorus* —
+  many voices) is an exact-match domain the project fully owns.
+- [brand] **Full purge:** every trace of the old codename was renamed to Chorala in one
+  case-exact pass across the whole repo — package scope `@chorala/*`, env prefix `CHORALA_*`,
+  wire-protocol tokens (`window.Chorala`, `chorala:engaged`, `postMessage source:'chorala'`,
+  `X-Chorala-Key`/`X-Chorala-Signature`), widget CSS vars/classes (`--chorala-*`, `chorala-*`),
+  cookies (`chorala-theme`, `chorala_uid`), Postgres DB/role, Redis/BullMQ prefix, and PM2
+  process names. The codename appears nowhere in the source (guarded by a test, see §13).
+- [brand] The embed wire-protocol rename is a **coordinated cutover** with the one live embed
+  (MusicAha): no back-compat aliases are kept. The host page must update `window.Chorala`,
+  the `chorala:engaged` listener and `source:'chorala'` check — see the migration note handed
+  to the MusicAha side.
+- [brand] Canonical URL is `https://chorala.com` (`CHORALA_PUBLIC_URL` value); `idea.2pu.net`
   + `www.chorala.com` kept as trusted origins/admin hosts so all routes still log in.
-- [brand] Migrated the live seeded admin `admin@heed.dev`→`admin@chorala.com` and re-hashed
-  its password (`choraladmin123`) **in place** (no user delete) to avoid cascading the live
-  posts/members authored by that admin.
+- [brand] Migrated the live seeded admin in place and re-hashed its password (no user delete)
+  to avoid cascading the live posts/members it authored; later deleted in favour of the real
+  owner (`satoshinakashu@pm.me`) + an isolated public demo account (`demo@chorala.com`).
 - [brand] Customer feedback portals (`/site/*`) now set their own indexable, project-named
   metadata instead of inheriting the admin dashboard's `Chorala — Admin` + noindex.
 
@@ -33,14 +33,14 @@ choice. Format: `- [phase] chose X over Y because Z`.
   exactly; no lb1/lb2 net-new components. (aidev SSH egress to lb1:2223 was opened for this.)
 
 ## Setup / host adaptation
-- [setup] Build in-place at repo root (no nested `heed/` dir) over a `heed/`
+- [setup] Build in-place at repo root (no nested `chorala/` dir) over a `chorala/`
   subfolder, because this dev host already routes `idea.2pu.net` to this project
-  directory; the `@heed/*` scope and `HEED_` env prefix still carry the brand token.
+  directory; the `@chorala/*` scope and `CHORALA_` env prefix still carry the brand token.
 - [setup] Relaxed `engines.node` to `>=22` over SPEC §4's locked Node 24, because
   the dev host runs Node v22.22.2 (a current LTS that runs the whole stack) and has
   no version manager installed. Revisit before any production cut.
 - [setup] Local dev points `DATABASE_URL` at the shared Postgres 16 cluster (DB
-  `heed`) and `REDIS_URL` at the shared Redis (db index 9, BullMQ key prefix `heed`)
+  `chorala`) and `REDIS_URL` at the shared Redis (db index 9, BullMQ key prefix `chorala`)
   over spinning project-local containers, per this host's PORTS.md conventions. The
   Docker Compose self-host path (Phase 8) still ships dedicated postgres+redis so the
   one-command self-host promise (SPEC §14) holds for external users.
@@ -78,7 +78,7 @@ choice. Format: `- [phase] chose X over Y because Z`.
   configured to map its models to these tables in Phase 2.
 - [phase1] Seed creates the admin `user` + `member` (owner) rows but defers the password
   **credential** to Phase 2, where Better Auth's hasher is available. `SEED_ADMIN`
-  (admin@chorala.com / heedadmin123) is exported from the seed for Phase 2 to consume.
+  (admin@chorala.com / choralaadmin123) is exported from the seed for Phase 2 to consume.
 - [phase1] Prepended `CREATE EXTENSION IF NOT EXISTS vector;` to migration `0000` (drizzle-kit
   does not emit it) so a fresh DB / CI provisions pgvector self-sufficiently.
 - [phase1] `db:push` needs a TTY to confirm, so the canonical apply path is
@@ -97,7 +97,7 @@ choice. Format: `- [phase] chose X over Y because Z`.
   its password-hash format — robust across Better Auth versions.
 - [phase2] Post reads use an explicit column selection that **omits the `embedding` vector**
   so 768-float arrays never leak into API responses or waste bandwidth.
-- [phase2] Route handlers validate with the zod schemas from `@heed/types` (`schema.parse`);
+- [phase2] Route handlers validate with the zod schemas from `@chorala/types` (`schema.parse`);
   a single Hono `onError` maps `AppError`/`ZodError` to the `{ error: { code, message } }`
   contract. No `@hono/zod-validator` dependency needed.
 - [phase2] Parent-mounted route params (`projectId`, `postId`) type as `string | undefined`
@@ -112,11 +112,11 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase3] End-user JWT verified with **jose** (`jwtVerify`, HS256) — constant-time HMAC
   per SPEC §13 — rather than hand-rolling JWT crypto. jose isn't in SPEC §4's table but is
   the standard, audited choice; logged here.
-- [phase3] Anonymous identity uses Hono's **signed cookie** (`heed_uid`, signed with
-  HEED_AUTH_SECRET, SameSite=None+Secure for cross-site widgets). Reads resolve identity
+- [phase3] Anonymous identity uses Hono's **signed cookie** (`chorala_uid`, signed with
+  CHORALA_AUTH_SECRET, SameSite=None+Secure for cross-site widgets). Reads resolve identity
   without creating; writes (`requireEndUser`) create an anon end-user + set the cookie.
 - [phase3] Public API auth/CORS/rate-limit live in one `publicProject` middleware: resolves
-  project by `X-Heed-Key`, enforces per-project `allowed_origins` CORS (echo origin or 403;
+  project by `X-Chorala-Key`, enforces per-project `allowed_origins` CORS (echo origin or 403;
   `*` allowed), then a Redis fixed-window rate limit keyed by project+IP+minute. Rate limit
   **fails open** if Redis is down (graceful degradation, SPEC §2).
 - [phase3] `POST /vote` and `DELETE /vote` map to an explicit `votes.setVote(..., shouldVote)`
@@ -132,9 +132,9 @@ choice. Format: `- [phase] chose X over Y because Z`.
   (acceptable — seed is re-runnable).
 
 ## Phase 4
-- [phase4] The widget (`@heed/widget`) is fully **standalone** — depends only on `preact`,
-  defines its own response types, and imports no `@heed/*` packages. This keeps the MIT
-  embed surface from importing the AGPL `@heed/types` (resolving the §3/§5 vs CLAUDE.md
+- [phase4] The widget (`@chorala/widget`) is fully **standalone** — depends only on `preact`,
+  defines its own response types, and imports no `@chorala/*` packages. This keeps the MIT
+  embed surface from importing the AGPL `@chorala/types` (resolving the §3/§5 vs CLAUDE.md
   tension in favor of "MIT must not import AGPL") and keeps the bundle tiny/self-contained.
 - [phase4] Bundled with **tsup** (esbuild) → a single IIFE `widget.js` with Preact inlined.
   Result: 30KB raw / **11.6KB gzip** (target <40KB). Loader is **365B** (target <2KB).
@@ -158,14 +158,14 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase5] Used hand-built shadcn-style Tailwind components (`components/ui.tsx`, CVA variants)
   instead of running the shadcn CLI / Radix — keeps the dependency surface small and the build
   fast while matching the shadcn look. Logged as a deviation from SPEC §4's "shadcn/ui".
-- [phase5] The dashboard is **server-component-first**: pages call `@heed/core` services
+- [phase5] The dashboard is **server-component-first**: pages call `@chorala/core` services
   directly (it's an AGPL server app) and mutations are **server actions** (`lib/actions.ts`)
   that resolve the session→AuthContext and call core, then `revalidatePath`. No HTTP round-trip
   to the API for admin data.
 - [phase5] Auth: the dashboard runs its own Better Auth instance with the **same secret + DB +
   cookie scheme** as the API. On the shared host `idea.2pu.net`, sign-in POSTs to the API's
   Better Auth (haproxy routes `/api/*` → :8787), which sets the session cookie; the dashboard
-  (:3015) reads it. Both key `useSecureCookies` off `HEED_PUBLIC_URL`'s scheme so the cookie
+  (:3015) reads it. Both key `useSecureCookies` off `CHORALA_PUBLIC_URL`'s scheme so the cookie
   name/flags match across backends — without this the dashboard looked for a differently-prefixed
   cookie and never saw the session (caught + fixed via Playwright). Note: this means admin auth
   works on the shared host, not across distinct localhost ports.
@@ -191,10 +191,10 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase6] Cross-language: `translatePost` writes `post_translations` (is_auto) for every org
   locale; votes already attach to the canonical post, so a localized view votes on the same row.
 - [phase6] Queues (`packages/core/src/queues.ts`): BullMQ producers (ai/webhooks/email,
-  prefix `heed`) with `safeAdd` that **fails open** if Redis is down and **no-ops under
+  prefix `chorala`) with `safeAdd` that **fails open** if Redis is down and **no-ops under
   NODE_ENV=test** (so unit tests don't open queue connections / hang Vitest). Lazy connection.
 - [phase6] `apps/worker`: BullMQ workers — AI (processPost/clusterThemes/summarize via the
-  env provider), webhooks (HMAC `X-Heed-Signature`, BullMQ retries/backoff), email. Core
+  env provider), webhooks (HMAC `X-Chorala-Signature`, BullMQ retries/backoff), email. Core
   services enqueue on the right events (post.created→AI+webhook, status_changed, merged,
   comment.created, vote.created, changelog.published).
 - [phase6] `packages/email`: pluggable transport (SMTP via nodemailer / Resend via fetch /
@@ -211,15 +211,15 @@ choice. Format: `- [phase] chose X over Y because Z`.
   (`apps/api/src/routes/ai.ts`, mounted before `/posts/:id` so `/posts/search` wins):
   `GET /posts/search` (semantic via pgvector, text fallback when AI off), `POST
   /posts/:id/summarize`, `POST /changelog/draft`. Core gained `posts.semanticSearch`; AI
-  gained `draftChangelogFromPosts`. The api now depends on `@heed/ai`.
+  gained `draftChangelogFromPosts`. The api now depends on `@chorala/ai`.
 - [phase7] 9 tools: list_boards, list_posts, get_post, search_feedback, top_requests,
   cluster_themes, summarize_post, update_post_status (resolves status by name), and
   draft_changelog_from_posts. The api key is project-scoped, so the server resolves its
   single project via `GET /projects` and caches the id.
 - [phase7] Transports: stdio (default, for local Claude clients) + streamable HTTP
-  (`HEED_MCP_TRANSPORT=http`). README ships the exact Claude Desktop / Claude Code config.
+  (`CHORALA_MCP_TRANSPORT=http`). README ships the exact Claude Desktop / Claude Code config.
 - [phase7] The MCP test (`test/stdio.test.ts`) spawns the server and drives it with the real
-  MCP SDK client over stdio; **skips cleanly** (exit 0) without `HEED_MCP_API_KEY` so it
+  MCP SDK client over stdio; **skips cleanly** (exit 0) without `CHORALA_MCP_API_KEY` so it
   doesn't break `pnpm test`. Verified live: 9 tools; search_feedback + top_requests return
   seeded data.
 
@@ -227,7 +227,7 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase8] `packages/billing` (AGPL): plans (free/starter/pro by **admin-seat** count — never
   user/vote metering, SPEC §1/§12), `assertSeatAvailable` (wired into member invites; no-op in
   self-host), and Stripe checkout + webhook handlers. Stripe is **lazy-imported** so self-host
-  never loads it; the whole module is inert unless `HEED_DEPLOYMENT=cloud`. Verified inert.
+  never loads it; the whole module is inert unless `CHORALA_DEPLOYMENT=cloud`. Verified inert.
 - [phase8] Docker: real multi-stage-ish Dockerfiles for api/worker (run TS source via tsx) and
   dashboard (next build → next start); `Caddyfile` routes `/api/*` + `/widget.js` → api, else →
   dashboard; `docker-compose.yml` runs postgres(pgvector)+redis+api+worker+dashboard+caddy with

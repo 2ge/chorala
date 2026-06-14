@@ -1,13 +1,13 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import type { HeedClient } from './client.ts'
+import type { ChoralaClient } from './client.ts'
 
 const json = (data: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }],
 })
 
 /** Build the Chorala MCP server with all SPEC §10 tools, backed by the HTTP client. */
-export function createServer(client: HeedClient): McpServer {
+export function createServer(client: ChoralaClient): McpServer {
   const server = new McpServer({ name: 'chorala', version: '0.1.0' })
   const pid = () => client.getProjectId()
 

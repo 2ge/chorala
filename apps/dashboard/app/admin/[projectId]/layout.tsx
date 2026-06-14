@@ -1,4 +1,4 @@
-import { projects as projectService } from '@heed/core'
+import { projects as projectService } from '@chorala/core'
 import type { ReactNode } from 'react'
 import { ProjectNav } from '@/components/project-nav'
 import { requireAuthContext } from '@/lib/session'

@@ -1,4 +1,4 @@
-import { env } from '@heed/config'
+import { env } from '@chorala/config'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { auth } from './auth.ts'
@@ -19,7 +19,7 @@ import { statusesRoutes } from './routes/statuses.ts'
 import { tagsRoutes } from './routes/tags.ts'
 import type { AppEnv } from './types.ts'
 
-const WIDGET_STUB = `/* Chorala widget bundle not built. Run \`pnpm --filter @heed/widget build\`. */
+const WIDGET_STUB = `/* Chorala widget bundle not built. Run \`pnpm --filter @chorala/widget build\`. */
 console.error('[chorala] widget.js not built');
 `
 
@@ -29,10 +29,10 @@ export function createApp() {
   app.notFound(notFoundHandler)
 
   app.get('/health', (c) =>
-    c.json({ ok: true, service: 'heed-api', deployment: env.HEED_DEPLOYMENT }),
+    c.json({ ok: true, service: 'chorala-api', deployment: env.CHORALA_DEPLOYMENT }),
   )
 
-  // The embeddable widget bundle (served per HEED_WIDGET_CDN_URL). Loadable cross-origin.
+  // The embeddable widget bundle (served per CHORALA_WIDGET_CDN_URL). Loadable cross-origin.
   app.get('/widget.js', (c) => {
     const js = readFileSafe(WIDGET_JS) ?? WIDGET_STUB
     c.header('content-type', 'application/javascript; charset=utf-8')
@@ -68,7 +68,7 @@ export function createApp() {
   api.use(
     '*',
     cors({
-      origin: [env.HEED_PUBLIC_URL, 'https://www.chorala.com', 'https://idea.2pu.net'],
+      origin: [env.CHORALA_PUBLIC_URL, 'https://www.chorala.com', 'https://idea.2pu.net'],
       credentials: true,
     }),
   )

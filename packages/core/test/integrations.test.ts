@@ -1,5 +1,13 @@
 import { randomUUID } from 'node:crypto'
-import { client, db, eq, integrations as intTable, newId, organizations, projects } from '@heed/db'
+import {
+  client,
+  db,
+  eq,
+  integrations as intTable,
+  newId,
+  organizations,
+  projects,
+} from '@chorala/db'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { decryptSecret, encryptSecret } from '../src/crypto.ts'
 import { type AuthContext, integrations } from '../src/index.ts'
@@ -46,14 +54,14 @@ describe('secret encryption', () => {
 describe('github integration', () => {
   test('connect stores repo + encrypted token; never exposes the secret', async () => {
     await integrations.setGithubIntegration(ctx, projectId, {
-      repo: '2ge/heed',
+      repo: '2ge/chorala',
       token: 'ghp_abc123def456',
     })
 
     const list = await integrations.listIntegrations(ctx, projectId)
     expect(list).toHaveLength(1)
     expect(list[0]?.type).toBe('github')
-    expect((list[0]?.config as { repo: string }).repo).toBe('2ge/heed')
+    expect((list[0]?.config as { repo: string }).repo).toBe('2ge/chorala')
     expect(list[0]).not.toHaveProperty('secret')
 
     // the stored secret is encrypted, and decrypts back to the token
@@ -70,9 +78,9 @@ describe('github integration', () => {
   })
 
   test('updating keeps the existing token when none is provided', async () => {
-    await integrations.setGithubIntegration(ctx, projectId, { repo: '2ge/heed2' })
+    await integrations.setGithubIntegration(ctx, projectId, { repo: '2ge/chorala2' })
     const [row] = await db.select().from(intTable).where(eq(intTable.projectId, projectId))
-    expect((row?.config as { repo: string }).repo).toBe('2ge/heed2')
+    expect((row?.config as { repo: string }).repo).toBe('2ge/chorala2')
     expect(decryptSecret(row?.secret ?? '')).toBe('ghp_abc123def456')
   })
 

@@ -20,22 +20,22 @@ importers:
 
   apps/api:
     dependencies:
-      '@heed/ai':
+      '@chorala/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@heed/config':
+      '@chorala/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@heed/core':
+      '@chorala/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@heed/db':
+      '@chorala/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@heed/email':
+      '@chorala/email':
         specifier: workspace:*
         version: link:../../packages/email
-      '@heed/types':
+      '@chorala/types':
         specifier: workspace:*
         version: link:../../packages/types
       '@hono/node-server':
@@ -72,16 +72,16 @@ importers:
 
   apps/dashboard:
     dependencies:
-      '@heed/config':
+      '@chorala/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@heed/core':
+      '@chorala/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@heed/db':
+      '@chorala/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@heed/types':
+      '@chorala/types':
         specifier: workspace:*
         version: link:../../packages/types
       better-auth:
@@ -136,19 +136,19 @@ importers:
 
   apps/worker:
     dependencies:
-      '@heed/ai':
+      '@chorala/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@heed/config':
+      '@chorala/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@heed/core':
+      '@chorala/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@heed/db':
+      '@chorala/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@heed/email':
+      '@chorala/email':
         specifier: workspace:*
         version: link:../../packages/email
       bullmq:
@@ -170,10 +170,10 @@ importers:
 
   packages/ai:
     dependencies:
-      '@heed/config':
+      '@chorala/config':
         specifier: workspace:*
         version: link:../config
-      '@heed/db':
+      '@chorala/db':
         specifier: workspace:*
         version: link:../db
       drizzle-orm:
@@ -192,10 +192,10 @@ importers:
 
   packages/billing:
     dependencies:
-      '@heed/config':
+      '@chorala/config':
         specifier: workspace:*
         version: link:../config
-      '@heed/db':
+      '@chorala/db':
         specifier: workspace:*
         version: link:../db
       stripe:
@@ -221,16 +221,16 @@ importers:
 
   packages/core:
     dependencies:
-      '@heed/billing':
+      '@chorala/billing':
         specifier: workspace:*
         version: link:../billing
-      '@heed/config':
+      '@chorala/config':
         specifier: workspace:*
         version: link:../config
-      '@heed/db':
+      '@chorala/db':
         specifier: workspace:*
         version: link:../db
-      '@heed/types':
+      '@chorala/types':
         specifier: workspace:*
         version: link:../types
       bullmq:
@@ -255,7 +255,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@heed/config':
+      '@chorala/config':
         specifier: workspace:*
         version: link:../config
       drizzle-orm:
@@ -286,7 +286,7 @@ importers:
 
   packages/email:
     dependencies:
-      '@heed/config':
+      '@chorala/config':
         specifier: workspace:*
         version: link:../config
       nodemailer:
@@ -345,6 +345,9 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      vitest:
+        specifier: 3.2.6
+        version: 3.2.6(@types/node@22.18.9)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)
 
   packages/widget-loader:
     devDependencies:

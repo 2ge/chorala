@@ -2,8 +2,8 @@
 #   /api/*, /widget.js  -> api:8787
 #   everything else      -> dashboard:3015 (admin + portal)
 #
-# Set HEED_DOMAIN to your hostname for automatic Let's Encrypt TLS; defaults to :80.
-{$HEED_DOMAIN::80} {
+# Set CHORALA_DOMAIN to your hostname for automatic Let's Encrypt TLS; defaults to :80.
+{$CHORALA_DOMAIN::80} {
 	encode gzip
 
 	@api path /api/* /widget.js /widget.js.map

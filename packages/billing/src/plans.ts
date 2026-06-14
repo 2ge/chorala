@@ -1,4 +1,4 @@
-import { loadEnv } from '@heed/config'
+import { loadEnv } from '@chorala/config'
 
 export type PlanId = 'free' | 'starter' | 'pro'
 

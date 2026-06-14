@@ -1,5 +1,5 @@
-import { projects } from '@heed/core'
-import { createProjectInput, updateProjectInput } from '@heed/types'
+import { projects } from '@chorala/core'
+import { createProjectInput, updateProjectInput } from '@chorala/types'
 import { Hono } from 'hono'
 import type { AppEnv } from '../types.ts'
 

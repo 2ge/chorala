@@ -4,7 +4,7 @@ import {
   posts as postSvc,
   statuses as statusSvc,
   tags as tagSvc,
-} from '@heed/core'
+} from '@chorala/core'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import {

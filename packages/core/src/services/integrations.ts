@@ -1,4 +1,4 @@
-import { and, db, eq, integrations, newId, posts } from '@heed/db'
+import { and, db, eq, integrations, newId, posts } from '@chorala/db'
 import type { AuthContext } from '../context.ts'
 import { decryptSecret, encryptSecret } from '../crypto.ts'
 import { badRequest, notFound } from '../errors.ts'
@@ -10,7 +10,7 @@ const ghHeaders = (token: string) => ({
   accept: 'application/vnd.github+json',
   'x-github-api-version': '2022-11-28',
   'content-type': 'application/json',
-  'user-agent': 'heed',
+  'user-agent': 'chorala',
 })
 
 type GithubConfig = { repo: string }
@@ -110,7 +110,7 @@ export async function createGithubIssue(
     body: JSON.stringify({
       title: post.title,
       body: `${post.body || '_No description._'}\n\n— ${post.voteCount} vote(s) on Chorala`,
-      labels: ['heed'],
+      labels: ['chorala'],
     }),
   })
   if (!res.ok) throw badRequest(`GitHub error ${res.status}: ${(await res.text()).slice(0, 200)}`)

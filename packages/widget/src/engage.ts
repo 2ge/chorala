@@ -6,23 +6,17 @@ export type EngageType = 'engaged' | 'feedback' | 'vote' | 'comment' | 'submit'
  *
  * - Inline embed (our default, Shadow DOM): dispatches a `chorala:engaged` CustomEvent.
  * - Iframe embed: also postMessage's the parent ({ source: 'chorala', type }).
- *
- * Back-compat: also emits the legacy `heed:engaged` event + `source: 'heed'` postMessage
- * so existing host listeners (e.g. MusicAha's deployed page) keep granting rewards.
  */
 export function emitEngaged(type: EngageType = 'engaged'): void {
   if (typeof window === 'undefined') return
-  for (const name of ['chorala:engaged', 'heed:engaged']) {
-    try {
-      window.dispatchEvent(new CustomEvent(name, { detail: { type } }))
-    } catch {
-      /* ignore */
-    }
+  try {
+    window.dispatchEvent(new CustomEvent('chorala:engaged', { detail: { type } }))
+  } catch {
+    /* ignore */
   }
   try {
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({ source: 'chorala', type }, '*')
-      window.parent.postMessage({ source: 'heed', type }, '*') // legacy alias
     }
   } catch {
     /* ignore */

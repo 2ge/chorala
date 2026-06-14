@@ -1,4 +1,4 @@
-import type { AuthContext, projects } from '@heed/core'
+import type { AuthContext, projects } from '@chorala/core'
 
 export type AppEnv = {
   Variables: {

@@ -1,4 +1,4 @@
-import { DEFAULT_STATUSES } from '@heed/config'
+import { DEFAULT_STATUSES } from '@chorala/config'
 import {
   and,
   boards,
@@ -9,8 +9,8 @@ import {
   newId,
   projects,
   statuses,
-} from '@heed/db'
-import type { CreateProjectInput, UpdateProjectInput } from '@heed/types'
+} from '@chorala/db'
+import type { CreateProjectInput, UpdateProjectInput } from '@chorala/types'
 import { type AuthContext, canManageOrg } from '../context.ts'
 import { badRequest, conflict, forbidden, notFound } from '../errors.ts'
 

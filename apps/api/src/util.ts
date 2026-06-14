@@ -1,4 +1,4 @@
-import { badRequest } from '@heed/core'
+import { badRequest } from '@chorala/core'
 import type { Context } from 'hono'
 
 /** Read a required route param. Parent-mounted params type as `string | undefined`; this

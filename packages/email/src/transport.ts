@@ -1,4 +1,4 @@
-import { env } from '@heed/config'
+import { env } from '@chorala/config'
 import nodemailer from 'nodemailer'
 import type { Email } from './templates.ts'
 
@@ -30,7 +30,7 @@ class SmtpTransport implements EmailTransport {
   })
   async send(args: SendArgs) {
     await this.transporter.sendMail({
-      from: env.HEED_EMAIL_FROM,
+      from: env.CHORALA_EMAIL_FROM,
       to: args.to,
       subject: args.subject,
       text: args.text,
@@ -50,7 +50,7 @@ class ResendTransport implements EmailTransport {
         authorization: `Bearer ${env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: env.HEED_EMAIL_FROM,
+        from: env.CHORALA_EMAIL_FROM,
         to: args.to,
         subject: args.subject,
         html: args.html,
@@ -65,7 +65,7 @@ let transport: EmailTransport | null = null
 
 export function getTransport(): EmailTransport {
   if (transport) return transport
-  switch (env.HEED_EMAIL_TRANSPORT) {
+  switch (env.CHORALA_EMAIL_TRANSPORT) {
     case 'smtp':
       transport = env.SMTP_HOST ? new SmtpTransport() : new NoopTransport()
       break

@@ -1,5 +1,5 @@
-import { env } from '@heed/config'
-import { integrations, projects as projectSvc } from '@heed/core'
+import { env } from '@chorala/config'
+import { integrations, projects as projectSvc } from '@chorala/core'
 import { GithubIntegrationCard } from '@/components/integration-card'
 import { Button, Card, Input, Label, Textarea } from '@/components/ui'
 import { updateProjectSettings } from '@/lib/actions'
@@ -14,7 +14,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
     ints.find((i) => i.type === 'github')?.config as { repo?: string } | undefined
   )?.repo
   const widget = project.widgetSettings as { primaryColor?: string; theme?: string; mode?: string }
-  const cdn = env.HEED_WIDGET_CDN_URL
+  const cdn = env.CHORALA_WIDGET_CDN_URL
 
   const snippet = `<script>
   (function(w,d,s){w.Chorala=w.Chorala||function(){(w.Chorala.q=w.Chorala.q||[]).push(arguments)};

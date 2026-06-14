@@ -76,22 +76,22 @@ export function App(props: Props) {
   const tabs: View[] = ['board', 'roadmap', 'changelog']
 
   return (
-    <div class={`heed-root ${inline ? 'heed-inline' : ''}`}>
-      <div class="heed-header">
+    <div class={`chorala-root ${inline ? 'chorala-inline' : ''}`}>
+      <div class="chorala-header">
         <h1>{t('feedback')}</h1>
         {!inline && (
-          <button type="button" class="heed-x" onClick={onClose} aria-label={t('close')}>
+          <button type="button" class="chorala-x" onClick={onClose} aria-label={t('close')}>
             ×
           </button>
         )}
       </div>
 
-      <div class="heed-tabs">
+      <div class="chorala-tabs">
         {tabs.map((v) => (
           <button
             key={v}
             type="button"
-            class={`heed-tab ${view === v ? 'active' : ''}`}
+            class={`chorala-tab ${view === v ? 'active' : ''}`}
             onClick={() => {
               setDetailId(null)
               setShowForm(false)
@@ -103,10 +103,10 @@ export function App(props: Props) {
         ))}
       </div>
 
-      <div class="heed-body">
-        {error && <div class="heed-error">{error}</div>}
+      <div class="chorala-body">
+        {error && <div class="chorala-error">{error}</div>}
         {loading ? (
-          <div class="heed-empty">{t('loading')}</div>
+          <div class="chorala-empty">{t('loading')}</div>
         ) : detailId ? (
           <PostDetailView
             api={api}
@@ -144,8 +144,8 @@ export function App(props: Props) {
         )}
       </div>
 
-      <div class="heed-footer">
-        <a class="heed-credit" href="https://chorala.com" target="_blank" rel="noreferrer">
+      <div class="chorala-footer">
+        <a class="chorala-credit" href="https://chorala.com" target="_blank" rel="noreferrer">
           {t('poweredBy')}
         </a>
       </div>
@@ -157,7 +157,7 @@ function VoteButton({ post, onVote, label }: { post: Post; onVote: () => void; l
   return (
     <button
       type="button"
-      class={`heed-votebtn ${post.hasVoted ? 'voted' : ''}`}
+      class={`chorala-votebtn ${post.hasVoted ? 'voted' : ''}`}
       onClick={onVote}
       aria-pressed={post.hasVoted}
       aria-label={label}
@@ -180,12 +180,12 @@ function PostRow({
   onOpen: () => void
 }) {
   return (
-    <div class="heed-post">
+    <div class="chorala-post">
       {onVote && <VoteButton post={post} onVote={onVote} label={t('vote')} />}
-      <button type="button" class="heed-postbtn heed-post-main" onClick={onOpen}>
-        <p class="heed-post-title">{post.title}</p>
-        {post.body && <p class="heed-post-body">{post.body}</p>}
-        <p class="heed-post-meta">
+      <button type="button" class="chorala-postbtn chorala-post-main" onClick={onOpen}>
+        <p class="chorala-post-title">{post.title}</p>
+        {post.body && <p class="chorala-post-body">{post.body}</p>}
+        <p class="chorala-post-meta">
           {post.commentCount} {t('comments')}
         </p>
       </button>
@@ -208,11 +208,16 @@ function BoardList({
 }) {
   return (
     <div>
-      <button type="button" class="heed-btn" style="width:100%;margin-bottom:12px" onClick={onNew}>
+      <button
+        type="button"
+        class="chorala-btn"
+        style="width:100%;margin-bottom:12px"
+        onClick={onNew}
+      >
         + {t('submitIdea')}
       </button>
       {posts.length === 0 ? (
-        <div class="heed-empty">{t('noPosts')}</div>
+        <div class="chorala-empty">{t('noPosts')}</div>
       ) : (
         posts.map((p) => (
           <PostRow key={p.id} post={p} t={t} onVote={() => onVote(p)} onOpen={() => onOpen(p.id)} />
@@ -261,11 +266,11 @@ function SubmitForm({
   return (
     <form onSubmit={submit}>
       {boards.length > 1 && (
-        <div class="heed-field">
+        <div class="chorala-field">
           <label>
             <span>{t('board')}</span>
             <select
-              class="heed-input"
+              class="chorala-input"
               value={boardSlug}
               onChange={(e) => setBoardSlug((e.target as HTMLSelectElement).value)}
             >
@@ -278,34 +283,34 @@ function SubmitForm({
           </label>
         </div>
       )}
-      <div class="heed-field">
+      <div class="chorala-field">
         <label>
           <span>{t('title')}</span>
           <input
-            class="heed-input"
+            class="chorala-input"
             value={title}
             placeholder={t('titlePlaceholder')}
             onInput={(e) => setTitle((e.target as HTMLInputElement).value)}
           />
         </label>
       </div>
-      <div class="heed-field">
+      <div class="chorala-field">
         <label>
           <span>{t('details')}</span>
           <textarea
-            class="heed-textarea"
+            class="chorala-textarea"
             value={body}
             placeholder={t('detailsPlaceholder')}
             onInput={(e) => setBody((e.target as HTMLTextAreaElement).value)}
           />
         </label>
       </div>
-      {err && <div class="heed-error">{err}</div>}
-      <div class="heed-row">
-        <button type="submit" class="heed-btn" disabled={busy || title.trim().length < 2}>
+      {err && <div class="chorala-error">{err}</div>}
+      <div class="chorala-row">
+        <button type="submit" class="chorala-btn" disabled={busy || title.trim().length < 2}>
           {t('submit')}
         </button>
-        <button type="button" class="heed-btn secondary" onClick={onCancel}>
+        <button type="button" class="chorala-btn secondary" onClick={onCancel}>
           {t('cancel')}
         </button>
       </div>
@@ -370,37 +375,42 @@ function PostDetailView({
     }
   }
 
-  if (!post) return <div class="heed-empty">{t('loading')}</div>
+  if (!post) return <div class="chorala-empty">{t('loading')}</div>
 
   return (
     <div>
-      <button type="button" class="heed-btn secondary" style="margin-bottom:12px" onClick={onBack}>
+      <button
+        type="button"
+        class="chorala-btn secondary"
+        style="margin-bottom:12px"
+        onClick={onBack}
+      >
         ← {t('back')}
       </button>
-      <div class="heed-post">
+      <div class="chorala-post">
         <VoteButton post={post} onVote={vote} label={t('vote')} />
-        <div class="heed-post-main">
-          <p class="heed-post-title">{post.title}</p>
-          {post.body && <p style="color:var(--heed-muted);margin:4px 0 0">{post.body}</p>}
+        <div class="chorala-post-main">
+          <p class="chorala-post-title">{post.title}</p>
+          {post.body && <p style="color:var(--chorala-muted);margin:4px 0 0">{post.body}</p>}
         </div>
       </div>
-      {err && <div class="heed-error">{err}</div>}
-      <h3 style="font-size:13px;margin:16px 0 4px;color:var(--heed-muted)">
+      {err && <div class="chorala-error">{err}</div>}
+      <h3 style="font-size:13px;margin:16px 0 4px;color:var(--chorala-muted)">
         {comments.length} {t('comments')}
       </h3>
       {comments.map((c) => (
-        <div key={c.id} class="heed-comment">
+        <div key={c.id} class="chorala-comment">
           {c.body}
         </div>
       ))}
       <form onSubmit={addComment} style="margin-top:10px">
         <textarea
-          class="heed-textarea"
+          class="chorala-textarea"
           value={text}
           placeholder={t('addComment')}
           onInput={(e) => setText((e.target as HTMLTextAreaElement).value)}
         />
-        <button type="submit" class="heed-btn" style="margin-top:6px" disabled={!text.trim()}>
+        <button type="submit" class="chorala-btn" style="margin-top:6px" disabled={!text.trim()}>
           {t('send')}
         </button>
       </form>
@@ -418,13 +428,13 @@ function RoadmapView({
   onOpen: (id: string) => void
 }) {
   if (!roadmap || roadmap.columns.length === 0)
-    return <div class="heed-empty">{t('nothingHere')}</div>
+    return <div class="chorala-empty">{t('nothingHere')}</div>
   return (
     <div>
       {roadmap.columns.map((col) => (
         <div key={col.status.id} style="margin-bottom:16px">
-          <div class="heed-col-title">
-            <span class="heed-dot" style={`background:${col.status.color}`} />
+          <div class="chorala-col-title">
+            <span class="chorala-dot" style={`background:${col.status.color}`} />
             {col.status.name} · {col.posts.length}
           </div>
           {col.posts.map((p) => (
@@ -437,23 +447,23 @@ function RoadmapView({
 }
 
 function ChangelogView({ t, entries }: { t: Translator; entries: ChangelogEntry[] }) {
-  if (entries.length === 0) return <div class="heed-empty">{t('nothingHere')}</div>
+  if (entries.length === 0) return <div class="chorala-empty">{t('nothingHere')}</div>
   return (
     <div>
       {entries.map((e) => (
-        <div key={e.id} class="heed-cl">
+        <div key={e.id} class="chorala-cl">
           <h3>{e.title}</h3>
           {e.publishedAt && <div class="date">{new Date(e.publishedAt).toLocaleDateString()}</div>}
           {e.labels.length > 0 && (
-            <div class="heed-labels">
+            <div class="chorala-labels">
               {e.labels.map((l) => (
-                <span key={l} class="heed-label">
+                <span key={l} class="chorala-label">
                   {l}
                 </span>
               ))}
             </div>
           )}
-          <p style="color:var(--heed-muted);font-size:13px">{e.body}</p>
+          <p style="color:var(--chorala-muted);font-size:13px">{e.body}</p>
         </div>
       ))}
     </div>

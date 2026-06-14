@@ -103,10 +103,8 @@ function handle(cmd: Cmd) {
 }
 
 // Replace the loader's queue stub with the real processor and replay queued commands.
-// Supports both the `Chorala` global and the legacy `Heed` alias (same queue).
-const w = window as unknown as { Chorala?: { q?: unknown[][] }; Heed?: { q?: unknown[][] } }
-const queued: unknown[][] = w.Chorala?.q ?? w.Heed?.q ?? []
+const w = window as unknown as { Chorala?: { q?: unknown[][] } }
+const queued: unknown[][] = w.Chorala?.q ?? []
 const run = (...args: unknown[]) => handle(args as Cmd)
-;(w as unknown as { Chorala: unknown; Heed: unknown }).Chorala = run
-;(w as unknown as { Chorala: unknown; Heed: unknown }).Heed = run
+;(w as unknown as { Chorala: unknown }).Chorala = run
 for (const c of queued) handle(c as Cmd)

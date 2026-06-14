@@ -1,5 +1,5 @@
 {
-  "name": "@heed/api",
+  "name": "@chorala/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -19,12 +19,12 @@
     "seed:admin": "tsx src/scripts/seed-admin.ts"
   },
   "dependencies": {
-    "@heed/ai": "workspace:*",
-    "@heed/config": "workspace:*",
-    "@heed/core": "workspace:*",
-    "@heed/db": "workspace:*",
-    "@heed/email": "workspace:*",
-    "@heed/types": "workspace:*",
+    "@chorala/ai": "workspace:*",
+    "@chorala/config": "workspace:*",
+    "@chorala/core": "workspace:*",
+    "@chorala/db": "workspace:*",
+    "@chorala/email": "workspace:*",
+    "@chorala/types": "workspace:*",
     "@hono/node-server": "2.0.4",
     "better-auth": "1.6.18",
     "hono": "4.12.25",

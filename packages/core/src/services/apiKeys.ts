@@ -1,5 +1,5 @@
-import { apiKeys, db, eq, generateApiKey, hashApiKey, newId } from '@heed/db'
-import type { CreateApiKeyInput } from '@heed/types'
+import { apiKeys, db, eq, generateApiKey, hashApiKey, newId } from '@chorala/db'
+import type { CreateApiKeyInput } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { notFound } from '../errors.ts'
 import { getProject } from './projects.ts'

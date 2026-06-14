@@ -1,5 +1,5 @@
 {
-  "name": "heed",
+  "name": "chorala",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,10 +17,10 @@
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "typecheck": "turbo run typecheck",
-    "db:generate": "pnpm --filter @heed/db db:generate",
-    "db:push": "pnpm --filter @heed/db db:push",
-    "db:migrate": "pnpm --filter @heed/db db:migrate",
-    "db:seed": "pnpm --filter @heed/db db:seed"
+    "db:generate": "pnpm --filter @chorala/db db:generate",
+    "db:push": "pnpm --filter @chorala/db db:push",
+    "db:migrate": "pnpm --filter @chorala/db db:migrate",
+    "db:seed": "pnpm --filter @chorala/db db:seed"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.4",

@@ -1,5 +1,5 @@
-import { analytics } from '@heed/core'
-import { analyticsQuery } from '@heed/types'
+import { analytics } from '@chorala/core'
+import { analyticsQuery } from '@chorala/types'
 import { Hono } from 'hono'
 import type { AppEnv } from '../types.ts'
 import { reqParam } from '../util.ts'

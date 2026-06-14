@@ -1,5 +1,5 @@
 {
-  "name": "@heed/ai",
+  "name": "@chorala/ai",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@heed/config": "workspace:*",
-    "@heed/db": "workspace:*",
+    "@chorala/config": "workspace:*",
+    "@chorala/db": "workspace:*",
     "drizzle-orm": "0.45.2"
   },
   "devDependencies": {

@@ -12,7 +12,7 @@ import {
   publicFeed,
   statuses,
   tags,
-} from '@heed/core'
+} from '@chorala/core'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireAuthContext } from './session'

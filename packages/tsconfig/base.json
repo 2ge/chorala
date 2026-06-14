@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "@heed/tsconfig base (strict, ESM, bundler-resolved, Node 22+)",
+  "display": "@chorala/tsconfig base (strict, ESM, bundler-resolved, Node 22+)",
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023"],

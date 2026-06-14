@@ -1,5 +1,5 @@
 {
-  "name": "@heed/tsconfig",
+  "name": "@chorala/tsconfig",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -7,7 +7,7 @@
     "base.json"
   ],
   "scripts": {
-    "build": "echo 'build @heed/tsconfig (config-only)'",
-    "lint": "echo 'lint @heed/tsconfig (config-only)'"
+    "build": "echo 'build @chorala/tsconfig (config-only)'",
+    "lint": "echo 'lint @chorala/tsconfig (config-only)'"
   }
 }

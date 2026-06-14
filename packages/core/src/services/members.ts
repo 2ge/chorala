@@ -1,6 +1,6 @@
-import { assertSeatAvailable } from '@heed/billing'
-import { and, db, eq, members, newId, users } from '@heed/db'
-import type { InviteMemberInput, MemberRole } from '@heed/types'
+import { assertSeatAvailable } from '@chorala/billing'
+import { and, db, eq, members, newId, users } from '@chorala/db'
+import type { InviteMemberInput, MemberRole } from '@chorala/types'
 import { type AuthContext, canManageOrg } from '../context.ts'
 import { conflict, forbidden, notFound } from '../errors.ts'
 

@@ -1,4 +1,4 @@
-import type { MemberRole } from '@heed/types'
+import type { MemberRole } from '@chorala/types'
 
 /** The authenticated caller's scope, resolved by the API layer and passed into services. */
 export type AuthContext = {

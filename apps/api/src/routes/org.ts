@@ -1,5 +1,5 @@
-import { members, orgs } from '@heed/core'
-import { inviteMemberInput, memberRole, updateOrgSettingsInput } from '@heed/types'
+import { members, orgs } from '@chorala/core'
+import { inviteMemberInput, memberRole, updateOrgSettingsInput } from '@chorala/types'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import type { AppEnv } from '../types.ts'

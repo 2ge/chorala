@@ -6,8 +6,8 @@ WORKDIR /app
 
 COPY . .
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @heed/dashboard build
+RUN pnpm --filter @chorala/dashboard build
 
 ENV NODE_ENV=production
 EXPOSE 3015
-CMD ["pnpm", "--filter", "@heed/dashboard", "start"]
+CMD ["pnpm", "--filter", "@chorala/dashboard", "start"]

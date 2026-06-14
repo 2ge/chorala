@@ -1,5 +1,5 @@
-import type { AuthContext } from '@heed/core'
-import { db, eq, members, organizations } from '@heed/db'
+import type { AuthContext } from '@chorala/core'
+import { db, eq, members, organizations } from '@chorala/db'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { auth } from './auth'

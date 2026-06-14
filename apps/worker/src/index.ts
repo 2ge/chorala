@@ -1,9 +1,9 @@
 import { createHmac } from 'node:crypto'
-import { clusterThemes, createProvider, processPost, summarizePost } from '@heed/ai'
-import { env } from '@heed/config'
-import { integrations, QUEUE_PREFIX } from '@heed/core'
-import { and, db, eq, webhooks } from '@heed/db'
-import { sendEmail } from '@heed/email'
+import { clusterThemes, createProvider, processPost, summarizePost } from '@chorala/ai'
+import { env } from '@chorala/config'
+import { integrations, QUEUE_PREFIX } from '@chorala/core'
+import { and, db, eq, webhooks } from '@chorala/db'
+import { sendEmail } from '@chorala/email'
 import { type ConnectionOptions, type Job, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 
@@ -48,8 +48,8 @@ async function deliverWebhooks(data: {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-heed-event': data.event,
-        'x-heed-signature': signature,
+        'x-chorala-event': data.event,
+        'x-chorala-signature': signature,
       },
       body,
     })
@@ -86,7 +86,7 @@ for (const [name, worker] of [
 }
 
 console.log(
-  `✓ heed-worker running — ai provider: ${provider.name}, email: ${env.HEED_EMAIL_TRANSPORT}`,
+  `✓ chorala-worker running — ai provider: ${provider.name}, email: ${env.CHORALA_EMAIL_TRANSPORT}`,
 )
 
 async function shutdown() {

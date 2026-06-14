@@ -10,9 +10,6 @@
  *
  * The widget.js URL is read from this script tag's `data-chorala-cdn` attribute, or from
  * `window.ChoralaWidgetUrl`, defaulting to `/widget.js` on the loader's own origin.
- *
- * Back-compat: `window.Heed` / `HeedWidgetUrl` / `data-heed-cdn` remain supported aliases
- * so existing embeds (e.g. MusicAha's deployed page) keep working unchanged.
  */
 type CmdQueue = { (...args: unknown[]): void; q?: unknown[][] }
 
@@ -20,13 +17,11 @@ declare global {
   interface Window {
     Chorala?: CmdQueue
     ChoralaWidgetUrl?: string
-    Heed?: CmdQueue // legacy alias
-    HeedWidgetUrl?: string // legacy alias
   }
 }
 
 ;(function bootstrap(w: Window, d: Document) {
-  if (w.Chorala || w.Heed) return // already loaded
+  if (w.Chorala) return // already loaded
 
   const queue: unknown[][] = []
   const fn: CmdQueue = (...args: unknown[]) => {
@@ -34,13 +29,11 @@ declare global {
   }
   fn.q = queue
   w.Chorala = fn
-  w.Heed = fn // legacy alias: same queue
 
   const current = d.currentScript as HTMLScriptElement | null
-  const fromAttr =
-    current?.getAttribute('data-chorala-cdn') || current?.getAttribute('data-heed-cdn') || undefined
+  const fromAttr = current?.getAttribute('data-chorala-cdn') || undefined
   const fromOrigin = current?.src ? new URL('/widget.js', current.src).href : '/widget.js'
-  const url = w.ChoralaWidgetUrl || w.HeedWidgetUrl || fromAttr || fromOrigin
+  const url = w.ChoralaWidgetUrl || fromAttr || fromOrigin
 
   const s = d.createElement('script')
   s.async = true

@@ -71,9 +71,9 @@ failures, commit, then continue. Do not ask the human between phases.
   Translations enable cross-language voting on the canonical post.
 - `packages/email`: React Email templates + SMTP/Resend/Noop transport (notifications,
   changelog, magic link).
-- **Acceptance:** with `HEED_AI_PROVIDER=ollama` running, a new post gets an embedding,
+- **Acceptance:** with `CHORALA_AI_PROVIDER=ollama` running, a new post gets an embedding,
   a near-duplicate produces a merge suggestion, and a post is translated into a second
-  org locale and votable from that locale. With `HEED_AI_PROVIDER=none` everything still
+  org locale and votable from that locale. With `CHORALA_AI_PROVIDER=none` everything still
   runs and AI features are cleanly disabled. Vitest covers task logic with a mock provider.
 
 ## Phase 7 — MCP server
@@ -83,7 +83,7 @@ failures, commit, then continue. Do not ask the human between phases.
   `top_requests` returns correct data from the seeded DB.
 
 ## Phase 8 — Cloud flag, billing, packaging, docs
-- `packages/billing`: Stripe wired, fully inert unless `HEED_DEPLOYMENT=cloud`; cloud
+- `packages/billing`: Stripe wired, fully inert unless `CHORALA_DEPLOYMENT=cloud`; cloud
   signup + admin-seat limits (never user/vote limits).
 - `docker/`: Dockerfiles for api/dashboard/worker, `Caddyfile`; root `docker-compose.yml`
   (postgres+pgvector, redis, api, dashboard, worker, caddy) that runs the whole stack.
@@ -92,7 +92,7 @@ failures, commit, then continue. Do not ask the human between phases.
   end-user JWT/SSO guide, MCP setup, env reference, licensing explanation, architecture
   overview, contributing.
 - **Acceptance:** `docker compose up` from a clean checkout (with a filled `.env`) brings
-  up a working instance reachable via Caddy; `HEED_DEPLOYMENT=selfhost` needs no Stripe;
+  up a working instance reachable via Caddy; `CHORALA_DEPLOYMENT=selfhost` needs no Stripe;
   CI is green.
 
 ---

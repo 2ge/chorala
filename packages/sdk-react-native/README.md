@@ -1,3 +1,3 @@
-# @heed/sdk-react-native
+# @chorala/sdk-react-native
 
 MIT-licensed package. Scaffolded in Phase 0; implemented in its BUILD_PLAN phase.

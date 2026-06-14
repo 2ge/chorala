@@ -1,7 +1,7 @@
 /** Embedding vector dimensions (Ollama nomic-embed-text → 768). */
 export const VECTOR_DIM = 768
 
-/** Prefixes for nanoid-based primary keys (centralized id generation lives in @heed/db). */
+/** Prefixes for nanoid-based primary keys (centralized id generation lives in @chorala/db). */
 export const ID_PREFIXES = {
   organization: 'org',
   member: 'mem',

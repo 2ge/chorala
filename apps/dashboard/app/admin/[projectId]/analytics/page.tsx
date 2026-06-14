@@ -1,4 +1,4 @@
-import { analytics } from '@heed/core'
+import { analytics } from '@chorala/core'
 import { Card } from '@/components/ui'
 import { requireAuthContext } from '@/lib/session'
 

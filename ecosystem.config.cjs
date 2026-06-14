@@ -1,5 +1,5 @@
 // PM2 process definitions for the Chorala stack on this host.
-// Secrets/config come from the repo-root .env (loaded by @heed/config at runtime);
+// Secrets/config come from the repo-root .env (loaded by @chorala/config at runtime);
 // only NODE_ENV is set here. Start with: pm2 start ecosystem.config.cjs && pm2 save
 const ROOT = '/home/claude/projects/idea'
 
@@ -15,13 +15,13 @@ module.exports = {
   apps: [
     {
       ...common,
-      name: 'heed-api',
+      name: 'chorala-api',
       script: 'npx',
       args: 'tsx apps/api/src/server.ts',
     },
     {
       ...common,
-      name: 'heed-worker',
+      name: 'chorala-worker',
       script: 'npx',
       args: 'tsx apps/worker/src/index.ts',
       max_restarts: 5,
@@ -29,7 +29,7 @@ module.exports = {
     },
     {
       ...common,
-      name: 'heed-dashboard',
+      name: 'chorala-dashboard',
       cwd: `${ROOT}/apps/dashboard`,
       script: 'npx',
       args: 'next start -p 3015',

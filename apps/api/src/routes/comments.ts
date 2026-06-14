@@ -1,5 +1,5 @@
-import { comments } from '@heed/core'
-import { createCommentInput } from '@heed/types'
+import { comments } from '@chorala/core'
+import { createCommentInput } from '@chorala/types'
 import { Hono } from 'hono'
 import type { AppEnv } from '../types.ts'
 import { reqParam } from '../util.ts'

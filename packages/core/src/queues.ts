@@ -1,10 +1,10 @@
-import { env, isAiEnabled } from '@heed/config'
-import type { WebhookEvent } from '@heed/types'
+import { env, isAiEnabled } from '@chorala/config'
+import type { WebhookEvent } from '@chorala/types'
 import { type ConnectionOptions, Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 
-/** Shared queue names + key prefix (matches the host's `heed` redis convention). */
-export const QUEUE_PREFIX = 'heed'
+/** Shared queue names + key prefix (matches the host's `chorala` redis convention). */
+export const QUEUE_PREFIX = 'chorala'
 export const QUEUES = {
   ai: 'ai',
   webhooks: 'webhooks',

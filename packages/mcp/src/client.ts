@@ -1,8 +1,8 @@
 /** Tiny HTTP client for the Chorala admin API, authenticated with an `hk_...` API key.
  *  Kept dependency-free so this MIT package never imports the AGPL server code. */
-export type HeedClientConfig = { apiUrl: string; apiKey: string }
+export type ChoralaClientConfig = { apiUrl: string; apiKey: string }
 
-export function createClient(cfg: HeedClientConfig) {
+export function createClient(cfg: ChoralaClientConfig) {
   const base = `${cfg.apiUrl.replace(/\/+$/, '')}/api/v1`
   const baseHeaders = {
     authorization: `Bearer ${cfg.apiKey}`,
@@ -35,4 +35,4 @@ export function createClient(cfg: HeedClientConfig) {
   return { req, getProjectId }
 }
 
-export type HeedClient = ReturnType<typeof createClient>
+export type ChoralaClient = ReturnType<typeof createClient>

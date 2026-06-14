@@ -26,9 +26,9 @@ function ensureDotenv(): void {
 export const envSchema = z
   .object({
     // --- Deployment ---
-    HEED_DEPLOYMENT: z.enum(['selfhost', 'cloud']).default('selfhost'),
-    HEED_PUBLIC_URL: z.url().default('http://localhost:3000'),
-    HEED_API_URL: z.url().default('http://localhost:8787'),
+    CHORALA_DEPLOYMENT: z.enum(['selfhost', 'cloud']).default('selfhost'),
+    CHORALA_PUBLIC_URL: z.url().default('http://localhost:3000'),
+    CHORALA_API_URL: z.url().default('http://localhost:8787'),
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
     // --- Database (required) ---
@@ -38,23 +38,23 @@ export const envSchema = z
     REDIS_URL: z.string().min(1).default('redis://localhost:6379'),
 
     // --- Auth ---
-    HEED_AUTH_SECRET: z.string().min(32, 'HEED_AUTH_SECRET must be at least 32 characters'),
+    CHORALA_AUTH_SECRET: z.string().min(32, 'CHORALA_AUTH_SECRET must be at least 32 characters'),
     GITHUB_CLIENT_ID: z.string().optional(),
     GITHUB_CLIENT_SECRET: z.string().optional(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
 
     // --- AI (optional; degrades to disabled) ---
-    HEED_AI_PROVIDER: z.enum(['ollama', 'openai', 'anthropic', 'none']).default('ollama'),
-    HEED_AI_BASE_URL: z.url().default('http://localhost:11434'),
-    HEED_AI_API_KEY: z.string().optional(),
-    HEED_AI_CHAT_MODEL: z.string().default('llama3.1:8b'),
-    HEED_AI_EMBED_MODEL: z.string().default('nomic-embed-text'),
-    HEED_AI_DEDUP_THRESHOLD: z.coerce.number().min(0).max(1).default(0.86),
+    CHORALA_AI_PROVIDER: z.enum(['ollama', 'openai', 'anthropic', 'none']).default('ollama'),
+    CHORALA_AI_BASE_URL: z.url().default('http://localhost:11434'),
+    CHORALA_AI_API_KEY: z.string().optional(),
+    CHORALA_AI_CHAT_MODEL: z.string().default('llama3.1:8b'),
+    CHORALA_AI_EMBED_MODEL: z.string().default('nomic-embed-text'),
+    CHORALA_AI_DEDUP_THRESHOLD: z.coerce.number().min(0).max(1).default(0.86),
 
     // --- Email (optional) ---
-    HEED_EMAIL_TRANSPORT: z.enum(['smtp', 'resend', 'none']).default('smtp'),
-    HEED_EMAIL_FROM: z.string().default('feedback@example.com'),
+    CHORALA_EMAIL_TRANSPORT: z.enum(['smtp', 'resend', 'none']).default('smtp'),
+    CHORALA_EMAIL_FROM: z.string().default('feedback@example.com'),
     SMTP_HOST: z.string().optional(),
     SMTP_PORT: z.coerce.number().int().positive().default(587),
     SMTP_USER: z.string().optional(),
@@ -68,18 +68,18 @@ export const envSchema = z
     STRIPE_PRICE_PRO: z.string().optional(),
 
     // --- Widget / public API ---
-    HEED_WIDGET_CDN_URL: z.url().default('http://localhost:8787/widget.js'),
-    HEED_RATE_LIMIT_PUBLIC: z.coerce.number().int().positive().default(60),
+    CHORALA_WIDGET_CDN_URL: z.url().default('http://localhost:8787/widget.js'),
+    CHORALA_RATE_LIMIT_PUBLIC: z.coerce.number().int().positive().default(60),
   })
   .superRefine((val, ctx) => {
     if (
-      (val.HEED_AI_PROVIDER === 'openai' || val.HEED_AI_PROVIDER === 'anthropic') &&
-      !val.HEED_AI_API_KEY
+      (val.CHORALA_AI_PROVIDER === 'openai' || val.CHORALA_AI_PROVIDER === 'anthropic') &&
+      !val.CHORALA_AI_API_KEY
     ) {
       ctx.addIssue({
         code: 'custom',
-        path: ['HEED_AI_API_KEY'],
-        message: `HEED_AI_API_KEY is required when HEED_AI_PROVIDER=${val.HEED_AI_PROVIDER}`,
+        path: ['CHORALA_AI_API_KEY'],
+        message: `CHORALA_AI_API_KEY is required when CHORALA_AI_PROVIDER=${val.CHORALA_AI_PROVIDER}`,
       })
     }
   })

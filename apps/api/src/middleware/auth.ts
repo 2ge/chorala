@@ -1,5 +1,5 @@
-import { type AuthContext, apiKeys, unauthorized } from '@heed/core'
-import { db, eq, members, projects } from '@heed/db'
+import { type AuthContext, apiKeys, unauthorized } from '@chorala/core'
+import { db, eq, members, projects } from '@chorala/db'
 import type { MiddlewareHandler } from 'hono'
 import { auth } from '../auth.ts'
 import type { AppEnv } from '../types.ts'
@@ -31,7 +31,7 @@ export const requireAuth: MiddlewareHandler<AppEnv> = async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers })
   if (!session?.user) throw unauthorized()
 
-  const orgHeader = c.req.header('x-heed-org')
+  const orgHeader = c.req.header('x-chorala-org')
   const rows = await db.select().from(members).where(eq(members.userId, session.user.id))
   const membership = orgHeader ? rows.find((m) => m.orgId === orgHeader) : rows[0]
   if (!membership) throw unauthorized('User is not a member of any organization')

@@ -1,5 +1,5 @@
-import { and, asc, boards, db, eq, newId } from '@heed/db'
-import type { CreateBoardInput, UpdateBoardInput } from '@heed/types'
+import { and, asc, boards, db, eq, newId } from '@chorala/db'
+import type { CreateBoardInput, UpdateBoardInput } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { conflict, notFound } from '../errors.ts'
 import { getProject } from './projects.ts'

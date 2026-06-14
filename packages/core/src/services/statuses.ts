@@ -1,5 +1,5 @@
-import { asc, db, eq, newId, statuses } from '@heed/db'
-import type { CreateStatusInput, UpdateStatusInput } from '@heed/types'
+import { asc, db, eq, newId, statuses } from '@chorala/db'
+import type { CreateStatusInput, UpdateStatusInput } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { notFound } from '../errors.ts'
 import { getProject } from './projects.ts'

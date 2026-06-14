@@ -1,5 +1,5 @@
-import { db, desc, eq, feedbackClusters, posts, sql, votes } from '@heed/db'
-import type { AnalyticsQuery } from '@heed/types'
+import { db, desc, eq, feedbackClusters, posts, sql, votes } from '@chorala/db'
+import type { AnalyticsQuery } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { postColumns } from './posts.ts'
 import { getProject } from './projects.ts'

@@ -12,12 +12,12 @@ jobs:
       postgres:
         image: pgvector/pgvector:pg16
         env:
-          POSTGRES_USER: heed
-          POSTGRES_PASSWORD: heed
-          POSTGRES_DB: heed
+          POSTGRES_USER: chorala
+          POSTGRES_PASSWORD: chorala
+          POSTGRES_DB: chorala
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U heed -d heed"
+          --health-cmd "pg_isready -U chorala -d chorala"
           --health-interval 5s --health-timeout 5s --health-retries 10
       redis:
         image: redis:7-alpine
@@ -26,11 +26,11 @@ jobs:
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgres://heed:heed@localhost:5432/heed
+      DATABASE_URL: postgres://chorala:chorala@localhost:5432/chorala
       REDIS_URL: redis://localhost:6379
-      HEED_AUTH_SECRET: ci_test_secret_at_least_32_bytes_long_xx
-      HEED_AI_PROVIDER: none
-      HEED_EMAIL_TRANSPORT: none
+      CHORALA_AUTH_SECRET: ci_test_secret_at_least_32_bytes_long_xx
+      CHORALA_AI_PROVIDER: none
+      CHORALA_EMAIL_TRANSPORT: none
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -1,4 +1,4 @@
-import { and, db, eq, organizations, projects } from '@heed/db'
+import { and, db, eq, organizations, projects } from '@chorala/db'
 
 async function withOrg(project: typeof projects.$inferSelect | undefined) {
   if (!project || !project.isPublic) return null

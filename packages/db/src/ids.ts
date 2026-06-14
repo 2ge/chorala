@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto'
-import { API_KEY_PREFIX, ID_PREFIXES, type IdEntity, PUBLIC_KEY_PREFIX } from '@heed/config'
+import { API_KEY_PREFIX, ID_PREFIXES, type IdEntity, PUBLIC_KEY_PREFIX } from '@chorala/config'
 import { customAlphabet } from 'nanoid'
 
 // URL-safe, unambiguous-ish alphabet (no _ or - so ids stay double-click selectable).

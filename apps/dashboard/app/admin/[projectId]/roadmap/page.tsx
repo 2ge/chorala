@@ -1,4 +1,4 @@
-import { publicFeed } from '@heed/core'
+import { publicFeed } from '@chorala/core'
 import { requireAuthContext } from '@/lib/session'
 
 export default async function RoadmapPage({ params }: { params: Promise<{ projectId: string }> }) {

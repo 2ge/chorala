@@ -1,5 +1,5 @@
-import { and, db, eq, newId, posts, postTags, tags } from '@heed/db'
-import type { CreateTagInput } from '@heed/types'
+import { and, db, eq, newId, posts, postTags, tags } from '@chorala/db'
+import type { CreateTagInput } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { conflict, notFound } from '../errors.ts'
 import { getProject } from './projects.ts'

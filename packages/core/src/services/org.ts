@@ -1,5 +1,5 @@
-import { db, eq, organizations } from '@heed/db'
-import type { UpdateOrgSettingsInput } from '@heed/types'
+import { db, eq, organizations } from '@chorala/db'
+import type { UpdateOrgSettingsInput } from '@chorala/types'
 import { type AuthContext, canManageOrg } from '../context.ts'
 import { forbidden, notFound } from '../errors.ts'
 

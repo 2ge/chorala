@@ -4,11 +4,10 @@
 > here. If something seems ambiguous, choose the **simplest option consistent with this
 > document**, implement it, and record the choice in `DECISIONS.md`. Do not stop to ask.
 
-> **Product name:** `Chorala` (chorala.com). The display brand is **Chorala** throughout
-> the UI, docs, and embed snippet. The internal package scope `@heed/*` and env prefix
-> `HEED_` are retained as stable code identifiers (not user-visible), as are the wire-protocol
-> tokens `window.Heed`/`heed:engaged`/`X-Heed-Key` (kept as back-compat aliases for existing
-> embeds; new code uses `window.Chorala`/`chorala:engaged`).
+> **Product name:** `Chorala` (chorala.com) — the single brand everywhere, with no legacy
+> aliases: UI, docs, embed snippet, package scope `@chorala/*`, env prefix `CHORALA_`,
+> wire-protocol tokens (`window.Chorala`, `chorala:engaged`, `X-Chorala-Key`), database, and
+> Redis. A test asserts the old codename appears nowhere in the source.
 
 ---
 
@@ -45,7 +44,7 @@ deliverable email, custom domains, SSO, and EU data residency.
 
 ## 2. Core principles
 
-1. **Single codebase, two deployment modes**, switched by `HEED_DEPLOYMENT=selfhost|cloud`.
+1. **Single codebase, two deployment modes**, switched by `CHORALA_DEPLOYMENT=selfhost|cloud`.
    Cloud-only concerns (Stripe billing, multi-org signup, usage limits) live behind this
    flag and are inert in self-host.
 2. **Graceful degradation.** If AI is not configured, AI features are *disabled*, never
@@ -110,7 +109,7 @@ the closest maintained equivalent and log it in `DECISIONS.md`.
 ## 5. Monorepo layout (create exactly this)
 
 ```
-heed/
+chorala/
   apps/
     api/                  # Hono API server (admin + public/widget APIs)
     dashboard/            # Next.js 15 — admin dashboard + public portal + roadmap + changelog
@@ -120,7 +119,7 @@ heed/
     core/                 # domain services shared by api + worker (AGPL)
     ai/                   # LLMProvider abstraction, embeddings, AI tasks (AGPL)
     email/                # React Email templates + pluggable transport (AGPL)
-    billing/              # Stripe; no-op unless HEED_DEPLOYMENT=cloud (AGPL)
+    billing/              # Stripe; no-op unless CHORALA_DEPLOYMENT=cloud (AGPL)
     config/               # zod-validated env loader, shared constants (AGPL)
     types/                # shared zod schemas = the API contract (AGPL)
     widget/               # embeddable Preact widget, Shadow DOM (MIT)
@@ -156,19 +155,19 @@ heed/
 
 ```
 # --- Deployment ---
-HEED_DEPLOYMENT=selfhost              # selfhost | cloud
-HEED_PUBLIC_URL=http://localhost:3000 # base URL of dashboard/portal
-HEED_API_URL=http://localhost:8787    # base URL of API
+CHORALA_DEPLOYMENT=selfhost              # selfhost | cloud
+CHORALA_PUBLIC_URL=http://localhost:3000 # base URL of dashboard/portal
+CHORALA_API_URL=http://localhost:8787    # base URL of API
 NODE_ENV=development
 
 # --- Database ---
-DATABASE_URL=postgres://heed:heed@localhost:5432/heed
+DATABASE_URL=postgres://chorala:chorala@localhost:5432/chorala
 
 # --- Redis ---
 REDIS_URL=redis://localhost:6379
 
 # --- Auth (Better Auth) ---
-HEED_AUTH_SECRET=                     # 32+ byte random; required
+CHORALA_AUTH_SECRET=                     # 32+ byte random; required
 # Optional OAuth providers (admin login)
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
@@ -176,16 +175,16 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 
 # --- AI (optional; features degrade if absent) ---
-HEED_AI_PROVIDER=ollama               # ollama | openai | anthropic | none
-HEED_AI_BASE_URL=http://localhost:11434
-HEED_AI_API_KEY=                      # for openai/anthropic
-HEED_AI_CHAT_MODEL=llama3.1:8b
-HEED_AI_EMBED_MODEL=nomic-embed-text
-HEED_AI_DEDUP_THRESHOLD=0.86          # cosine similarity to suggest a merge
+CHORALA_AI_PROVIDER=ollama               # ollama | openai | anthropic | none
+CHORALA_AI_BASE_URL=http://localhost:11434
+CHORALA_AI_API_KEY=                      # for openai/anthropic
+CHORALA_AI_CHAT_MODEL=llama3.1:8b
+CHORALA_AI_EMBED_MODEL=nomic-embed-text
+CHORALA_AI_DEDUP_THRESHOLD=0.86          # cosine similarity to suggest a merge
 
 # --- Email (optional) ---
-HEED_EMAIL_TRANSPORT=smtp             # smtp | resend | none
-HEED_EMAIL_FROM=feedback@example.com
+CHORALA_EMAIL_TRANSPORT=smtp             # smtp | resend | none
+CHORALA_EMAIL_FROM=feedback@example.com
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
@@ -199,12 +198,12 @@ STRIPE_PRICE_STARTER=
 STRIPE_PRICE_PRO=
 
 # --- Widget / public API ---
-HEED_WIDGET_CDN_URL=http://localhost:8787/widget.js
-HEED_RATE_LIMIT_PUBLIC=60             # requests/min per IP per project on public API
+CHORALA_WIDGET_CDN_URL=http://localhost:8787/widget.js
+CHORALA_RATE_LIMIT_PUBLIC=60             # requests/min per IP per project on public API
 ```
 
 `packages/config` must zod-validate these at boot and fail fast with a readable message
-if a required var (DATABASE_URL, HEED_AUTH_SECRET) is missing.
+if a required var (DATABASE_URL, CHORALA_AUTH_SECRET) is missing.
 
 ---
 
@@ -279,9 +278,9 @@ integrations, webhooks, api_keys, members (invite/role), org settings, analytics
 (top posts, vote velocity, cluster themes).
 
 ### 8.2 Public / widget API
-Auth: project `public_key` (header `X-Heed-Key`) + optional end-user JWT
-(`X-Heed-User`, HMAC-signed by the project's `end_user_jwt_secret`). CORS restricted to
-the project's `allowed_origins`. Redis rate-limited (`HEED_RATE_LIMIT_PUBLIC`/min/IP).
+Auth: project `public_key` (header `X-Chorala-Key`) + optional end-user JWT
+(`X-Chorala-User`, HMAC-signed by the project's `end_user_jwt_secret`). CORS restricted to
+the project's `allowed_origins`. Redis rate-limited (`CHORALA_RATE_LIMIT_PUBLIC`/min/IP).
 Endpoints:
 - `GET  /public/boards` — public boards + posts (paginated, filter by status/tag/sort).
 - `GET  /public/posts/:id` — post + comments + translations.
@@ -299,7 +298,7 @@ Endpoints:
 a signed cookie. This mirrors Canny/Featurebase SSO and must be documented in the README.
 
 Webhook events: `post.created`, `post.status_changed`, `post.merged`, `comment.created`,
-`changelog.published`, `vote.created`. Signed with HMAC (`X-Heed-Signature`). Delivered by
+`changelog.published`, `vote.created`. Signed with HMAC (`X-Chorala-Signature`). Delivered by
 the worker with retries/backoff.
 
 ---
@@ -311,7 +310,7 @@ This is the "embed everywhere" surface. Requirements:
   `widget.js`, and replays queued commands. Public API:
   ```html
   <script>
-    (function(w,d,s){ /* queue + async load from HEED_WIDGET_CDN_URL */ })(window,document,'script');
+    (function(w,d,s){ /* queue + async load from CHORALA_WIDGET_CDN_URL */ })(window,document,'script');
     Chorala('init', { projectKey: 'pk_live_xxx', locale: 'auto', user: { jwt: 'eyJ...' } });
   </script>
   ```
@@ -352,11 +351,11 @@ snippet to register it. This is both a feature and marketing — make it clean.
 
 - `LLMProvider` interface: `complete({system,messages,json?})`, `embed(text[])`.
 - Implementations: `OllamaProvider` (default), `OpenAIProvider`, `AnthropicProvider`,
-  and `NoopProvider` (when `HEED_AI_PROVIDER=none` → AI features disabled cleanly).
+  and `NoopProvider` (when `CHORALA_AI_PROVIDER=none` → AI features disabled cleanly).
 - Selected at boot from env via a factory.
 - **Tasks** (run as BullMQ jobs in `apps/worker`):
   - `embedPost` — on create/edit, embed title+body → `posts.embedding`.
-  - `dedupPost` — vector top-k; if cosine ≥ `HEED_AI_DEDUP_THRESHOLD`, attach a
+  - `dedupPost` — vector top-k; if cosine ≥ `CHORALA_AI_DEDUP_THRESHOLD`, attach a
     "possible duplicate of …" suggestion (admin confirms merge; never auto-merge).
   - `translatePost` — translate into the org's `locales`; write `post_translations`
     with `is_auto=true`. **Cross-language voting**: votes attach to the canonical post,
@@ -370,9 +369,9 @@ snippet to register it. This is both a feature and marketing — make it clean.
 
 ## 12. Cloud vs self-host
 
-- `HEED_DEPLOYMENT=selfhost` (default): no Stripe, no usage caps, no public signup
+- `CHORALA_DEPLOYMENT=selfhost` (default): no Stripe, no usage caps, no public signup
   (admin created via seed/CLI), single or unlimited orgs. Everything works.
-- `HEED_DEPLOYMENT=cloud`: enables public org signup, Stripe billing
+- `CHORALA_DEPLOYMENT=cloud`: enables public org signup, Stripe billing
   (`packages/billing`), plan-based admin-seat limits (NOT user/vote limits — never),
   and managed-AI defaults. Billing code must be fully inert when not in cloud mode.
 - Plans (cloud): `free` (1 admin, branding), `starter` (~$15/mo, flat, custom domain,
@@ -400,7 +399,7 @@ snippet to register it. This is both a feature and marketing — make it clean.
 
 After Claude Code finishes, the human must be able to:
 ```
-cp .env.example .env          # fill HEED_AUTH_SECRET (and AI/email if wanted)
+cp .env.example .env          # fill CHORALA_AUTH_SECRET (and AI/email if wanted)
 docker compose up             # postgres, redis, api, dashboard, worker, caddy
 # OR for local dev:
 pnpm install && pnpm db:push && pnpm db:seed && pnpm dev

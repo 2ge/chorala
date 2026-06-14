@@ -1,5 +1,5 @@
 {
-  "name": "@heed/config",
+  "name": "@chorala/config",
   "version": "0.0.0",
   "private": true,
   "type": "module",

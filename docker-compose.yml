@@ -1,21 +1,21 @@
 # Chorala — full self-host stack. One command:
 #
-#   cp .env.example .env   # set HEED_AUTH_SECRET (openssl rand -base64 32)
+#   cp .env.example .env   # set CHORALA_AUTH_SECRET (openssl rand -base64 32)
 #   docker compose up
 #
 # Caddy is the only service that publishes ports (80/443). Postgres + Redis stay on
-# the internal network. Set HEED_DOMAIN in .env for automatic HTTPS.
+# the internal network. Set CHORALA_DOMAIN in .env for automatic HTTPS.
 services:
   postgres:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_USER: heed
-      POSTGRES_PASSWORD: heed
-      POSTGRES_DB: heed
+      POSTGRES_USER: chorala
+      POSTGRES_PASSWORD: chorala
+      POSTGRES_DB: chorala
     volumes:
-      - heed_pgdata:/var/lib/postgresql/data
+      - chorala_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U heed -d heed']
+      test: ['CMD-SHELL', 'pg_isready -U chorala -d chorala']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -24,7 +24,7 @@ services:
     image: redis:7-alpine
     command: ['redis-server', '--appendonly', 'yes']
     volumes:
-      - heed_redisdata:/data
+      - chorala_redisdata:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
@@ -38,7 +38,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://heed:heed@postgres:5432/heed
+      DATABASE_URL: postgres://chorala:chorala@postgres:5432/chorala
       REDIS_URL: redis://redis:6379
     depends_on:
       postgres: { condition: service_healthy }
@@ -51,7 +51,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://heed:heed@postgres:5432/heed
+      DATABASE_URL: postgres://chorala:chorala@postgres:5432/chorala
       REDIS_URL: redis://redis:6379
     depends_on:
       postgres: { condition: service_healthy }
@@ -65,7 +65,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://heed:heed@postgres:5432/heed
+      DATABASE_URL: postgres://chorala:chorala@postgres:5432/chorala
       REDIS_URL: redis://redis:6379
     depends_on:
       postgres: { condition: service_healthy }
@@ -75,20 +75,20 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     environment:
-      HEED_DOMAIN: ${HEED_DOMAIN:-:80}
+      CHORALA_DOMAIN: ${CHORALA_DOMAIN:-:80}
     ports:
       - '80:80'
       - '443:443'
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
-      - heed_caddydata:/data
-      - heed_caddyconfig:/config
+      - chorala_caddydata:/data
+      - chorala_caddyconfig:/config
     depends_on:
       - api
       - dashboard
 
 volumes:
-  heed_pgdata:
-  heed_redisdata:
-  heed_caddydata:
-  heed_caddyconfig:
+  chorala_pgdata:
+  chorala_redisdata:
+  chorala_caddydata:
+  chorala_caddyconfig:

@@ -131,6 +131,8 @@ export class AnthropicProvider implements LLMProvider {
   }
 
   async embed(): Promise<number[][]> {
-    throw new Error('Anthropic does not provide embeddings; set HEED_AI_EMBED via Ollama/OpenAI.')
+    throw new Error(
+      'Anthropic does not provide embeddings; set CHORALA_AI_EMBED via Ollama/OpenAI.',
+    )
   }
 }

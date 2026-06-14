@@ -1,5 +1,5 @@
-import { createProvider, draftChangelogFromPosts, summarizePost } from '@heed/ai'
-import { posts } from '@heed/core'
+import { createProvider, draftChangelogFromPosts, summarizePost } from '@chorala/ai'
+import { posts } from '@chorala/core'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import type { AppEnv } from '../types.ts'

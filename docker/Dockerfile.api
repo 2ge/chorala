@@ -10,4 +10,4 @@ RUN pnpm install --frozen-lockfile
 ENV NODE_ENV=production
 EXPOSE 8787
 # Apply migrations on boot, then serve.
-CMD ["sh", "-c", "pnpm db:migrate && pnpm --filter @heed/api start"]
+CMD ["sh", "-c", "pnpm db:migrate && pnpm --filter @chorala/api start"]

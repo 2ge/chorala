@@ -37,11 +37,11 @@ export function ThemeSwitcher({ initial = 'paper' }: { initial?: string }) {
     setOpen(false)
     document.documentElement.dataset.theme = id
     try {
-      localStorage.setItem('heed-theme', id)
+      localStorage.setItem('chorala-theme', id)
     } catch {
       /* ignore */
     }
-    document.cookie = `heed-theme=${id}; path=/; max-age=31536000; samesite=lax`
+    document.cookie = `chorala-theme=${id}; path=/; max-age=31536000; samesite=lax`
   }
 
   const active = THEMES.find((t) => t.id === current) ?? DEFAULT_THEME

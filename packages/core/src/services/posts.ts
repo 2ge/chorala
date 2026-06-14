@@ -14,8 +14,8 @@ import {
   sql,
   statuses,
   votes,
-} from '@heed/db'
-import type { AdminCreatePostInput, PostSort, UpdatePostInput } from '@heed/types'
+} from '@chorala/db'
+import type { AdminCreatePostInput, PostSort, UpdatePostInput } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { badRequest, conflict, notFound } from '../errors.ts'
 import { enqueueIntegrationSync, enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'

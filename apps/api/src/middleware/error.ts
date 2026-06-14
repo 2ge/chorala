@@ -1,4 +1,4 @@
-import { AppError } from '@heed/core'
+import { AppError } from '@chorala/core'
 import type { Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { ZodError } from 'zod'

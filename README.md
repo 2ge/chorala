@@ -6,8 +6,8 @@
 > **We never charge you for your users voting.** Cloud pricing is flat per-admin;
 > end-users and votes are always unlimited.
 
-**Chorala** is the product (chorala.com). Internally the code keeps the `@heed/*` package
-scope and `HEED_` env prefix as stable identifiers (not user-visible).
+**Chorala** is the product (chorala.com). Internally the code keeps the `@chorala/*` package
+scope and `CHORALA_` env prefix as stable identifiers (not user-visible).
 
 - **Embeddable everywhere** — a tiny Preact widget in a Shadow DOM (≈12KB gzip) drops
   into any site with zero CSS leakage, plus a hosted portal, roadmap, and changelog.
@@ -24,17 +24,17 @@ scope and `HEED_` env prefix as stable identifiers (not user-visible).
 
 ```bash
 cp .env.example .env
-# set HEED_AUTH_SECRET — e.g. openssl rand -base64 32
+# set CHORALA_AUTH_SECRET — e.g. openssl rand -base64 32
 docker compose up
 ```
 
-Caddy serves the stack on `:80` (set `HEED_DOMAIN=feedback.example.com` in `.env` for
+Caddy serves the stack on `:80` (set `CHORALA_DOMAIN=feedback.example.com` in `.env` for
 automatic HTTPS). The API auto-runs migrations on boot. Create the first admin with:
 
 ```bash
 docker compose exec api pnpm db:seed            # demo org + admin + sample data
-docker compose exec api pnpm --filter @heed/api seed:admin
-# → admin@chorala.com / heedadmin123
+docker compose exec api pnpm --filter @chorala/api seed:admin
+# → admin@chorala.com / choralaadmin123
 ```
 
 ### Local development
@@ -43,7 +43,7 @@ docker compose exec api pnpm --filter @heed/api seed:admin
 pnpm install
 docker compose up -d postgres redis             # or use your own PG16 + Redis
 pnpm db:migrate && pnpm db:seed
-pnpm --filter @heed/api seed:admin              # sets the admin password
+pnpm --filter @chorala/api seed:admin              # sets the admin password
 pnpm dev                                         # api :8787, dashboard :3015, worker
 ```
 
@@ -110,15 +110,15 @@ Project → API keys and register the server (stdio or streamable HTTP) — 9 to
 ## Environment
 
 All vars are documented in [`.env.example`](.env.example). Required: `DATABASE_URL`,
-`HEED_AUTH_SECRET`. Key optional groups: AI (`HEED_AI_PROVIDER` + model/base-url),
-email (`HEED_EMAIL_TRANSPORT`), billing (`STRIPE_*`, cloud only), widget/public API
-(`HEED_WIDGET_CDN_URL`, `HEED_RATE_LIMIT_PUBLIC`). `packages/config` zod-validates at
+`CHORALA_AUTH_SECRET`. Key optional groups: AI (`CHORALA_AI_PROVIDER` + model/base-url),
+email (`CHORALA_EMAIL_TRANSPORT`), billing (`STRIPE_*`, cloud only), widget/public API
+(`CHORALA_WIDGET_CDN_URL`, `CHORALA_RATE_LIMIT_PUBLIC`). `packages/config` zod-validates at
 boot and fails fast on a missing required var.
 
 ## Cloud vs self-host
 
-`HEED_DEPLOYMENT=selfhost` (default): no Stripe, no caps, unlimited admins.
-`HEED_DEPLOYMENT=cloud`: Stripe billing + public signup + **admin-seat** limits per plan
+`CHORALA_DEPLOYMENT=selfhost` (default): no Stripe, no caps, unlimited admins.
+`CHORALA_DEPLOYMENT=cloud`: Stripe billing + public signup + **admin-seat** limits per plan
 (free/starter/pro). End-users and votes are **always unlimited** — never metered.
 Billing code is fully inert in self-host.
 
@@ -147,4 +147,4 @@ pnpm lint && pnpm test` must pass. Judgement calls made while building are logge
 - `packages/sdk-react-native` is a README-only stub (no native mobile SDK in v1).
 - v1 integrations: Slack, Linear, GitHub, generic webhooks (webhook delivery is live;
   the Slack/Linear/GitHub specifics are scaffolded).
-- AI features require a configured provider; with `HEED_AI_PROVIDER=none` they're cleanly disabled.
+- AI features require a configured provider; with `CHORALA_AI_PROVIDER=none` they're cleanly disabled.

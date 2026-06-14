@@ -1,4 +1,4 @@
-import { members as memberSvc } from '@heed/core'
+import { members as memberSvc } from '@chorala/core'
 import { Badge, Button, Card, Input, Label, Select } from '@/components/ui'
 import { inviteMember } from '@/lib/actions'
 import { requireAuthContext } from '@/lib/session'

@@ -1,4 +1,4 @@
-import { apiKeys as keySvc } from '@heed/core'
+import { apiKeys as keySvc } from '@chorala/core'
 import { KeyCreator } from '@/components/key-creator'
 import { Badge, Card } from '@/components/ui'
 import { requireAuthContext } from '@/lib/session'

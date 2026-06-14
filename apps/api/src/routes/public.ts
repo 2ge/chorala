@@ -1,11 +1,11 @@
-import { endUsers, publicFeed, unauthorized, votes } from '@heed/core'
+import { endUsers, publicFeed, unauthorized, votes } from '@chorala/core'
 import {
   changelogSubscribeInput,
   createCommentInput,
   createPostInput,
   identifyInput,
   postSort,
-} from '@heed/types'
+} from '@chorala/types'
 import { Hono } from 'hono'
 import { requireEndUser, resolveEndUser } from '../lib/identity.ts'
 import { verifyEndUserJwt } from '../lib/jwt.ts'

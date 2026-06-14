@@ -3,10 +3,10 @@ import { fileURLToPath } from 'node:url'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
-const apiKey = process.env.HEED_MCP_API_KEY
+const apiKey = process.env.CHORALA_MCP_API_KEY
 if (!apiKey) {
-  // Skip cleanly in CI/unit runs without a live API + key (run with HEED_MCP_API_KEY set).
-  console.log('↷ MCP stdio test skipped (set HEED_MCP_API_KEY + a running API to run it).')
+  // Skip cleanly in CI/unit runs without a live API + key (run with CHORALA_MCP_API_KEY set).
+  console.log('↷ MCP stdio test skipped (set CHORALA_MCP_API_KEY + a running API to run it).')
   process.exit(0)
 }
 
@@ -21,11 +21,11 @@ async function main() {
     args: [serverPath],
     env: {
       ...process.env,
-      HEED_MCP_API_KEY: apiKey as string,
-      HEED_API_URL: process.env.HEED_API_URL ?? 'http://localhost:8787',
+      CHORALA_MCP_API_KEY: apiKey as string,
+      CHORALA_API_URL: process.env.CHORALA_API_URL ?? 'http://localhost:8787',
     },
   })
-  const client = new Client({ name: 'heed-mcp-test', version: '0.0.0' })
+  const client = new Client({ name: 'chorala-mcp-test', version: '0.0.0' })
   await client.connect(transport)
 
   // 1. tools are exposed

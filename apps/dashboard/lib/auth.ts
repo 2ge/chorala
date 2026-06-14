@@ -1,5 +1,5 @@
-import { env } from '@heed/config'
-import { db, schema } from '@heed/db'
+import { env } from '@chorala/config'
+import { db, schema } from '@chorala/db'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 
@@ -9,8 +9,8 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
  * basePath under /api/v1/auth matches the API; the dashboard only ever READS the session.
  */
 export const auth = betterAuth({
-  secret: env.HEED_AUTH_SECRET,
-  baseURL: env.HEED_PUBLIC_URL,
+  secret: env.CHORALA_AUTH_SECRET,
+  baseURL: env.CHORALA_PUBLIC_URL,
   basePath: '/api/v1/auth',
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -22,5 +22,5 @@ export const auth = betterAuth({
     },
   }),
   emailAndPassword: { enabled: true },
-  advanced: { useSecureCookies: env.HEED_PUBLIC_URL.startsWith('https://') },
+  advanced: { useSecureCookies: env.CHORALA_PUBLIC_URL.startsWith('https://') },
 })

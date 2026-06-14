@@ -26,14 +26,14 @@ test('feedback journey: submit → board → vote → triage → roadmap', async
   // --- Submit an idea via the public API (what the widget does), then vote ---
   const title = `E2E idea ${Date.now()}`
   const created = await request.post(`${base}/api/v1/public/posts`, {
-    headers: { 'x-heed-key': publicKey, 'content-type': 'application/json' },
+    headers: { 'x-chorala-key': publicKey, 'content-type': 'application/json' },
     data: { boardSlug: 'feature-requests', title, body: 'created by the e2e test' },
   })
   expect(created.ok()).toBeTruthy()
   const postId = ((await created.json()) as { post: { id: string } }).post.id
 
   const voteRes = await request.post(`${base}/api/v1/public/posts/${postId}/vote`, {
-    headers: { 'x-heed-key': publicKey },
+    headers: { 'x-chorala-key': publicKey },
   })
   expect(((await voteRes.json()) as { voteCount: number }).voteCount).toBeGreaterThan(0)
 

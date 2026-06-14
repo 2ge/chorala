@@ -1,4 +1,4 @@
-import { projects as projectService } from '@heed/core'
+import { projects as projectService } from '@chorala/core'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
@@ -9,7 +9,7 @@ import { requireAuthContext } from '@/lib/session'
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const ctx = await requireAuthContext()
   const projects = await projectService.listProjects(ctx)
-  const theme = (await cookies()).get('heed-theme')?.value ?? 'paper'
+  const theme = (await cookies()).get('chorala-theme')?.value ?? 'paper'
 
   return (
     <div className="min-h-screen">

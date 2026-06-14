@@ -1,5 +1,5 @@
-import { tags } from '@heed/core'
-import { createTagInput } from '@heed/types'
+import { tags } from '@chorala/core'
+import { createTagInput } from '@chorala/types'
 import { Hono } from 'hono'
 import type { AppEnv } from '../types.ts'
 import { reqParam } from '../util.ts'

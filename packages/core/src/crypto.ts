@@ -1,9 +1,9 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'node:crypto'
-import { env } from '@heed/config'
+import { env } from '@chorala/config'
 
 let key: Buffer | null = null
 function getKey(): Buffer {
-  if (!key) key = scryptSync(env.HEED_AUTH_SECRET, 'heed-integrations', 32)
+  if (!key) key = scryptSync(env.CHORALA_AUTH_SECRET, 'chorala-integrations', 32)
   return key
 }
 

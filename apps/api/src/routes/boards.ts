@@ -1,5 +1,5 @@
-import { boards } from '@heed/core'
-import { createBoardInput, updateBoardInput } from '@heed/types'
+import { boards } from '@chorala/core'
+import { createBoardInput, updateBoardInput } from '@chorala/types'
 import { Hono } from 'hono'
 import type { AppEnv } from '../types.ts'
 import { reqParam } from '../util.ts'

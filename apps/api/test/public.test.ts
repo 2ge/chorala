@@ -1,5 +1,5 @@
-import { env } from '@heed/config'
-import { db, eq, projects } from '@heed/db'
+import { env } from '@chorala/config'
+import { db, eq, projects } from '@chorala/db'
 import { SignJWT } from 'jose'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createApp } from '../src/app.ts'
@@ -9,7 +9,7 @@ const app = createApp()
 let publicKey: string
 let jwtSecret: string
 
-const KEY = () => ({ 'x-heed-key': publicKey })
+const KEY = () => ({ 'x-chorala-key': publicKey })
 
 async function signUser(claims: Record<string, unknown>) {
   return new SignJWT(claims)
@@ -19,7 +19,7 @@ async function signUser(claims: Record<string, unknown>) {
     .sign(new TextEncoder().encode(jwtSecret))
 }
 
-/** Pull the heed_uid cookie out of a response so a follow-up request reuses the identity. */
+/** Pull the chorala_uid cookie out of a response so a follow-up request reuses the identity. */
 function cookieFrom(res: Response): string | undefined {
   const set = res.headers.get('set-cookie')
   return set?.split(';')[0]
@@ -37,7 +37,7 @@ afterAll(async () => {
 })
 
 describe('project key + CORS', () => {
-  test('missing X-Heed-Key is 401', async () => {
+  test('missing X-Chorala-Key is 401', async () => {
     const res = await app.request('/api/v1/public/boards')
     expect(res.status).toBe(401)
   })
@@ -84,7 +84,7 @@ describe('anonymous flow (cookie identity)', () => {
     })
     expect(createRes.status).toBe(201)
     const cookie = cookieFrom(createRes)
-    expect(cookie).toContain('heed_uid')
+    expect(cookie).toContain('chorala_uid')
     const created = (await createRes.json()) as { post: { id: string } }
     const postId = created.post.id
 
@@ -147,7 +147,7 @@ describe('identified flow (host JWT)', () => {
       await app.request('/api/v1/public/boards', { headers: KEY() })
     ).json()) as { posts: { id: string }[] }
     const postId = boards.posts[0]!.id
-    const userHeaders = { ...KEY(), 'x-heed-user': jwt }
+    const userHeaders = { ...KEY(), 'x-chorala-user': jwt }
     await app.request(`/api/v1/public/posts/${postId}/vote`, {
       method: 'POST',
       headers: userHeaders,
@@ -171,7 +171,7 @@ describe('identified flow (host JWT)', () => {
 
 describe('rate limiting', () => {
   test('exceeding the per-minute limit returns 429', async () => {
-    const limit = env.HEED_RATE_LIMIT_PUBLIC
+    const limit = env.CHORALA_RATE_LIMIT_PUBLIC
     const ip = '203.0.113.77' // dedicated IP so this test owns its window
     let last = 200
     for (let i = 0; i < limit + 1; i++) {

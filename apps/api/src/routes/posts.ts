@@ -1,4 +1,4 @@
-import { posts, tags } from '@heed/core'
+import { posts, tags } from '@chorala/core'
 import {
   adminCreatePostInput,
   changePostStatusInput,
@@ -6,7 +6,7 @@ import {
   postSort,
   tagPostInput,
   updatePostInput,
-} from '@heed/types'
+} from '@chorala/types'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import type { AppEnv } from '../types.ts'

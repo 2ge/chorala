@@ -1,4 +1,4 @@
-import { boards as boardSvc, posts as postSvc, statuses as statusSvc } from '@heed/core'
+import { boards as boardSvc, posts as postSvc, statuses as statusSvc } from '@chorala/core'
 import Link from 'next/link'
 import { PinButton, StatusSelect } from '@/components/post-controls'
 import { Badge, Button, Card, Input, Label, Select, VotePill } from '@/components/ui'

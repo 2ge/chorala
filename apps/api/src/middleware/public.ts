@@ -1,5 +1,5 @@
-import { env } from '@heed/config'
-import { AppError, projects, unauthorized } from '@heed/core'
+import { env } from '@chorala/config'
+import { AppError, projects, unauthorized } from '@chorala/core'
 import type { Context, MiddlewareHandler } from 'hono'
 import { redis } from '../lib/redis.ts'
 import type { PublicEnv, PublicProject } from '../types.ts'
@@ -13,7 +13,7 @@ function clientIp(c: Context): string {
 }
 
 async function enforceRateLimit(c: Context, projectId: string) {
-  const limit = env.HEED_RATE_LIMIT_PUBLIC
+  const limit = env.CHORALA_RATE_LIMIT_PUBLIC
   const window = Math.floor(Date.now() / 1000 / RATE_WINDOW_SEC)
   const key = `rl:${projectId}:${clientIp(c)}:${window}`
   try {
@@ -42,14 +42,14 @@ function setCorsHeaders(c: Context, origin: string) {
   c.header('Access-Control-Allow-Origin', origin)
   c.header('Access-Control-Allow-Credentials', 'true')
   c.header('Vary', 'Origin')
-  c.header('Access-Control-Allow-Headers', 'content-type, x-heed-key, x-heed-user')
+  c.header('Access-Control-Allow-Headers', 'content-type, x-chorala-key, x-chorala-user')
   c.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
   c.header('Access-Control-Max-Age', '600')
 }
 
-/** Resolves the project from `X-Heed-Key`, enforces per-project CORS + Redis rate limiting. */
+/** Resolves the project from `X-Chorala-Key`, enforces per-project CORS + Redis rate limiting. */
 export const publicProject: MiddlewareHandler<PublicEnv> = async (c, next) => {
-  // CORS preflight: the browser never sends X-Heed-Key on OPTIONS, so answer it before
+  // CORS preflight: the browser never sends X-Chorala-Key on OPTIONS, so answer it before
   // requiring the key. Permissively echo the origin; the real request still enforces
   // the project's allowed_origins (below) — a disallowed origin gets a 403 with no ACAO.
   if (c.req.method === 'OPTIONS') {
@@ -58,8 +58,8 @@ export const publicProject: MiddlewareHandler<PublicEnv> = async (c, next) => {
     return c.body(null, 204)
   }
 
-  const key = c.req.header('x-heed-key')
-  if (!key) throw unauthorized('Missing X-Heed-Key')
+  const key = c.req.header('x-chorala-key')
+  if (!key) throw unauthorized('Missing X-Chorala-Key')
   const project = await projects.getByPublicKey(key)
   if (!project) throw unauthorized('Invalid project key')
 

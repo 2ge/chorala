@@ -1,5 +1,5 @@
-import { env, isCloud } from '@heed/config'
-import { count, db, eq, members, organizations } from '@heed/db'
+import { env, isCloud } from '@chorala/config'
+import { count, db, eq, members, organizations } from '@chorala/db'
 import { PLANS, type PlanId, planFor } from './plans.ts'
 
 export { PLANS, type Plan, type PlanId, planFor } from './plans.ts'

@@ -1,4 +1,4 @@
-import { db, eq, members, SEED_ADMIN, users } from '@heed/db'
+import { db, eq, members, SEED_ADMIN, users } from '@chorala/db'
 import { auth } from '../auth.ts'
 
 /**

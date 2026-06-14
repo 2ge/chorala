@@ -1,4 +1,4 @@
-import { projects as projectService } from '@heed/core'
+import { projects as projectService } from '@chorala/core'
 import { redirect } from 'next/navigation'
 import { Button, Card, Input, Label } from '@/components/ui'
 import { createProject } from '@/lib/actions'

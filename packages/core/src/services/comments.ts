@@ -1,4 +1,4 @@
-import { and, asc, comments, db, eq, newId, posts, sql } from '@heed/db'
+import { and, asc, comments, db, eq, newId, posts, sql } from '@chorala/db'
 import { notFound } from '../errors.ts'
 import { enqueueWebhookEvent } from '../queues.ts'
 

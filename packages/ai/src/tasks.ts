@@ -1,4 +1,4 @@
-import { loadEnv } from '@heed/config'
+import { loadEnv } from '@chorala/config'
 import {
   aiJobs,
   and,
@@ -13,7 +13,7 @@ import {
   postTranslations,
   projects,
   sql,
-} from '@heed/db'
+} from '@chorala/db'
 import type { LLMProvider } from './provider.ts'
 
 const vec = (e: number[]) => `[${e.join(',')}]`
@@ -41,7 +41,7 @@ export type DuplicateSuggestion = { postId: string; title: string; similarity: n
 export async function dedupPost(
   provider: LLMProvider,
   postId: string,
-  threshold = loadEnv().HEED_AI_DEDUP_THRESHOLD,
+  threshold = loadEnv().CHORALA_AI_DEDUP_THRESHOLD,
 ): Promise<DuplicateSuggestion[]> {
   if (!provider.enabled || !provider.canEmbed) return []
   const [post] = await db

@@ -1,5 +1,5 @@
-import { statuses } from '@heed/core'
-import { createStatusInput, updateStatusInput } from '@heed/types'
+import { statuses } from '@chorala/core'
+import { createStatusInput, updateStatusInput } from '@chorala/types'
 import { Hono } from 'hono'
 import type { AppEnv } from '../types.ts'
 import { reqParam } from '../util.ts'

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { client, db, endUsers, eq, members, newId, organizations, users } from '@heed/db'
+import { client, db, endUsers, eq, members, newId, organizations, users } from '@chorala/db'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { AppError, type AuthContext, apiKeys, posts, projects, votes } from '../src/index.ts'
 

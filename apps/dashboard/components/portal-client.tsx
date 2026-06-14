@@ -24,7 +24,7 @@ export function PortalVote({
       const res = await fetch(`/api/v1/public/posts/${postId}/vote`, {
         method: v ? 'DELETE' : 'POST',
         credentials: 'include',
-        headers: { 'x-heed-key': publicKey },
+        headers: { 'x-chorala-key': publicKey },
       })
       if (res.ok) {
         const d = (await res.json()) as { voted: boolean; voteCount: number }

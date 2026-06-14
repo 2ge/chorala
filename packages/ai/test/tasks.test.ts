@@ -11,7 +11,7 @@ import {
   postTranslations,
   projects,
   votes,
-} from '@heed/db'
+} from '@chorala/db'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import type { CompleteOptions, LLMProvider } from '../src/index.ts'
 import { dedupPost, embedPost, NoopProvider, processPost, translatePost } from '../src/index.ts'
