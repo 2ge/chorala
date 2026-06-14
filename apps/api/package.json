@@ -19,6 +19,7 @@
     "seed:admin": "tsx src/scripts/seed-admin.ts"
   },
   "dependencies": {
+    "@heed/ai": "workspace:*",
     "@heed/config": "workspace:*",
     "@heed/core": "workspace:*",
     "@heed/db": "workspace:*",

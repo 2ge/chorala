@@ -1,3 +1,70 @@
-# @heed/mcp
+# @heed/mcp — Heed MCP server (MIT)
 
-MIT-licensed package. Scaffolded in Phase 0; implemented in its BUILD_PLAN phase.
+Expose your Heed feedback to AI clients (Claude Desktop, Claude Code, Cursor) as
+[Model Context Protocol](https://modelcontextprotocol.io) tools. Triage feedback,
+search semantically, and draft changelogs from inside your assistant.
+
+This package is **MIT** and talks to the Heed HTTP API over the network with an
+admin API key (`hk_…`) — it imports none of the server code.
+
+## Tools
+
+| Tool | What it does |
+|---|---|
+| `list_boards` | List the project's boards |
+| `list_posts` | List posts (filter by board/status/search/sort) |
+| `get_post` | A post + its comments |
+| `search_feedback` | Semantic search (text fallback if AI is off) |
+| `top_requests` | Most-requested ideas by (weighted) votes |
+| `cluster_themes` | AI-generated themes across feedback |
+| `summarize_post` | Summarize a post's thread |
+| `update_post_status` | Change a post's status by name (needs a write key) |
+| `draft_changelog_from_posts` | Draft a markdown changelog from shipped posts |
+
+## Configuration
+
+Two env vars:
+
+- `HEED_MCP_API_KEY` — a Heed API key (`hk_…`), created in **Project → API keys**.
+  It is scoped to a single project.
+- `HEED_API_URL` — base URL of the Heed API (default `http://localhost:8787`).
+
+## Claude Desktop
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "heed": {
+      "command": "npx",
+      "args": ["-y", "tsx", "/absolute/path/to/packages/mcp/src/index.ts"],
+      "env": {
+        "HEED_MCP_API_KEY": "hk_live_xxx",
+        "HEED_API_URL": "https://feedback.yourcompany.com"
+      }
+    }
+  }
+}
+```
+
+## Claude Code
+
+```bash
+claude mcp add heed \
+  --env HEED_MCP_API_KEY=hk_live_xxx \
+  --env HEED_API_URL=https://feedback.yourcompany.com \
+  -- npx -y tsx /absolute/path/to/packages/mcp/src/index.ts
+```
+
+## Transports
+
+- **stdio** (default) — for local Claude Desktop / Claude Code / Cursor.
+- **streamable HTTP** — set `HEED_MCP_TRANSPORT=http` (and optionally `HEED_MCP_PORT`,
+  default `8788`) for remote clients.
+
+## Run locally
+
+```bash
+HEED_MCP_API_KEY=hk_xxx HEED_API_URL=http://localhost:8787 pnpm --filter @heed/mcp start
+```

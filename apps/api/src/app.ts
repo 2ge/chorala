@@ -5,6 +5,7 @@ import { auth } from './auth.ts'
 import { DEMO_HTML, readFileSafe, WIDGET_JS, WIDGET_MAP } from './lib/assets.ts'
 import { requireAuth } from './middleware/auth.ts'
 import { notFoundHandler, onError } from './middleware/error.ts'
+import { aiRoutes } from './routes/ai.ts'
 import { analyticsRoutes } from './routes/analytics.ts'
 import { apiKeysRoutes } from './routes/apiKeys.ts'
 import { boardsRoutes } from './routes/boards.ts'
@@ -68,6 +69,8 @@ export function createApp() {
   api.route('/projects', projectsRoutes)
   api.route('/projects/:projectId/boards', boardsRoutes)
   api.route('/projects/:projectId/statuses', statusesRoutes)
+  // AI routes first so static paths (/posts/search) win over /posts/:id.
+  api.route('/projects/:projectId', aiRoutes)
   api.route('/projects/:projectId/posts', postsRoutes)
   api.route('/projects/:projectId/posts/:postId/comments', commentsRoutes)
   api.route('/projects/:projectId/tags', tagsRoutes)

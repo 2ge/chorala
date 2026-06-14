@@ -78,6 +78,36 @@ export async function listPosts(ctx: AuthContext, projectId: string, opts: ListO
     .orderBy(...orderFor(opts.sort))
 }
 
+/** Semantic search by a query embedding (pgvector cosine). Returns posts + similarity. */
+export async function semanticSearch(
+  ctx: AuthContext,
+  projectId: string,
+  embedding: number[],
+  limit = 10,
+) {
+  await getProject(ctx, projectId)
+  const literal = `[${embedding.join(',')}]`
+  const rows = await db.execute<{
+    id: string
+    title: string
+    body: string
+    vote_count: number
+    similarity: number
+  }>(sql`
+    select id, title, body, vote_count, 1 - (embedding <=> ${literal}::vector) as similarity
+    from posts
+    where project_id = ${projectId} and merged_into_post_id is null and embedding is not null
+    order by embedding <=> ${literal}::vector
+    limit ${limit}`)
+  return Array.from(rows).map((r) => ({
+    id: r.id,
+    title: r.title,
+    body: r.body,
+    voteCount: r.vote_count,
+    similarity: Number(r.similarity),
+  }))
+}
+
 export async function getPost(ctx: AuthContext, projectId: string, id: string) {
   await getProject(ctx, projectId)
   const [row] = await db

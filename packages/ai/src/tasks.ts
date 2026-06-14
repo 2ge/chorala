@@ -6,6 +6,7 @@ import {
   db,
   eq,
   feedbackClusters,
+  inArray,
   newId,
   organizations,
   posts,
@@ -222,5 +223,29 @@ export async function summarizePost(provider: LLMProvider, postId: string): Prom
         content: `Title: ${post.title}\nBody: ${post.body}\nComments:\n${thread.map((c) => `- ${c.body}`).join('\n')}`,
       },
     ],
+  })
+}
+
+/** Draft a markdown changelog entry from a set of shipped posts (MCP tool). */
+export async function draftChangelogFromPosts(
+  provider: LLMProvider,
+  postIds: string[],
+): Promise<string> {
+  const rows =
+    postIds.length > 0
+      ? await db
+          .select({ title: posts.title, body: posts.body })
+          .from(posts)
+          .where(inArray(posts.id, postIds))
+      : []
+  const list = rows.map((r) => `- ${r.title}: ${r.body}`).join('\n')
+  if (!provider.enabled) {
+    // graceful fallback when AI is disabled: a plain templated draft
+    return `## What's new\n\n${rows.map((r) => `- **${r.title}**`).join('\n')}`
+  }
+  return provider.complete({
+    system:
+      'Write a concise, friendly product changelog entry in markdown from these shipped items. Start with a short title line.',
+    messages: [{ role: 'user', content: list }],
   })
 }

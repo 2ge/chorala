@@ -173,3 +173,23 @@ choice. Format: `- [phase] chose X over Y because Z`.
   to keep deps light; email is Noop on this host. Logged as a deviation from SPEC §11.
 - [phase6] Verified: AI task chain + Noop degradation via Vitest mock provider (5 tests);
   live worker boots and consumes an enqueued job end-to-end (producer→Redis→worker→transport).
+
+## Phase 7
+- [phase7] `packages/mcp` (MIT) is a **standalone HTTP client** of the Heed admin API
+  (Bearer `hk_…` key) — it imports `@modelcontextprotocol/sdk` + `zod` only, never the AGPL
+  server code, honoring SPEC §3's "MIT must not import AGPL". It defines its own minimal types.
+- [phase7] To back the AI-powered MCP tools, added a small admin API surface
+  (`apps/api/src/routes/ai.ts`, mounted before `/posts/:id` so `/posts/search` wins):
+  `GET /posts/search` (semantic via pgvector, text fallback when AI off), `POST
+  /posts/:id/summarize`, `POST /changelog/draft`. Core gained `posts.semanticSearch`; AI
+  gained `draftChangelogFromPosts`. The api now depends on `@heed/ai`.
+- [phase7] 9 tools: list_boards, list_posts, get_post, search_feedback, top_requests,
+  cluster_themes, summarize_post, update_post_status (resolves status by name), and
+  draft_changelog_from_posts. The api key is project-scoped, so the server resolves its
+  single project via `GET /projects` and caches the id.
+- [phase7] Transports: stdio (default, for local Claude clients) + streamable HTTP
+  (`HEED_MCP_TRANSPORT=http`). README ships the exact Claude Desktop / Claude Code config.
+- [phase7] The MCP test (`test/stdio.test.ts`) spawns the server and drives it with the real
+  MCP SDK client over stdio; **skips cleanly** (exit 0) without `HEED_MCP_API_KEY` so it
+  doesn't break `pnpm test`. Verified live: 9 tools; search_feedback + top_requests return
+  seeded data.
