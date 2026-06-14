@@ -104,6 +104,12 @@ Pass it to the widget: `Chorala('init', { projectKey, user: { jwt: token } })`. 
 visitors fall back to a signed cookie. `segment` powers prioritization (e.g. weight votes
 by MRR). Mirrors Canny/Featurebase SSO.
 
+## API
+
+Full HTTP API reference — auth, public/widget endpoints, admin endpoints, auth flows,
+webhooks and the embed JS API — is in **[`docs/API.md`](docs/API.md)**. Every shape mirrors
+the zod contract in `packages/types`.
+
 ## MCP (triage from Claude / Cursor)
 
 See [`packages/mcp/README.md`](packages/mcp/README.md). Create an `hk_…` key in
