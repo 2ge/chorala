@@ -10,27 +10,33 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <div className="min-h-screen">
-      <header className="flex h-14 items-center gap-4 border-b border-slate-200 bg-white px-5">
-        <Link href="/admin" className="flex items-center gap-2 font-bold">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 text-sm text-white">
-            H
-          </span>
-          Heed
-        </Link>
-        <nav className="flex items-center gap-1 text-sm">
-          {projects.map((p) => (
-            <Link
-              key={p.id}
-              href={`/admin/${p.id}/posts`}
-              className="rounded-md px-3 py-1.5 text-slate-600 hover:bg-slate-100"
-            >
-              {p.name}
-            </Link>
-          ))}
-        </nav>
-        <div className="ml-auto flex items-center gap-2 text-sm text-slate-500">
-          <span>{ctx.role}</span>
-          <SignOut />
+      <header className="sticky top-0 z-30 border-b border-line/80 bg-paper/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-5 px-6">
+          <Link href="/admin" className="group flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-accent font-display text-[17px] leading-none text-white shadow-[0_6px_14px_-6px_rgba(217,81,42,0.9)]">
+              H
+            </span>
+            <span className="font-display text-[22px] leading-none tracking-[-0.02em]">Heed</span>
+          </Link>
+
+          <nav className="hidden items-center gap-1 sm:flex">
+            {projects.map((p) => (
+              <Link
+                key={p.id}
+                href={`/admin/${p.id}/posts`}
+                className="rounded-full px-3 py-1.5 text-sm text-ink-soft transition hover:bg-ink/5 hover:text-ink"
+              >
+                {p.name}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-3">
+            <span className="hidden rounded-full border border-line bg-raised px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-soft sm:inline">
+              {ctx.role}
+            </span>
+            <SignOut />
+          </div>
         </div>
       </header>
       {children}

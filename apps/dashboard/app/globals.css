@@ -1,28 +1,155 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, 'Times New Roman', serif;
+
+  /* Warm "editorial paper" palette */
+  --color-paper: #f7f3ec;
+  --color-raised: #fffdf9;
+  --color-ink: #1c1815;
+  --color-ink-soft: #6f655a;
+  --color-ink-faint: #a59c8f;
+  --color-line: #e8e0d3;
+  --color-line-strong: #ddd2c1;
+
+  /* Vermilion accent (upvote energy) — also aliased to brand-* used across components */
+  --color-accent: #d9512a;
+  --color-accent-hover: #c0431f;
+  --color-accent-soft: #fbe7de;
+  --color-brand-50: #fdf1ea;
+  --color-brand-100: #fbe2d4;
+  --color-brand-500: #e2592f;
+  --color-brand-600: #d9512a;
+  --color-brand-700: #b8431f;
 }
 
 :root {
-  --bg: #f8fafc;
-  --fg: #0f172a;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --card: #ffffff;
+  color-scheme: light;
 }
 
-html,
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01', 'cv01';
+  position: relative;
+  min-height: 100vh;
 }
 
+/* Atmospheric canvas: warm radial wash + faint grain for depth (never flat white). */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(900px 500px at 12% -8%, rgba(217, 81, 42, 0.06), transparent 60%),
+    radial-gradient(1100px 600px at 100% 0%, rgba(120, 113, 96, 0.07), transparent 55%);
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.5;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Refined scrollbars */
 * {
-  border-color: var(--border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* Tactile upvote pill — the signature element of a feedback tool. */
+.vote-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border-radius: 12px;
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-raised);
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 1px 0 rgba(28, 24, 21, 0.04);
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.vote-pill:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.vote-pill:active {
+  transform: translateY(1px);
+}
+.vote-pill[data-voted='true'] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+  box-shadow: 0 6px 16px -8px rgba(217, 81, 42, 0.7);
+}
+.vote-pill .caret {
+  font-size: 0.65em;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+/* Card surface with layered warm shadow */
+.surface {
+  background: var(--color-raised);
+  border: 1px solid var(--color-line);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(28, 24, 21, 0.04),
+    0 14px 30px -22px rgba(28, 24, 21, 0.25);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

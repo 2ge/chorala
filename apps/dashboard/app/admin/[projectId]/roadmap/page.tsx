@@ -1,5 +1,4 @@
 import { publicFeed } from '@heed/core'
-import { Badge, Card } from '@/components/ui'
 import { requireAuthContext } from '@/lib/session'
 
 export default async function RoadmapPage({ params }: { params: Promise<{ projectId: string }> }) {
@@ -8,30 +7,48 @@ export default async function RoadmapPage({ params }: { params: Promise<{ projec
   const { columns } = await publicFeed.getRoadmap(projectId)
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-xl font-bold">Roadmap</h1>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {columns.length === 0 && (
-          <p className="text-slate-400">No statuses are marked “show on roadmap”.</p>
-        )}
-        {columns.map((col) => (
-          <Card key={col.status.id} className="p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: col.status.color }} />
-              <span className="font-semibold">{col.status.name}</span>
-              <span className="text-xs text-slate-400">{col.posts.length}</span>
-            </div>
-            <div className="space-y-2">
-              {col.posts.map((p) => (
-                <div key={p.id} className="rounded-lg border border-slate-100 p-2 text-sm">
-                  <span className="font-medium">{p.title}</span>
-                  <Badge className="ml-2 bg-slate-100 text-slate-500">▲ {p.voteCount}</Badge>
-                </div>
-              ))}
-            </div>
-          </Card>
-        ))}
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-display text-3xl tracking-[-0.02em]">Roadmap</h1>
+        <p className="mt-1 text-sm text-ink-soft">What’s planned, in progress, and shipped.</p>
       </div>
+      {columns.length === 0 ? (
+        <p className="text-ink-faint">No statuses are marked “show on roadmap” yet.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {columns.map((col) => (
+            <div key={col.status.id} className="rounded-2xl border border-line bg-paper/40 p-3">
+              <div className="mb-3 flex items-center gap-2 px-1">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: col.status.color }}
+                />
+                <span className="font-semibold tracking-[-0.01em]">{col.status.name}</span>
+                <span className="ml-auto rounded-full bg-ink/5 px-2 py-0.5 text-xs font-semibold tabular-nums text-ink-soft">
+                  {col.posts.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {col.posts.length === 0 && (
+                  <p className="px-1 py-3 text-xs text-ink-faint">Nothing here yet.</p>
+                )}
+                {col.posts.map((p) => (
+                  <div
+                    key={p.id}
+                    className="surface flex items-center gap-3 p-3 transition hover:-translate-y-0.5"
+                  >
+                    <span className="font-medium tracking-[-0.01em]">{p.title}</span>
+                    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-line bg-raised px-2 py-0.5 text-xs font-bold tabular-nums text-accent">
+                      <span className="text-[0.7em]">▲</span>
+                      {p.voteCount}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

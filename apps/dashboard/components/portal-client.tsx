@@ -41,13 +41,18 @@ export function PortalVote({
       type="button"
       onClick={toggle}
       disabled={busy}
-      className={`flex w-12 shrink-0 flex-col items-center rounded-lg border py-1 text-sm font-bold transition ${
+      className="flex h-14 w-12 flex-col items-center justify-center gap-0.5 rounded-xl border text-sm font-bold tabular-nums shadow-[0_1px_0_rgba(28,24,21,0.04)] transition active:translate-y-px"
+      style={
         v
-          ? 'border-transparent bg-[var(--brand)] text-white'
-          : 'border-slate-200 hover:border-[var(--brand)]'
-      }`}
+          ? { background: 'var(--brand)', borderColor: 'var(--brand)', color: '#fff' }
+          : {
+              background: 'var(--color-raised)',
+              borderColor: 'var(--color-line-strong)',
+              color: 'var(--color-ink)',
+            }
+      }
     >
-      <span className="text-xs">▲</span>
+      <span className="text-[0.65em] leading-none">▲</span>
       {c}
     </button>
   )
@@ -65,7 +70,7 @@ export function SubscribeForm({ projectId }: { projectId: string }) {
     setEmail('')
   }
 
-  if (done) return <p className="text-sm text-green-600">You’re subscribed. ✓</p>
+  if (done) return <p className="text-sm font-medium text-emerald-600">You’re subscribed. ✓</p>
   return (
     <form onSubmit={submit} className="flex gap-2">
       <input
@@ -74,11 +79,12 @@ export function SubscribeForm({ projectId }: { projectId: string }) {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@example.com"
-        className="h-9 grow rounded-lg border border-slate-300 px-3 text-sm"
+        className="h-10 grow rounded-[10px] border border-line-strong bg-raised px-3 text-sm outline-none transition placeholder:text-ink-faint focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/20"
       />
       <button
         type="submit"
-        className="h-9 rounded-lg bg-[var(--brand)] px-4 text-sm font-semibold text-white"
+        className="h-10 rounded-[10px] px-4 text-sm font-semibold text-white transition active:translate-y-px"
+        style={{ background: 'var(--brand)' }}
       >
         Subscribe
       </button>

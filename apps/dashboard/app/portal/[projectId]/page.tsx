@@ -17,27 +17,32 @@ export default async function PortalBoard({
   const { posts } = await publicFeed.listPublicBoards(projectId, { locale, sort: 'top' })
 
   return (
-    <div className="space-y-3">
-      <h2 className="text-sm font-semibold text-slate-500">Top ideas</h2>
-      {posts.length === 0 && <p className="text-slate-400">No ideas yet.</p>}
-      {posts.map((p) => (
-        <div
-          key={p.id}
-          className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4"
-        >
-          <PortalVote
-            publicKey={data.project.publicKey}
-            postId={p.id}
-            count={p.voteCount}
-            voted={!!p.hasVoted}
-          />
-          <div>
-            <p className="font-medium">{p.title}</p>
-            {p.body && <p className="mt-1 text-sm text-slate-500">{p.body}</p>}
-            <p className="mt-1 text-xs text-slate-400">{p.commentCount} comments</p>
+    <div>
+      <div className="mb-5">
+        <h2 className="font-display text-3xl tracking-[-0.02em]">Ideas</h2>
+        <p className="mt-1 text-sm text-ink-soft">Vote for what you want us to build next.</p>
+      </div>
+      <div className="space-y-2.5">
+        {posts.length === 0 && <p className="text-ink-faint">No ideas yet — be the first.</p>}
+        {posts.map((p) => (
+          <div
+            key={p.id}
+            className="surface flex items-start gap-4 p-4 transition hover:-translate-y-0.5"
+          >
+            <PortalVote
+              publicKey={data.project.publicKey}
+              postId={p.id}
+              count={p.voteCount}
+              voted={!!p.hasVoted}
+            />
+            <div className="min-w-0 pt-0.5">
+              <p className="font-medium tracking-[-0.01em]">{p.title}</p>
+              {p.body && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{p.body}</p>}
+              <p className="mt-1.5 text-xs text-ink-faint">{p.commentCount} comments</p>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }

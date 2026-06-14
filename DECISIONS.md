@@ -213,3 +213,16 @@ choice. Format: `- [phase] chose X over Y because Z`.
   service containers and AI/email set to none.
 - [phase8] README expanded: one-command self-host, local dev, widget embed, end-user JWT/SSO,
   MCP, env reference, cloud-vs-selfhost, architecture, licensing, contributing.
+
+## Design pass
+- [design] Gave the dashboard + portal a distinctive **"editorial paper"** identity (warm
+  off-white canvas + grain/gradient, near-black warm ink, a single confident **vermilion**
+  accent fitting for upvotes) — deliberately away from the generic indigo/purple-on-white
+  SaaS look. Display font **Fraunces** (serif, optical sizing) for the wordmark + page titles;
+  **Hanken Grotesk** for UI, via `next/font`.
+- [design] New token system in `globals.css` (`--color-paper/raised/ink/line/accent…`), with
+  `brand-*` repointed to the accent so existing utilities recolor instantly; refined `ui.tsx`
+  primitives (buttons w/ inset highlight + accent ring, fields, cards via `.surface`, badges
+  with status dots), a signature tactile **VotePill**, an icon'd active-state sidebar nav,
+  redesigned login (oversized decorative wordmark), polished portal + kanban roadmap.
+  Widget keeps its own per-project theming. Verified visually via Playwright.

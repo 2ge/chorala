@@ -1,9 +1,9 @@
 import { projects as projectService } from '@heed/core'
-import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { ProjectNav } from '@/components/project-nav'
 import { requireAuthContext } from '@/lib/session'
 
-const TABS = [
+const TABS: [string, string][] = [
   ['posts', 'Posts'],
   ['roadmap', 'Roadmap'],
   ['changelog', 'Changelog'],
@@ -11,7 +11,7 @@ const TABS = [
   ['settings', 'Settings'],
   ['members', 'Members'],
   ['keys', 'API Keys'],
-] as const
+]
 
 export default async function ProjectLayout({
   children,
@@ -25,30 +25,21 @@ export default async function ProjectLayout({
   const project = await projectService.getProject(ctx, projectId)
 
   return (
-    <div className="mx-auto flex max-w-6xl gap-6 px-5 py-6">
-      <aside className="w-44 shrink-0">
-        <p className="mb-3 px-2 text-sm font-bold">{project.name}</p>
-        <nav className="space-y-0.5">
-          {TABS.map(([slug, label]) => (
-            <Link
-              key={slug}
-              href={`/admin/${projectId}/${slug}`}
-              className="block rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+    <div className="mx-auto flex max-w-6xl gap-8 px-6 py-8">
+      <aside className="sticky top-24 hidden h-fit w-52 shrink-0 lg:block">
+        <p className="mb-4 px-3 font-display text-lg leading-tight">{project.name}</p>
+        <ProjectNav projectId={projectId} tabs={TABS} />
         <a
           href={`/portal/${projectId}`}
           target="_blank"
           rel="noreferrer"
-          className="mt-4 block px-3 text-xs text-brand-600 hover:underline"
+          className="mt-5 flex items-center gap-1.5 px-3 text-xs font-medium text-accent transition hover:gap-2.5"
         >
-          View public portal →
+          View public portal
+          <span aria-hidden>→</span>
         </a>
       </aside>
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="min-w-0 flex-1 rise">{children}</main>
     </div>
   )
 }
