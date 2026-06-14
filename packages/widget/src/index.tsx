@@ -108,3 +108,30 @@ const queued: unknown[][] = w.Chorala?.q ?? []
 const run = (...args: unknown[]) => handle(args as Cmd)
 ;(w as unknown as { Chorala: unknown }).Chorala = run
 for (const c of queued) handle(c as Cmd)
+
+// Self-configuring embed (modern, no inline JS). Two zero-boilerplate forms, used
+// only if init wasn't already queued programmatically (which still wins, above):
+//   1. one tag:  <script async src=".../widget.js" data-chorala-key="pk_…"></script>
+//   2. config obj (e.g. SSO): window.choralaSettings = { projectKey, user: { jwt } }
+if (!config) {
+  const settings = (w as unknown as { choralaSettings?: InitOptions }).choralaSettings
+  const tag =
+    (document.currentScript as HTMLScriptElement | null) ??
+    document.querySelector<HTMLScriptElement>('script[data-chorala-key]')
+  const key = settings?.projectKey ?? tag?.dataset.choralaKey
+  if (key) {
+    handle([
+      'init',
+      {
+        projectKey: key,
+        locale: settings?.locale ?? tag?.dataset.locale ?? 'auto',
+        view: (settings?.view ?? tag?.dataset.view) as View | undefined,
+        user: settings?.user,
+        settings: settings?.settings ?? {
+          mode: (tag?.dataset.mode as Mode | undefined) ?? 'floating',
+          primaryColor: tag?.dataset.color,
+        },
+      },
+    ] as Cmd)
+  }
+}

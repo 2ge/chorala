@@ -68,22 +68,24 @@ docker/      Dockerfile.{api,dashboard,worker} · Caddyfile
 
 ## Widget embed guide
 
-Paste two scripts on any page:
+One tag — the floating widget self-configures from `data-*` attributes:
 
 ```html
-<script>
-  (function (w, d, s) {
-    w.Chorala = w.Chorala || function () { (w.Chorala.q = w.Chorala.q || []).push(arguments) };
-    s = d.createElement('script'); s.async = 1;
-    s.src = 'https://feedback.example.com/widget.js'; d.head.appendChild(s);
-  })(window, document);
-  Chorala('init', { projectKey: 'pk_live_xxx', locale: 'auto' });
-</script>
+<script async src="https://feedback.example.com/widget.js" data-chorala-key="pk_live_xxx"></script>
 ```
 
-Commands: `init`, `identify(user)`, `open(boardSlug?)`, `close`, `render(selector, {view})`,
-`on(event, cb)`. Views: `board`, `roadmap`, `changelog`. Modes: floating launcher,
-inline embed, manual trigger. Themed by the project's widget settings.
+Optional: `data-mode` (`floating`|`inline`|`manual`), `data-locale`, `data-view`
+(`board`|`roadmap`|`changelog`), `data-color`.
+
+For SSO or inline embeds, set a config object before the script (no queue, no IIFE):
+
+```html
+<script>window.choralaSettings = { projectKey: 'pk_live_xxx', user: { jwt } }</script>
+<script async src="https://feedback.example.com/widget.js"></script>
+```
+
+Full programmatic control is still available via `Chorala(cmd, …)` — commands: `init`,
+`identify(user)`, `open(view?)`, `close`, `render(selector, {view})`, `on(event, cb)`.
 
 ## End-user identity (SSO)
 

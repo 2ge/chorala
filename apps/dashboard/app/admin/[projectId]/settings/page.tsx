@@ -16,11 +16,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
   const widget = project.widgetSettings as { primaryColor?: string; theme?: string; mode?: string }
   const cdn = env.CHORALA_WIDGET_CDN_URL
 
-  const snippet = `<script>
-  (function(w,d,s){w.Chorala=w.Chorala||function(){(w.Chorala.q=w.Chorala.q||[]).push(arguments)};
-   s=d.createElement('script');s.async=1;s.src='${cdn}';d.head.appendChild(s);})(window,document);
-  Chorala('init', { projectKey: '${project.publicKey}', locale: 'auto' });
-</script>`
+  const snippet = `<script async src="${cdn}" data-chorala-key="${project.publicKey}"></script>`
 
   return (
     <div className="max-w-2xl space-y-5">
