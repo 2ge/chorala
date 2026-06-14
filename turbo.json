@@ -1,7 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
-  "globalEnv": ["NODE_ENV", "CHORALA_DEPLOYMENT"],
+  "globalEnv": [
+    "NODE_ENV",
+    "CHORALA_*",
+    "DATABASE_URL",
+    "REDIS_URL",
+    "RESEND_API_KEY",
+    "SMTP_*",
+    "STRIPE_*",
+    "GITHUB_*",
+    "GOOGLE_*"
+  ],
   "globalDependencies": [".env", "packages/tsconfig/base.json"],
   "tasks": {
     "build": {
