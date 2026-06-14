@@ -193,3 +193,23 @@ choice. Format: `- [phase] chose X over Y because Z`.
   MCP SDK client over stdio; **skips cleanly** (exit 0) without `HEED_MCP_API_KEY` so it
   doesn't break `pnpm test`. Verified live: 9 tools; search_feedback + top_requests return
   seeded data.
+
+## Phase 8
+- [phase8] `packages/billing` (AGPL): plans (free/starter/pro by **admin-seat** count — never
+  user/vote metering, SPEC §1/§12), `assertSeatAvailable` (wired into member invites; no-op in
+  self-host), and Stripe checkout + webhook handlers. Stripe is **lazy-imported** so self-host
+  never loads it; the whole module is inert unless `HEED_DEPLOYMENT=cloud`. Verified inert.
+- [phase8] Docker: real multi-stage-ish Dockerfiles for api/worker (run TS source via tsx) and
+  dashboard (next build → next start); `Caddyfile` routes `/api/*` + `/widget.js` → api, else →
+  dashboard; `docker-compose.yml` runs postgres(pgvector)+redis+api+worker+dashboard+caddy with
+  only Caddy publishing 80/443 (pg/redis internal). API runs migrations on boot.
+- [phase8] Did NOT use turbo-prune per-service pruning; each image does a full workspace
+  `pnpm install` (simpler, correct; prune is a future image-size optimization). Logged.
+- [phase8] Full `docker compose up` was NOT executed on this dev host because it already binds
+  :80 (haproxy), :5432 and :6379 (shared PG/Redis) — bringing the stack up would collide. Instead
+  verified: `docker compose config` is valid (6 services) and the worker image **builds end to
+  end**; the three apps were run live throughout (api/dashboard/worker) against shared PG/Redis.
+- [phase8] CI (`ci.yml`): install → lint → build → db:migrate → db:seed → test, with pg+redis
+  service containers and AI/email set to none.
+- [phase8] README expanded: one-command self-host, local dev, widget embed, end-user JWT/SSO,
+  MCP, env reference, cloud-vs-selfhost, architecture, licensing, contributing.

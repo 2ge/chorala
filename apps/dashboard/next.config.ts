@@ -6,7 +6,7 @@ const config: NextConfig = {
   outputFileTracingRoot: undefined,
   eslint: { ignoreDuringBuilds: true },
   // postgres.js / ioredis must stay server-only.
-  serverExternalPackages: ['postgres', 'ioredis', 'better-auth', 'bullmq'],
+  serverExternalPackages: ['postgres', 'ioredis', 'better-auth', 'bullmq', 'stripe'],
 }
 
 export default config

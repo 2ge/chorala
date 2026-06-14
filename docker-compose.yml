@@ -1,10 +1,10 @@
-# Heed — Docker Compose.
+# Heed — full self-host stack. One command:
 #
-# Phase 0: brings up the stateful dev dependencies (Postgres + pgvector, Redis)
-# so `pnpm db:push && pnpm db:seed && pnpm dev` works against them.
+#   cp .env.example .env   # set HEED_AUTH_SECRET (openssl rand -base64 32)
+#   docker compose up
 #
-# Phase 8 adds the app services (api, dashboard, worker) and a Caddy edge so that
-# `docker compose up` from a clean checkout yields a full working instance.
+# Caddy is the only service that publishes ports (80/443). Postgres + Redis stay on
+# the internal network. Set HEED_DOMAIN in .env for automatic HTTPS.
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -12,29 +12,83 @@ services:
       POSTGRES_USER: heed
       POSTGRES_PASSWORD: heed
       POSTGRES_DB: heed
-    ports:
-      - "5432:5432"
     volumes:
       - heed_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U heed -d heed"]
+      test: ['CMD-SHELL', 'pg_isready -U heed -d heed']
       interval: 5s
       timeout: 5s
       retries: 10
 
   redis:
     image: redis:7-alpine
-    command: ["redis-server", "--appendonly", "yes"]
-    ports:
-      - "6379:6379"
+    command: ['redis-server', '--appendonly', 'yes']
     volumes:
       - heed_redisdata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 5s
       retries: 10
 
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://heed:heed@postgres:5432/heed
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://heed:heed@postgres:5432/heed
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      api: { condition: service_started }
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://heed:heed@postgres:5432/heed
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      api: { condition: service_started }
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      HEED_DOMAIN: ${HEED_DOMAIN:-:80}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - heed_caddydata:/data
+      - heed_caddyconfig:/config
+    depends_on:
+      - api
+      - dashboard
+
 volumes:
   heed_pgdata:
   heed_redisdata:
+  heed_caddydata:
+  heed_caddyconfig:

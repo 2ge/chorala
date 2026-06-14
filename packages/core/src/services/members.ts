@@ -1,3 +1,4 @@
+import { assertSeatAvailable } from '@heed/billing'
 import { and, db, eq, members, newId, users } from '@heed/db'
 import type { InviteMemberInput, MemberRole } from '@heed/types'
 import { type AuthContext, canManageOrg } from '../context.ts'
@@ -26,6 +27,8 @@ export async function listMembers(ctx: AuthContext) {
  */
 export async function inviteMember(ctx: AuthContext, input: InviteMemberInput) {
   if (!canManageOrg(ctx)) throw forbidden('Only org admins can invite members')
+  // Cloud: enforce admin-seat limit. Self-host: no-op (unlimited admins).
+  await assertSeatAvailable(ctx.orgId)
 
   let [user] = await db.select().from(users).where(eq(users.email, input.email))
   if (!user) {

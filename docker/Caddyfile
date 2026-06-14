@@ -1,10 +1,17 @@
-# Caddyfile — STUB (implemented in Phase 8).
-# Terminates TLS for the self-host stack and reverse-proxies:
-#   /api/*, /widget.js -> api:8787
-#   everything else     -> dashboard:3000
-{
-	admin off
-}
-:80 {
-	respond "heed Caddyfile is a Phase 0 stub" 200
+# Heed edge proxy. Caddy terminates TLS (auto-HTTPS for a real domain) and routes:
+#   /api/*, /widget.js  -> api:8787
+#   everything else      -> dashboard:3015 (admin + portal)
+#
+# Set HEED_DOMAIN to your hostname for automatic Let's Encrypt TLS; defaults to :80.
+{$HEED_DOMAIN::80} {
+	encode gzip
+
+	@api path /api/* /widget.js /widget.js.map
+	handle @api {
+		reverse_proxy api:8787
+	}
+
+	handle {
+		reverse_proxy dashboard:3015
+	}
 }

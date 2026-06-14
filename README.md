@@ -3,64 +3,147 @@
 > **Heed** is an open-core, embeddable, multilingual, AI-native product-feedback
 > platform — a self-hostable alternative to Canny / Featurebase / Frill.
 >
-> **We never charge you for your users voting.** Pricing (cloud) is flat per-admin;
+> **We never charge you for your users voting.** Cloud pricing is flat per-admin;
 > end-users and votes are always unlimited.
 
 `Heed` is a placeholder brand token (package scope `@heed/*`, env prefix `HEED_`).
 
-## What it is
-
-- **Embeddable everywhere** — a tiny Preact widget in a Shadow DOM drops into any
-  site with zero CSS leakage, plus a hosted portal, roadmap, and changelog.
+- **Embeddable everywhere** — a tiny Preact widget in a Shadow DOM (≈12KB gzip) drops
+  into any site with zero CSS leakage, plus a hosted portal, roadmap, and changelog.
 - **Multilingual** — ideas auto-translate; users in different languages vote on the
-  *same* canonical idea (cross-language voting).
-- **AI-native** — dedup, clustering, summarization, and translation via a pluggable
-  LLM provider (Ollama by default; OpenAI/Anthropic optional; degrades cleanly to off).
+  *same* canonical idea.
+- **AI-native** — dedup suggestions, clustering, summarization, translation via a
+  pluggable LLM provider (Ollama default; OpenAI/Anthropic optional; degrades to off).
 - **MCP server** — triage feedback from inside Claude / Cursor.
-- **Open source (AGPL) + managed cloud** — self-host with one command, or let the
-  cloud run the infrastructure.
-
-## Repository layout
-
-```
-apps/        api (Hono) · dashboard (Next 15) · worker (BullMQ)
-packages/    db · core · ai · email · billing · config · types   (AGPL)
-             widget · widget-loader · mcp · sdk-react-native      (MIT)
-             tsconfig                                             (shared config)
-docker/      Dockerfiles + Caddyfile for the self-host stack
-```
+- **Open source (AGPL) + managed cloud** — self-host with one command.
 
 ## Quick start
 
-Self-host (one command):
+### Self-host (one command)
 
 ```bash
-cp .env.example .env          # set HEED_AUTH_SECRET (+ AI/email if wanted)
-docker compose up             # postgres, redis, api, dashboard, worker, caddy
+cp .env.example .env
+# set HEED_AUTH_SECRET — e.g. openssl rand -base64 32
+docker compose up
 ```
 
-Local development:
+Caddy serves the stack on `:80` (set `HEED_DOMAIN=feedback.example.com` in `.env` for
+automatic HTTPS). The API auto-runs migrations on boot. Create the first admin with:
+
+```bash
+docker compose exec api pnpm db:seed            # demo org + admin + sample data
+docker compose exec api pnpm --filter @heed/api seed:admin
+# → admin@heed.dev / heedadmin123
+```
+
+### Local development
 
 ```bash
 pnpm install
-pnpm db:push && pnpm db:seed
-pnpm dev
+docker compose up -d postgres redis             # or use your own PG16 + Redis
+pnpm db:migrate && pnpm db:seed
+pnpm --filter @heed/api seed:admin              # sets the admin password
+pnpm dev                                         # api :8787, dashboard :3015, worker
 ```
 
-Then open the dashboard, log in with the seeded admin, and load the widget demo at
-`apps/dashboard/public/widget-demo.html`.
+Open the dashboard (`:3015`), sign in, and load the widget demo at
+`http://localhost:8787/widget-demo.html?key=<publicKey>`.
 
-> Full guides (widget embed, end-user JWT/SSO, MCP setup, env reference, licensing,
-> architecture, contributing) land in Phase 8.
+## Architecture
+
+```
+apps/        api (Hono :8787) · dashboard+portal (Next 15 :3015) · worker (BullMQ)
+packages/    db (Drizzle+pgvector) · core (domain services) · ai (LLM providers + tasks)
+             email · billing (Stripe, cloud-only) · config · types          (AGPL)
+             widget · widget-loader · mcp · sdk-react-native (stub)          (MIT)
+docker/      Dockerfile.{api,dashboard,worker} · Caddyfile
+```
+
+- **Type-safe end to end**: shared zod schemas in `packages/types` are the API contract.
+- **Thin routes → core services → DB**: domain logic lives in `packages/core` and is
+  shared by the API, worker, and dashboard.
+- **Graceful degradation**: if AI/email isn't configured, those features are *disabled*,
+  never broken.
+
+## Widget embed guide
+
+Paste two scripts on any page:
+
+```html
+<script>
+  (function (w, d, s) {
+    w.Heed = w.Heed || function () { (w.Heed.q = w.Heed.q || []).push(arguments) };
+    s = d.createElement('script'); s.async = 1;
+    s.src = 'https://feedback.example.com/widget.js'; d.head.appendChild(s);
+  })(window, document);
+  Heed('init', { projectKey: 'pk_live_xxx', locale: 'auto' });
+</script>
+```
+
+Commands: `init`, `identify(user)`, `open(boardSlug?)`, `close`, `render(selector, {view})`,
+`on(event, cb)`. Views: `board`, `roadmap`, `changelog`. Modes: floating launcher,
+inline embed, manual trigger. Themed by the project's widget settings.
+
+## End-user identity (SSO)
+
+To identify your logged-in users (so votes are attributed and dedup'd), sign a JWT with
+the project's **end-user JWT secret** (Project → Settings) using HS256:
+
+```ts
+import { SignJWT } from 'jose'
+const token = await new SignJWT({ id: user.id, email: user.email, name: user.name, segment: { plan: 'pro', mrr: 4200 } })
+  .setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime('1h')
+  .sign(new TextEncoder().encode(END_USER_JWT_SECRET))
+```
+
+Pass it to the widget: `Heed('init', { projectKey, user: { jwt: token } })`. Anonymous
+visitors fall back to a signed cookie. `segment` powers prioritization (e.g. weight votes
+by MRR). Mirrors Canny/Featurebase SSO.
+
+## MCP (triage from Claude / Cursor)
+
+See [`packages/mcp/README.md`](packages/mcp/README.md). Create an `hk_…` key in
+Project → API keys and register the server (stdio or streamable HTTP) — 9 tools incl.
+`search_feedback`, `top_requests`, `summarize_post`, `draft_changelog_from_posts`.
+
+## Environment
+
+All vars are documented in [`.env.example`](.env.example). Required: `DATABASE_URL`,
+`HEED_AUTH_SECRET`. Key optional groups: AI (`HEED_AI_PROVIDER` + model/base-url),
+email (`HEED_EMAIL_TRANSPORT`), billing (`STRIPE_*`, cloud only), widget/public API
+(`HEED_WIDGET_CDN_URL`, `HEED_RATE_LIMIT_PUBLIC`). `packages/config` zod-validates at
+boot and fails fast on a missing required var.
+
+## Cloud vs self-host
+
+`HEED_DEPLOYMENT=selfhost` (default): no Stripe, no caps, unlimited admins.
+`HEED_DEPLOYMENT=cloud`: Stripe billing + public signup + **admin-seat** limits per plan
+(free/starter/pro). End-users and votes are **always unlimited** — never metered.
+Billing code is fully inert in self-host.
+
+## Scripts
+
+`pnpm dev | build | lint | format | test | test:e2e | db:generate | db:push |
+db:migrate | db:seed` — all wired through Turborepo.
 
 ## Licensing
 
-Mixed open-core layout — see [`LICENSE`](./LICENSE) (AGPL-3.0, server side),
-[`NOTICE`](./NOTICE), and the per-package MIT `LICENSE` files on the embed/SDK/MCP
-surfaces. Rationale: companies will not embed AGPL JavaScript, so the widget, loader,
-MCP, and SDK packages are MIT. See [`CLA.md`](./CLA.md).
+Mixed open-core layout (see [`NOTICE`](NOTICE)):
 
-## Status
+- **AGPL-3.0** — repo root + server code (`apps/*`, `packages/{db,core,ai,email,billing,config,types}`). See [`LICENSE`](LICENSE).
+- **MIT** — the embed/SDK/MCP surfaces (`packages/{widget,widget-loader,mcp,sdk-react-native}`),
+  each with its own `LICENSE`, so companies can embed them without AGPL obligations. These
+  packages import no AGPL code.
 
-Built phase-by-phase per [`BUILD_PLAN.md`](./BUILD_PLAN.md) against
-[`SPEC.md`](./SPEC.md). Judgement calls are logged in [`DECISIONS.md`](./DECISIONS.md).
+## Contributing
+
+Sign the [CLA](CLA.md) (one click on your first PR). `pnpm install && pnpm build &&
+pnpm lint && pnpm test` must pass. Judgement calls made while building are logged in
+[`DECISIONS.md`](DECISIONS.md).
+
+## Status / intentionally stubbed
+
+- `packages/sdk-react-native` is a README-only stub (no native mobile SDK in v1).
+- v1 integrations: Slack, Linear, GitHub, generic webhooks (webhook delivery is live;
+  the Slack/Linear/GitHub specifics are scaffolded).
+- AI features require a configured provider; with `HEED_AI_PROVIDER=none` they're cleanly disabled.

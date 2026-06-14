@@ -17,6 +17,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@heed/billing": "workspace:*",
     "@heed/config": "workspace:*",
     "@heed/db": "workspace:*",
     "@heed/types": "workspace:*",
