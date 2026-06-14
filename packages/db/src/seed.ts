@@ -3,9 +3,7 @@ import { sql } from 'drizzle-orm'
 import { client, db } from './client.ts'
 import { generatePublicKey, generateSecret, newId } from './ids.ts'
 import * as schema from './schema.ts'
-
-/** Seeded admin credentials — the password is turned into a real Better Auth credential in Phase 2. */
-export const SEED_ADMIN = { email: 'admin@heed.dev', password: 'heedadmin123', name: 'Acme Admin' }
+import { SEED_ADMIN } from './seedData.ts'
 
 /** Deterministic pick (avoids randomness so seeds are reproducible). */
 const pick = <T>(arr: T[], i: number): T => arr[((i % arr.length) + arr.length) % arr.length] as T

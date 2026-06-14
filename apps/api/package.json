@@ -4,9 +4,34 @@
   "private": true,
   "type": "module",
   "license": "AGPL-3.0",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
   "scripts": {
-    "build": "echo 'build @heed/api (stub — implemented in its phase)'",
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "biome check .",
-    "typecheck": "echo 'typecheck @heed/api (stub)'"
+    "test": "vitest run",
+    "seed:admin": "tsx src/scripts/seed-admin.ts"
+  },
+  "dependencies": {
+    "@heed/config": "workspace:*",
+    "@heed/core": "workspace:*",
+    "@heed/db": "workspace:*",
+    "@heed/types": "workspace:*",
+    "@hono/node-server": "2.0.4",
+    "better-auth": "1.6.18",
+    "hono": "4.12.25",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.9",
+    "tsx": "4.22.4",
+    "typescript": "5.9.3",
+    "vitest": "3.2.6"
   }
 }

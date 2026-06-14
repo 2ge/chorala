@@ -20,3 +20,4 @@ export {
 export { client, type Database, db, schema } from './client.ts'
 export * from './ids.ts'
 export * from './schema.ts'
+export { SEED_ADMIN } from './seedData.ts'

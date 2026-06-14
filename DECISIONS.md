@@ -55,3 +55,26 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase1] `db:push` needs a TTY to confirm, so the canonical apply path is
   `db:generate` (committed SQL migrations, a BUILD_PLAN deliverable) + `db:migrate`
   (non-interactive). `db:push` remains for quick local iteration.
+
+## Phase 2
+- [phase2] Core services are organized one-file-per-resource and exported as **namespaces**
+  (`core.projects.*`, `core.posts.*`) so route handlers read declaratively and stay thin.
+- [phase2] `getProject` is the single scope gate reused by every nested service; it enforces
+  org ownership AND, for api-key callers, restricts access to the single scoped project
+  (api keys are project-scoped per SPEC §8.1). Caught + fixed a cross-project read during
+  manual testing.
+- [phase2] Better Auth `seed:admin` script recreates the seeded admin via Better Auth's
+  sign-up API and re-attaches the preserved org membership, rather than reverse-engineering
+  its password-hash format — robust across Better Auth versions.
+- [phase2] Post reads use an explicit column selection that **omits the `embedding` vector**
+  so 768-float arrays never leak into API responses or waste bandwidth.
+- [phase2] Route handlers validate with the zod schemas from `@heed/types` (`schema.parse`);
+  a single Hono `onError` maps `AppError`/`ZodError` to the `{ error: { code, message } }`
+  contract. No `@hono/zod-validator` dependency needed.
+- [phase2] Parent-mounted route params (`projectId`, `postId`) type as `string | undefined`
+  under `noUncheckedIndexedAccess`; a `reqParam()` helper narrows + 400s if absent.
+- [phase2] `noNonNullAssertion` disabled for test/seed files via a Biome override (idiomatic
+  there); enforced everywhere else.
+- [phase2] haproxy: added `idea_api` backend + `is_idea_api` ACL so `idea.2pu.net/api/*` and
+  `/widget.js` route to `:8787`, everything else to the dashboard `:3015`. API runs via
+  `tsx` for now (PM2/Docker packaging is Phase 8). `/health` is direct-only (not under /api).
