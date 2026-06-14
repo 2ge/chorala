@@ -34,17 +34,30 @@ function applyCors(c: Context, project: PublicProject): boolean {
   if (!origin) return true // non-browser client (server-to-server / curl)
   const allowed = project.allowedOrigins.includes('*') || project.allowedOrigins.includes(origin)
   if (!allowed) return false
+  setCorsHeaders(c, origin)
+  return true
+}
+
+function setCorsHeaders(c: Context, origin: string) {
   c.header('Access-Control-Allow-Origin', origin)
   c.header('Access-Control-Allow-Credentials', 'true')
   c.header('Vary', 'Origin')
   c.header('Access-Control-Allow-Headers', 'content-type, x-heed-key, x-heed-user')
   c.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
   c.header('Access-Control-Max-Age', '600')
-  return true
 }
 
 /** Resolves the project from `X-Heed-Key`, enforces per-project CORS + Redis rate limiting. */
 export const publicProject: MiddlewareHandler<PublicEnv> = async (c, next) => {
+  // CORS preflight: the browser never sends X-Heed-Key on OPTIONS, so answer it before
+  // requiring the key. Permissively echo the origin; the real request still enforces
+  // the project's allowed_origins (below) — a disallowed origin gets a 403 with no ACAO.
+  if (c.req.method === 'OPTIONS') {
+    const origin = c.req.header('origin')
+    if (origin) setCorsHeaders(c, origin)
+    return c.body(null, 204)
+  }
+
   const key = c.req.header('x-heed-key')
   if (!key) throw unauthorized('Missing X-Heed-Key')
   const project = await projects.getByPublicKey(key)
@@ -53,7 +66,6 @@ export const publicProject: MiddlewareHandler<PublicEnv> = async (c, next) => {
   if (!applyCors(c, project)) {
     throw new AppError('cors_forbidden', 'Origin not allowed for this project', 403)
   }
-  if (c.req.method === 'OPTIONS') return c.body(null, 204)
 
   await enforceRateLimit(c, project.id)
   c.set('project', project)

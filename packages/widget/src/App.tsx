@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'preact/hooks'
 import type { Api } from './api.ts'
+import { emitEngaged } from './engage.ts'
 import type { Translator } from './i18n.ts'
 import type { Board, ChangelogEntry, Comment, Post, RoadmapResponse, View } from './types.ts'
 
@@ -63,6 +64,7 @@ export function App(props: Props) {
       )
       try {
         await api.vote(post.id, on)
+        emitEngaged('vote')
       } catch (e) {
         setError((e as Error).message)
         void load('board')
@@ -248,6 +250,7 @@ function SubmitForm({
     setErr(null)
     try {
       await api.createPost({ boardSlug, title: title.trim(), body: body.trim(), locale })
+      emitEngaged('feedback')
       onDone()
     } catch (e2) {
       setErr((e2 as Error).message)
@@ -348,6 +351,7 @@ function PostDetailView({
     setPost({ ...post, hasVoted: on, voteCount: post.voteCount + (on ? 1 : -1) })
     try {
       await api.vote(post.id, on)
+      emitEngaged('vote')
     } catch (e) {
       setErr((e as Error).message)
     }
@@ -358,6 +362,7 @@ function PostDetailView({
     if (!text.trim()) return
     try {
       await api.comment(postId, text.trim())
+      emitEngaged('comment')
       setText('')
       await reload()
     } catch (e2) {

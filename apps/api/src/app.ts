@@ -37,7 +37,8 @@ export function createApp() {
     const js = readFileSafe(WIDGET_JS) ?? WIDGET_STUB
     c.header('content-type', 'application/javascript; charset=utf-8')
     c.header('access-control-allow-origin', '*')
-    c.header('cache-control', 'public, max-age=300')
+    // Short cache + revalidate so widget updates propagate quickly to embeds.
+    c.header('cache-control', 'public, max-age=60, stale-while-revalidate=30')
     return c.body(js)
   })
   app.get('/widget.js.map', (c) => {
@@ -55,16 +56,16 @@ export function createApp() {
   })
 
   const api = new Hono<AppEnv>()
-  // CORS for the dashboard admin surface (public/widget CORS is per-project, Phase 3).
-  api.use('*', cors({ origin: [env.HEED_PUBLIC_URL], credentials: true }))
 
-  // Better Auth handler — registered before requireAuth so auth endpoints stay public.
+  // Better Auth handler (same-origin from the dashboard, no CORS needed).
   api.on(['GET', 'POST'], '/auth/*', (c) => auth.handler(c.req.raw))
 
-  // Public / widget API — its own auth (project key + end-user JWT/cookie), CORS, rate limit.
+  // Public / widget API — its OWN per-project CORS + key + rate limit. Registered before
+  // the admin cors() so the dashboard-only CORS never touches cross-origin widget calls.
   api.route('/public', publicRoutes)
 
-  // Everything below requires an authenticated admin (session or api key).
+  // Admin surface: dashboard-origin CORS, then auth. Applies only to the routes below.
+  api.use('*', cors({ origin: [env.HEED_PUBLIC_URL], credentials: true }))
   api.use('*', requireAuth)
   api.route('/projects', projectsRoutes)
   api.route('/projects/:projectId/boards', boardsRoutes)
