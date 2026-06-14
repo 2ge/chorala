@@ -117,3 +117,9 @@ export async function getScopedProject(ctx: AuthContext) {
   if (!ctx.projectId) throw forbidden('This endpoint requires a project-scoped key')
   return getProject(ctx, ctx.projectId)
 }
+
+/** Resolve a project by its public (`pk_...`) key — the public/widget API entry point. */
+export async function getByPublicKey(publicKey: string) {
+  const [row] = await db.select().from(projects).where(eq(projects.publicKey, publicKey))
+  return row ?? null
+}

@@ -40,6 +40,42 @@ export async function toggleVote(projectId: string, postId: string, endUserId: s
   return { voted, voteCount: row?.voteCount ?? 0 }
 }
 
+/** Explicitly set a vote on/off (POST /vote vs DELETE /vote). Canonical-post aware. */
+export async function setVote(
+  projectId: string,
+  postId: string,
+  endUserId: string,
+  shouldVote: boolean,
+) {
+  const [post] = await db
+    .select({ id: posts.id, projectId: posts.projectId, mergedIntoPostId: posts.mergedIntoPostId })
+    .from(posts)
+    .where(eq(posts.id, postId))
+  if (!post || post.projectId !== projectId) throw notFound('Post')
+  const canonicalId = post.mergedIntoPostId ?? post.id
+
+  const [existing] = await db
+    .select({ id: votes.id })
+    .from(votes)
+    .where(and(eq(votes.postId, canonicalId), eq(votes.endUserId, endUserId)))
+
+  if (shouldVote && !existing) {
+    await db.insert(votes).values({ id: newId('vote'), postId: canonicalId, endUserId })
+  } else if (!shouldVote && existing) {
+    await db.delete(votes).where(eq(votes.id, existing.id))
+  }
+
+  const [row] = await db
+    .update(posts)
+    .set({
+      voteCount: sql`(select count(*)::int from ${votes} where ${votes.postId} = ${canonicalId})`,
+    })
+    .where(eq(posts.id, canonicalId))
+    .returning({ voteCount: posts.voteCount })
+
+  return { voted: shouldVote, voteCount: row?.voteCount ?? 0 }
+}
+
 export async function hasVoted(postId: string, endUserId: string) {
   const [row] = await db
     .select({ id: votes.id })

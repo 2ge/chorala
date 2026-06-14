@@ -78,3 +78,26 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase2] haproxy: added `idea_api` backend + `is_idea_api` ACL so `idea.2pu.net/api/*` and
   `/widget.js` route to `:8787`, everything else to the dashboard `:3015`. API runs via
   `tsx` for now (PM2/Docker packaging is Phase 8). `/health` is direct-only (not under /api).
+
+## Phase 3
+- [phase3] End-user JWT verified with **jose** (`jwtVerify`, HS256) — constant-time HMAC
+  per SPEC §13 — rather than hand-rolling JWT crypto. jose isn't in SPEC §4's table but is
+  the standard, audited choice; logged here.
+- [phase3] Anonymous identity uses Hono's **signed cookie** (`heed_uid`, signed with
+  HEED_AUTH_SECRET, SameSite=None+Secure for cross-site widgets). Reads resolve identity
+  without creating; writes (`requireEndUser`) create an anon end-user + set the cookie.
+- [phase3] Public API auth/CORS/rate-limit live in one `publicProject` middleware: resolves
+  project by `X-Heed-Key`, enforces per-project `allowed_origins` CORS (echo origin or 403;
+  `*` allowed), then a Redis fixed-window rate limit keyed by project+IP+minute. Rate limit
+  **fails open** if Redis is down (graceful degradation, SPEC §2).
+- [phase3] `POST /vote` and `DELETE /vote` map to an explicit `votes.setVote(..., shouldVote)`
+  (idempotent add/remove) rather than a blind toggle, matching SPEC §8.2's two verbs. Votes
+  always land on the canonical (post-merge) post → cross-language/duplicate ideas accumulate.
+- [phase3] Localization is an overlay: the public feed fetches `post_translations` for the
+  requested locale and swaps title/body, exposing `displayLocale`; original otherwise. This
+  is what lets a French and Spanish user vote on the **same** canonical idea (SPEC §1/§11).
+- [phase3] New public posts get the project's first `open`-kind status; embed/dedup/translate
+  job enqueue is a marked TODO until the worker exists (Phase 6).
+- [phase3] Public API integration tests run in-process via `app.request` against the seeded
+  `acme` project (signs real JWTs with jose); they add a little data to that project per run
+  (acceptable — seed is re-runnable).

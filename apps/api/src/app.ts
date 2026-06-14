@@ -12,6 +12,7 @@ import { commentsRoutes } from './routes/comments.ts'
 import { orgRoutes } from './routes/org.ts'
 import { postsRoutes } from './routes/posts.ts'
 import { projectsRoutes } from './routes/projects.ts'
+import { publicRoutes } from './routes/public.ts'
 import { statusesRoutes } from './routes/statuses.ts'
 import { tagsRoutes } from './routes/tags.ts'
 import type { AppEnv } from './types.ts'
@@ -42,6 +43,9 @@ export function createApp() {
 
   // Better Auth handler — registered before requireAuth so auth endpoints stay public.
   api.on(['GET', 'POST'], '/auth/*', (c) => auth.handler(c.req.raw))
+
+  // Public / widget API — its own auth (project key + end-user JWT/cookie), CORS, rate limit.
+  api.route('/public', publicRoutes)
 
   // Everything below requires an authenticated admin (session or api key).
   api.use('*', requireAuth)
