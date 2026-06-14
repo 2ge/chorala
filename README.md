@@ -106,9 +106,14 @@ by MRR). Mirrors Canny/Featurebase SSO.
 
 ## API
 
-Full HTTP API reference — auth, public/widget endpoints, admin endpoints, auth flows,
-webhooks and the embed JS API — is in **[`docs/API.md`](docs/API.md)**. Every shape mirrors
-the zod contract in `packages/types`.
+- **Interactive reference:** `/docs` (e.g. `https://chorala.com/docs`) — a Scalar UI with
+  "try it out" and client-library snippets.
+- **Machine-readable spec:** `/api/v1/openapi.json` — OpenAPI 3.1, generated from the zod
+  contract; feed it to SDK generators / Postman.
+- **Prose reference:** **[`docs/API.md`](docs/API.md)** — auth model, conventions, every
+  endpoint, webhooks and the embed JS API.
+
+All three are generated from / mirror the single zod contract in `packages/types`.
 
 ## MCP (triage from Claude / Cursor)
 

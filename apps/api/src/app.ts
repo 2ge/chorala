@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { auth } from './auth.ts'
 import { DEMO_HTML, readFileSafe, WIDGET_JS, WIDGET_MAP } from './lib/assets.ts'
+import { openapiDocument } from './lib/openapi.ts'
 import { requireAuth } from './middleware/auth.ts'
 import { notFoundHandler, onError } from './middleware/error.ts'
 import { aiRoutes } from './routes/ai.ts'
@@ -63,6 +64,12 @@ export function createApp() {
   // Public / widget API — its OWN per-project CORS + key + rate limit. Registered before
   // the admin cors() so the dashboard-only CORS never touches cross-origin widget calls.
   api.route('/public', publicRoutes)
+
+  // Machine-readable API spec (public, no auth) — powers /docs and SDK generators.
+  api.get('/openapi.json', (c) => {
+    c.header('access-control-allow-origin', '*')
+    return c.json(openapiDocument())
+  })
 
   // Admin surface: dashboard-origin CORS, then auth. Applies only to the routes below.
   api.use(
