@@ -26,8 +26,9 @@ export default async function LoginPage() {
         </div>
         <LoginForm />
         <p className="mt-5 text-center text-xs text-ink-faint">
-          Demo: <span className="font-medium text-ink-soft">admin@chorala.com</span> ·{' '}
-          <span className="font-medium text-ink-soft">heedadmin123</span>
+          Live demo — explore a real dashboard:{' '}
+          <span className="font-medium text-ink-soft">demo@chorala.com</span> ·{' '}
+          <span className="font-medium text-ink-soft">demodemo</span>
         </p>
       </div>
     </main>
