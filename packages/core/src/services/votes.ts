@@ -1,5 +1,6 @@
 import { and, db, eq, newId, posts, sql, votes } from '@heed/db'
 import { notFound } from '../errors.ts'
+import { enqueueWebhookEvent } from '../queues.ts'
 
 /**
  * Toggle an end-user's vote on a post. Votes always attach to the **canonical** post
@@ -27,6 +28,7 @@ export async function toggleVote(projectId: string, postId: string, endUserId: s
   } else {
     await db.insert(votes).values({ id: newId('vote'), postId: canonicalId, endUserId })
     voted = true
+    await enqueueWebhookEvent(projectId, 'vote.created', { postId: canonicalId, endUserId })
   }
 
   const [row] = await db
@@ -61,6 +63,7 @@ export async function setVote(
 
   if (shouldVote && !existing) {
     await db.insert(votes).values({ id: newId('vote'), postId: canonicalId, endUserId })
+    await enqueueWebhookEvent(projectId, 'vote.created', { postId: canonicalId, endUserId })
   } else if (!shouldVote && existing) {
     await db.delete(votes).where(eq(votes.id, existing.id))
   }

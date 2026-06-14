@@ -16,6 +16,7 @@ import {
 import type { AdminCreatePostInput, PostSort, UpdatePostInput } from '@heed/types'
 import type { AuthContext } from '../context.ts'
 import { badRequest, conflict, notFound } from '../errors.ts'
+import { enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
 import { getProject } from './projects.ts'
 
 /** Post columns excluding the (large, internal) embedding vector — never serialized to clients. */
@@ -109,6 +110,8 @@ export async function createPost(ctx: AuthContext, projectId: string, input: Adm
     originalLocale: input.locale ?? 'en',
     authorMemberId: ctx.memberId,
   })
+  await enqueuePostProcessing(id)
+  await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: input.boardId })
   return getPost(ctx, projectId, id)
 }
 
@@ -149,6 +152,7 @@ export async function changeStatus(
     if (!s) throw badRequest('Status does not belong to this project')
   }
   await db.update(posts).set({ statusId }).where(eq(posts.id, id))
+  await enqueueWebhookEvent(projectId, 'post.status_changed', { postId: id, statusId })
   return getPost(ctx, projectId, id)
 }
 
@@ -200,6 +204,7 @@ export async function mergePost(
 
   await db.update(posts).set({ mergedIntoPostId: targetId }).where(eq(posts.id, sourceId))
   await recountVotes(targetId)
+  await enqueueWebhookEvent(projectId, 'post.merged', { sourceId, targetId })
   return getPost(ctx, projectId, targetId)
 }
 

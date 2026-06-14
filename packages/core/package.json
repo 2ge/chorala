@@ -20,7 +20,9 @@
     "@heed/config": "workspace:*",
     "@heed/db": "workspace:*",
     "@heed/types": "workspace:*",
-    "drizzle-orm": "0.45.2"
+    "bullmq": "5.78.1",
+    "drizzle-orm": "0.45.2",
+    "ioredis": "5.11.1"
   },
   "devDependencies": {
     "@types/node": "22.18.9",

@@ -1,5 +1,6 @@
 export * from './context.ts'
 export * from './errors.ts'
+export * from './queues.ts'
 
 export * as analytics from './services/analytics.ts'
 export * as apiKeys from './services/apiKeys.ts'

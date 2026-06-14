@@ -148,3 +148,28 @@ choice. Format: `- [phase] chose X over Y because Z`.
   Also verified interactively via the Playwright MCP (real Chromium).
 - [phase5] Biome: excluded `*.css` (Tailwind 4 at-rules aren't parseable by Biome's CSS parser)
   and disabled `a11y/noLabelWithoutControl` for the dashboard (reusable Label component).
+
+## Phase 6
+- [phase6] `packages/ai`: `LLMProvider` interface + Ollama/OpenAI/Anthropic/Noop providers
+  (plain `fetch`, no vendor SDKs → light deps) selected by a factory from env. Tasks
+  (embed, dedup, translate, processPost, clusterThemes, summarize) are pure functions over
+  (provider, db) so they're unit-testable with a mock provider.
+- [phase6] AnthropicProvider.canEmbed = false (Anthropic has no embeddings API); `embed()`
+  throws a clear message. Embedding dim is fixed at 768 (nomic-embed default, matches the
+  schema's `vector(768)`); OpenAI users must pick a 768-dim model.
+- [phase6] Dedup records a **suggestion** in `ai_jobs` (kind=dedup, result.suggestions) and
+  never auto-merges (SPEC §11). pgvector cosine (`<=>`) finds candidates ≥ threshold.
+- [phase6] Cross-language: `translatePost` writes `post_translations` (is_auto) for every org
+  locale; votes already attach to the canonical post, so a localized view votes on the same row.
+- [phase6] Queues (`packages/core/src/queues.ts`): BullMQ producers (ai/webhooks/email,
+  prefix `heed`) with `safeAdd` that **fails open** if Redis is down and **no-ops under
+  NODE_ENV=test** (so unit tests don't open queue connections / hang Vitest). Lazy connection.
+- [phase6] `apps/worker`: BullMQ workers — AI (processPost/clusterThemes/summarize via the
+  env provider), webhooks (HMAC `X-Heed-Signature`, BullMQ retries/backoff), email. Core
+  services enqueue on the right events (post.created→AI+webhook, status_changed, merged,
+  comment.created, vote.created, changelog.published).
+- [phase6] `packages/email`: pluggable transport (SMTP via nodemailer / Resend via fetch /
+  Noop) + HTML template builders. Used plain HTML builders rather than React Email components
+  to keep deps light; email is Noop on this host. Logged as a deviation from SPEC §11.
+- [phase6] Verified: AI task chain + Noop degradation via Vitest mock provider (5 tests);
+  live worker boots and consumes an enqueued job end-to-end (producer→Redis→worker→transport).

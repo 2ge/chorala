@@ -2,6 +2,7 @@ import { and, changelogEntries, db, desc, eq, newId } from '@heed/db'
 import type { CreateChangelogInput, UpdateChangelogInput } from '@heed/types'
 import type { AuthContext } from '../context.ts'
 import { notFound } from '../errors.ts'
+import { enqueueWebhookEvent } from '../queues.ts'
 import { getProject } from './projects.ts'
 
 export async function listChangelog(
@@ -47,6 +48,9 @@ export async function createChangelog(
       publishedAt: input.status === 'published' ? new Date() : null,
     })
     .returning()
+  if (row?.status === 'published') {
+    await enqueueWebhookEvent(projectId, 'changelog.published', { changelogId: row.id })
+  }
   return row
 }
 
@@ -70,6 +74,9 @@ export async function updateChangelog(
     })
     .where(eq(changelogEntries.id, id))
     .returning()
+  if (becomingPublished) {
+    await enqueueWebhookEvent(projectId, 'changelog.published', { changelogId: id })
+  }
   return row
 }
 

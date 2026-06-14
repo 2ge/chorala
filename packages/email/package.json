@@ -1,12 +1,26 @@
 {
   "name": "@heed/email",
   "version": "0.0.0",
-  "private": false,
+  "private": true,
   "type": "module",
   "license": "AGPL-3.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
   "scripts": {
-    "build": "echo 'build @heed/email (stub — implemented in its phase)'",
-    "lint": "biome check .",
-    "typecheck": "echo 'typecheck @heed/email (stub)'"
+    "build": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome check ."
+  },
+  "dependencies": {
+    "@heed/config": "workspace:*",
+    "nodemailer": "8.0.11"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "8.0.1",
+    "typescript": "5.9.3"
   }
 }

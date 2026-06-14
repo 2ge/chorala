@@ -1,5 +1,6 @@
 import { and, asc, comments, db, eq, newId, posts, sql } from '@heed/db'
 import { notFound } from '../errors.ts'
+import { enqueueWebhookEvent } from '../queues.ts'
 
 type CommentAuthor = { endUserId?: string; memberId?: string }
 
@@ -57,6 +58,10 @@ export async function createComment(
     })
     .returning()
   await recountComments(postId)
+  // Public comments fire a webhook; internal staff notes do not.
+  if (!input.isInternal) {
+    await enqueueWebhookEvent(projectId, 'comment.created', { postId, commentId: id })
+  }
   return row
 }
 

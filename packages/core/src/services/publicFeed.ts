@@ -20,6 +20,7 @@ import {
 } from '@heed/db'
 import type { CreateCommentInput, CreatePostInput, PostSort } from '@heed/types'
 import { badRequest, notFound } from '../errors.ts'
+import { enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
 import { createComment, listComments } from './comments.ts'
 import { postColumns } from './posts.ts'
 
@@ -195,7 +196,9 @@ export async function createPublicPost(
     originalLocale: input.locale ?? 'en',
     statusId: openStatus?.id,
   })
-  // NOTE: embed + dedup + translate jobs are enqueued here in Phase 6 (worker).
+  // AI: embed + dedup + translate (no-op when AI is disabled); fire webhook event.
+  await enqueuePostProcessing(id)
+  await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: board.id })
   return getPublicPost(projectId, id, { locale: input.locale, endUserId })
 }
 
