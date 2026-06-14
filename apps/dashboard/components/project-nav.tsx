@@ -35,10 +35,24 @@ const ICONS: Record<string, ReactNode> = {
   keys: I('M15 7a4 4 0 11-3.5 6L4 21H2v-2l8-8a4 4 0 015-4zM15.5 7.5h.01'),
 }
 
-export function ProjectNav({ projectId, tabs }: { projectId: string; tabs: [string, string][] }) {
+export function ProjectNav({
+  projectId,
+  tabs,
+  horizontal,
+}: {
+  projectId: string
+  tabs: [string, string][]
+  horizontal?: boolean
+}) {
   const pathname = usePathname()
   return (
-    <nav className="space-y-0.5">
+    <nav
+      className={
+        horizontal
+          ? 'flex gap-1 overflow-x-auto pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          : 'space-y-0.5'
+      }
+    >
       {tabs.map(([slug, label]) => {
         const href = `/admin/${projectId}/${slug}`
         const active = pathname === href || pathname.startsWith(`${href}/`)
@@ -47,13 +61,24 @@ export function ProjectNav({ projectId, tabs }: { projectId: string; tabs: [stri
             key={slug}
             href={href}
             className={cn(
-              'group flex items-center gap-2.5 rounded-[10px] px-3 py-2 text-sm font-medium transition',
+              'group flex shrink-0 items-center gap-2 rounded-[10px] text-sm font-medium transition',
+              horizontal ? 'px-3 py-1.5' : 'px-3 py-2 gap-2.5',
               active
-                ? 'bg-accent-soft text-accent shadow-[inset_2px_0_0_var(--color-accent)]'
+                ? horizontal
+                  ? 'bg-accent text-white'
+                  : 'bg-accent-soft text-accent shadow-[inset_2px_0_0_var(--color-accent)]'
                 : 'text-ink-soft hover:bg-ink/[0.04] hover:text-ink',
             )}
           >
-            <span className={active ? 'text-accent' : 'text-ink-faint group-hover:text-ink-soft'}>
+            <span
+              className={
+                active
+                  ? horizontal
+                    ? 'text-white'
+                    : 'text-accent'
+                  : 'text-ink-faint group-hover:text-ink-soft'
+              }
+            >
               {ICONS[slug]}
             </span>
             {label}

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Fraunces, Hanken_Grotesk } from 'next/font/google'
+import { cookies } from 'next/headers'
 import type { ReactNode } from 'react'
+import { THEME_IDS } from '@/lib/themes'
 import './globals.css'
 
 const sans = Hanken_Grotesk({
@@ -22,9 +24,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const cookieTheme = (await cookies()).get('heed-theme')?.value
+  const theme = cookieTheme && THEME_IDS.includes(cookieTheme) ? cookieTheme : 'paper'
+
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable}`}>
+    <html lang="en" data-theme={theme} className={`${sans.variable} ${display.variable}`}>
       <body className="min-h-screen font-sans antialiased">{children}</body>
     </html>
   )

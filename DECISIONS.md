@@ -226,3 +226,15 @@ choice. Format: `- [phase] chose X over Y because Z`.
   with status dots), a signature tactile **VotePill**, an icon'd active-state sidebar nav,
   redesigned login (oversized decorative wordmark), polished portal + kanban roadmap.
   Widget keeps its own per-project theming. Verified visually via Playwright.
+
+## Themes + responsive
+- [design] Added a 5-theme system (Paper, Midnight/dark, Forest, Cobalt, Mono) as pure CSS
+  custom-property swaps under `:root[data-theme]` — every surface re-skins instantly because
+  the whole UI is var-driven. A header theme picker (swatches) persists to a cookie +
+  localStorage; the root layout reads the cookie for SSR so there's no flash. Theme metadata
+  lives in `lib/themes.ts` (a plain module) — importing a value from a `'use client'` file into
+  a server component yields a client *reference*, not the array (caused a crash; fixed).
+- [design] Responsive pass: the project sidebar is desktop-only, so mobile gets a sticky
+  horizontal scrollable nav bar; post-list rows wrap their pin/status controls onto their own
+  line on phones and the status select is width-capped. Verified on desktop (1366) and mobile
+  (390) via Playwright across posts, post detail, and theme switching.

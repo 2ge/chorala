@@ -1,12 +1,15 @@
 import { projects as projectService } from '@heed/core'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { SignOut } from '@/components/sign-out'
+import { ThemeSwitcher } from '@/components/theme-switcher'
 import { requireAuthContext } from '@/lib/session'
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const ctx = await requireAuthContext()
   const projects = await projectService.listProjects(ctx)
+  const theme = (await cookies()).get('heed-theme')?.value ?? 'paper'
 
   return (
     <div className="min-h-screen">
@@ -35,6 +38,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <span className="hidden rounded-full border border-line bg-raised px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-soft sm:inline">
               {ctx.role}
             </span>
+            <ThemeSwitcher initial={theme} />
             <SignOut />
           </div>
         </div>

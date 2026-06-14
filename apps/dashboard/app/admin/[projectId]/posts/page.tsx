@@ -59,7 +59,7 @@ export default async function PostsPage({ params }: { params: Promise<{ projectI
           return (
             <div
               key={p.id}
-              className="flex items-center gap-4 px-4 py-3.5 transition hover:bg-paper/60"
+              className="flex flex-wrap items-center gap-3 px-4 py-3.5 transition hover:bg-paper/60"
             >
               <VotePill count={p.voteCount} size="sm" />
               <div className="min-w-0 grow">
@@ -87,13 +87,17 @@ export default async function PostsPage({ params }: { params: Promise<{ projectI
                   </span>
                 </div>
               </div>
-              <PinButton projectId={projectId} postId={p.id} pinned={p.isPinned} />
-              <StatusSelect
-                projectId={projectId}
-                postId={p.id}
-                statusId={p.statusId}
-                statuses={statuses}
-              />
+              <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
+                <PinButton projectId={projectId} postId={p.id} pinned={p.isPinned} />
+                <div className="w-36 sm:w-44">
+                  <StatusSelect
+                    projectId={projectId}
+                    postId={p.id}
+                    statusId={p.statusId}
+                    statuses={statuses}
+                  />
+                </div>
+              </div>
             </div>
           )
         })}
