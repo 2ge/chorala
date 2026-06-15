@@ -7,6 +7,11 @@ your own integrations use goes through this one versioned API.
 - **Format:** JSON in, JSON out (`Content-Type: application/json`).
 - **Contract:** every request/response shape is a zod schema in `packages/types` — this doc
   mirrors it; the schema is the source of truth.
+- **Self-discovery:** the API advertises itself the standard ways, so clients/agents find it
+  automatically — every response carries a `Link` header (RFC 8631 `service-desc` →
+  `/api/v1/openapi.json`, `service-doc` → `/docs`); the spec also resolves at
+  `/.well-known/openapi.json`; `/.well-known/api-catalog` (RFC 9727) and `/llms.txt` catalog it;
+  the OpenAPI doc carries `externalDocs`; and `/docs` + the homepage expose `<link rel>` hints.
 
 ---
 

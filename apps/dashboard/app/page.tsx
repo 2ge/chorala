@@ -10,7 +10,10 @@ export const metadata: Metadata = {
   description:
     'Collect product feedback, let users vote, and turn the signal into a public roadmap and changelog. Open-core, embeddable, multilingual, AI-native. Self-host or cloud — unlimited votes, always.',
   robots: { index: true, follow: true },
-  alternates: { canonical: 'https://chorala.com' },
+  alternates: {
+    canonical: 'https://chorala.com',
+    types: { 'application/json': 'https://chorala.com/api/v1/openapi.json' },
+  },
   openGraph: {
     title: 'Chorala — every voice, in harmony',
     description:

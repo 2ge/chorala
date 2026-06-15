@@ -638,6 +638,10 @@ export function openapiDocument(): object {
         'Open-core product-feedback platform. Public/widget API (X-Chorala-Key), admin API (hk_ key or session), end-user SSO, webhooks. Full prose reference: /docs and docs/API.md.',
       license: { name: 'AGPL-3.0' },
     },
+    externalDocs: {
+      url: `${env.CHORALA_PUBLIC_URL}/docs`,
+      description: 'Interactive API reference',
+    },
     servers: [{ url: `${env.CHORALA_PUBLIC_URL}/api/v1`, description: 'This instance' }],
     security: [{ PublicKey: [] }],
     tags: [...new Set(ROUTES.map((r) => r.tag))].map((name) => ({ name })),

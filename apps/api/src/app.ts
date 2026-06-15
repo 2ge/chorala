@@ -24,10 +24,22 @@ const WIDGET_STUB = `/* Chorala widget bundle not built. Run \`pnpm --filter @ch
 console.error('[chorala] widget.js not built');
 `
 
+// RFC 8631 service description link relations — makes the API self-describing: every
+// response advertises where to find the machine spec and human docs.
+const DISCOVERY_LINK =
+  `<${env.CHORALA_PUBLIC_URL}/api/v1/openapi.json>; rel="service-desc"; type="application/json", ` +
+  `<${env.CHORALA_PUBLIC_URL}/docs>; rel="service-doc"; type="text/html"`
+
 export function createApp() {
   const app = new Hono<AppEnv>()
   app.onError(onError)
   app.notFound(notFoundHandler)
+
+  // Advertise the spec + docs on every response (RFC 8631).
+  app.use('*', async (c, next) => {
+    await next()
+    c.header('Link', DISCOVERY_LINK)
+  })
 
   app.get('/health', (c) =>
     c.json({ ok: true, service: 'chorala-api', deployment: env.CHORALA_DEPLOYMENT }),

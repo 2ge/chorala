@@ -9,6 +9,8 @@ const HTML = `<!doctype html>
     <meta name="robots" content="index, follow" />
     <title>Chorala API Reference</title>
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="service-desc" type="application/json" href="/api/v1/openapi.json" />
+    <link rel="service-doc" type="text/html" href="/docs" />
   </head>
   <body>
     <script
