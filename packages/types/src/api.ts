@@ -335,6 +335,23 @@ export type IngestInput = z.infer<typeof ingestInput>
 export const askInput = z.object({ question: z.string().min(1).max(500) })
 export type AskInput = z.infer<typeof askInput>
 
+// --- Integrations breadth (Phase 15) ---
+export const setDiscordInput = z.object({ webhookUrl: z.url() })
+export type SetDiscordInput = z.infer<typeof setDiscordInput>
+
+/**
+ * A Segment-compatible inbound event (identify / group). Used by the inbound webhook to
+ * upsert end-users + companies automatically — no per-user JWT wiring.
+ */
+export const inboundEvent = z.object({
+  type: z.enum(['identify', 'group', 'track', 'page', 'screen', 'alias']),
+  userId: z.string().optional(),
+  anonymousId: z.string().optional(),
+  groupId: z.string().optional(),
+  traits: z.record(z.string(), z.unknown()).optional(),
+})
+export type InboundEvent = z.infer<typeof inboundEvent>
+
 // --- Score fields (weighted prioritization, Phase 12) ---
 export const createScoreFieldInput = z.object({
   key: z

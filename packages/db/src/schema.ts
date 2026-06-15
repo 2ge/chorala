@@ -507,7 +507,7 @@ export const integrations = pgTable('integrations', {
   projectId: text('project_id')
     .notNull()
     .references(() => projects.id, { onDelete: 'cascade' }),
-  type: text('type').$type<'slack' | 'linear' | 'github'>().notNull(),
+  type: text('type').$type<'slack' | 'linear' | 'github' | 'discord' | 'segment'>().notNull(),
   config: jsonb('config').$type<Json>().default({}).notNull(),
   secret: text('secret'),
   ...ts,

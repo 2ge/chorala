@@ -13,6 +13,7 @@ import { boardsRoutes } from './routes/boards.ts'
 import { changelogRoutes } from './routes/changelog.ts'
 import { commentsRoutes } from './routes/comments.ts'
 import { companiesRoutes } from './routes/companies.ts'
+import { inboundRoutes } from './routes/inbound.ts'
 import { orgRoutes } from './routes/org.ts'
 import { postsRoutes } from './routes/posts.ts'
 import { projectsRoutes } from './routes/projects.ts'
@@ -79,6 +80,9 @@ export function createApp() {
   // Public / widget API — its OWN per-project CORS + key + rate limit. Registered before
   // the admin cors() so the dashboard-only CORS never touches cross-origin widget calls.
   api.route('/public', publicRoutes)
+
+  // Inbound CDP webhook (Segment-compatible) — authed by a per-project secret, not the session.
+  api.route('/inbound', inboundRoutes)
 
   // Machine-readable API spec (public, no auth) — powers /docs and SDK generators.
   api.get('/openapi.json', (c) => {

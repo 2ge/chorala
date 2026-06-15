@@ -2,6 +2,7 @@ import {
   type AuthContext,
   apiKeys,
   boards as boardSvc,
+  integrations,
   posts as postSvc,
   projects,
 } from '@chorala/core'
@@ -14,6 +15,7 @@ const app = createApp()
 let auth: Record<string, string>
 let projectId: string
 let boardId: string
+let ctx: AuthContext
 
 beforeAll(async () => {
   // Build a session ctx from the seed org, then spin up an isolated throwaway project.
@@ -21,7 +23,7 @@ beforeAll(async () => {
   if (!acme) throw new Error('seed project missing — run `pnpm db:seed`')
   const [m] = await db.select().from(members).where(eq(members.orgId, acme.orgId))
   if (!m) throw new Error('no member for the seed org')
-  const ctx: AuthContext = {
+  ctx = {
     kind: 'session',
     orgId: acme.orgId,
     userId: m.userId,
@@ -185,6 +187,26 @@ describe('autopilot (Phase 14)', () => {
     expect(ask.status).toBe(200)
     const res = (await ask.json()) as { sources: { id: string }[]; aiEnabled: boolean }
     expect(res.sources.some((s) => s.id === newId)).toBe(true)
+  })
+})
+
+describe('inbound webhook (Phase 15)', () => {
+  test('Bearer-secured identify upserts an end-user; a bad secret is 401', async () => {
+    const { secret } = await integrations.setSegmentIntegration(ctx, projectId)
+    const ok = await app.request(`/api/v1/inbound/${projectId}`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${secret}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'identify', userId: 'cdp-1', traits: { email: 'cdp@x.com' } }),
+    })
+    expect(ok.status).toBe(200)
+    expect((await ok.json()) as { processed: string }).toEqual({ processed: 'identify' })
+
+    const bad = await app.request(`/api/v1/inbound/${projectId}`, {
+      method: 'POST',
+      headers: { authorization: 'Bearer nope', 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'identify', userId: 'cdp-2' }),
+    })
+    expect(bad.status).toBe(401)
   })
 })
 

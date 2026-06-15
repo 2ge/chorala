@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import {
+  and,
   client,
   companies,
   db,
@@ -18,6 +19,7 @@ import {
   changelog,
   companies as companySvc,
   endUsers as endUserSvc,
+  integrations,
   posts,
   projects,
   publicFeed,
@@ -336,6 +338,60 @@ describe('autopilot review queue (Phase 14)', () => {
     expect(
       (await posts.listPosts(ctx, p.id, { reviewStatus: 'dismissed' })).some((r) => r.id === b.id),
     ).toBe(true)
+  })
+})
+
+describe('integrations breadth (Phase 15)', () => {
+  test('inbound identify/group upsert end-users + companies and link them', async () => {
+    const p = await newProject('inbound')
+    // identify → end-user with traits saved to `segment`
+    await integrations.processInbound(p.id, {
+      type: 'identify',
+      userId: 'u-77',
+      traits: { email: 'kira@acme.com', name: 'Kira', plan: 'pro' },
+    })
+    const [eu] = await db
+      .select()
+      .from(endUsers)
+      .where(and(eq(endUsers.projectId, p.id), eq(endUsers.externalId, 'u-77')))
+    expect(eu?.email).toBe('kira@acme.com')
+    expect((eu?.segment as { plan?: string }).plan).toBe('pro')
+
+    // group → company upsert + the user linked to it
+    await integrations.processInbound(p.id, {
+      type: 'group',
+      userId: 'u-77',
+      groupId: 'acme',
+      traits: { name: 'Acme Inc', plan: 'enterprise', mrr: 7000 },
+    })
+    const [co] = await db
+      .select()
+      .from(companies)
+      .where(and(eq(companies.projectId, p.id), eq(companies.externalId, 'acme')))
+    expect(co?.mrr).toBe(7000)
+    const [linked] = await db.select().from(endUsers).where(eq(endUsers.externalId, 'u-77'))
+    expect(linked?.companyId).toBe(co?.id)
+
+    // other event types are ignored
+    expect((await integrations.processInbound(p.id, { type: 'track' })).processed).toBe('ignored')
+  })
+
+  test('inbound secret round-trips; Discord URL is validated', async () => {
+    const p = await newProject('secrets')
+    const { secret, url } = await integrations.setSegmentIntegration(ctx, p.id)
+    expect(url).toContain(`/inbound/${p.id}`)
+    expect(await integrations.verifyInboundSecret(p.id, secret)).toBe(true)
+    expect(await integrations.verifyInboundSecret(p.id, 'wrong')).toBe(false)
+
+    // notifyDiscord on an unconnected project is a no-op (no network call)
+    await integrations.notifyDiscord(p.id, 'hello')
+
+    await expect(
+      integrations.setDiscordIntegration(ctx, p.id, 'http://evil.com/x'),
+    ).rejects.toThrow()
+    await integrations.setDiscordIntegration(ctx, p.id, 'https://discord.com/api/webhooks/123/abc')
+    const list = await integrations.listIntegrations(ctx, p.id)
+    expect(list.some((i) => i.type === 'discord')).toBe(true)
   })
 })
 

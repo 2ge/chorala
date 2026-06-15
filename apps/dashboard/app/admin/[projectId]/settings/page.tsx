@@ -1,6 +1,7 @@
 import { env } from '@chorala/config'
 import { integrations, projects as projectSvc, scoreFields as scoreFieldSvc } from '@chorala/core'
 import { GithubIntegrationCard } from '@/components/integration-card'
+import { DiscordCard, SegmentCard } from '@/components/integration-cards'
 import { ScoreFieldsManager } from '@/components/score-fields-manager'
 import { Button, Card, Input, Label, Select, Textarea } from '@/components/ui'
 import { updateProjectSettings } from '@/lib/actions'
@@ -139,6 +140,14 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
           repo={gh?.repo}
           autoCreate={gh?.autoCreate ?? 'off'}
         />
+      </Card>
+
+      <Card className="p-5">
+        <DiscordCard projectId={projectId} connected={ints.some((i) => i.type === 'discord')} />
+      </Card>
+
+      <Card className="p-5">
+        <SegmentCard projectId={projectId} connected={ints.some((i) => i.type === 'segment')} />
       </Card>
     </div>
   )

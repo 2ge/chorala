@@ -67,6 +67,7 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   SegmentDefinition: [T.segmentDefinition, 'input'],
   IngestInput: [T.ingestInput, 'input'],
   AskInput: [T.askInput, 'input'],
+  InboundEvent: [T.inboundEvent, 'input'],
   CreateChangelogInput: [T.createChangelogInput, 'input'],
   UpdateChangelogInput: [T.updateChangelogInput, 'input'],
   CreateApiKeyInput: [T.createApiKeyInput, 'input'],
@@ -196,6 +197,15 @@ const ROUTES: Route[] = [
     summary: 'Identify an end-user (SSO)',
     body: 'IdentifyInput',
     resp: ref('IdentifyResponse'),
+  },
+  {
+    method: 'post',
+    path: '/inbound/{projectId}',
+    tag: 'Public',
+    sec: 'public',
+    summary:
+      'Segment-compatible inbound webhook (identify/group → end-users + companies). Bearer = the project inbound secret.',
+    body: 'InboundEvent',
   },
 
   // --- Projects ---

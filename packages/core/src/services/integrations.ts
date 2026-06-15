@@ -1,7 +1,21 @@
-import { and, boards, db, eq, integrations, newId, posts } from '@chorala/db'
+import { env } from '@chorala/config'
+import {
+  and,
+  boards,
+  db,
+  endUsers,
+  eq,
+  generateSecret,
+  integrations,
+  newId,
+  posts,
+} from '@chorala/db'
+import type { InboundEvent } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { decryptSecret, encryptSecret } from '../crypto.ts'
 import { badRequest, notFound } from '../errors.ts'
+import { upsertFromIdentity as upsertCompany } from './companies.ts'
+import { upsertFromIdentity as upsertEndUser } from './endUsers.ts'
 import { getProject } from './projects.ts'
 
 const GH = 'https://api.github.com'
@@ -191,4 +205,139 @@ export async function syncGithubIssue(projectId: string, postId: string, statusK
     headers: ghHeaders(gh.token),
     body: JSON.stringify({ state }),
   })
+}
+
+// =====================================================================
+// Discord (outbound notifications) — Phase 15
+// =====================================================================
+
+/** Connect a Discord incoming-webhook URL (encrypted at rest). */
+export async function setDiscordIntegration(
+  ctx: AuthContext,
+  projectId: string,
+  webhookUrl: string,
+) {
+  await getProject(ctx, projectId)
+  if (!/^https:\/\/(discord\.com|discordapp\.com)\/api\/webhooks\//.test(webhookUrl)) {
+    throw badRequest('Expected a https://discord.com/api/webhooks/… URL')
+  }
+  const secret = encryptSecret(webhookUrl)
+  const [existing] = await db
+    .select()
+    .from(integrations)
+    .where(and(eq(integrations.projectId, projectId), eq(integrations.type, 'discord')))
+  if (existing) {
+    await db.update(integrations).set({ secret }).where(eq(integrations.id, existing.id))
+  } else {
+    await db
+      .insert(integrations)
+      .values({ id: newId('integration'), projectId, type: 'discord', config: {}, secret })
+  }
+  return { connected: true }
+}
+
+/** Post a plain message to the project's Discord channel (no-op if not connected). */
+export async function notifyDiscord(projectId: string, content: string) {
+  const [row] = await db
+    .select({ secret: integrations.secret })
+    .from(integrations)
+    .where(and(eq(integrations.projectId, projectId), eq(integrations.type, 'discord')))
+  if (!row?.secret) return
+  try {
+    await fetch(decryptSecret(row.secret), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ content: content.slice(0, 1900) }),
+    })
+  } catch (err) {
+    console.warn('[integrations] discord notify failed:', (err as Error).message)
+  }
+}
+
+// =====================================================================
+// Segment-compatible inbound webhook — Phase 15
+// =====================================================================
+
+/** Enable the inbound webhook; returns the signing secret (shown once) + the URL to configure. */
+export async function setSegmentIntegration(ctx: AuthContext, projectId: string) {
+  await getProject(ctx, projectId)
+  const raw = generateSecret(24)
+  const secret = encryptSecret(raw)
+  const [existing] = await db
+    .select()
+    .from(integrations)
+    .where(and(eq(integrations.projectId, projectId), eq(integrations.type, 'segment')))
+  if (existing) {
+    await db.update(integrations).set({ secret }).where(eq(integrations.id, existing.id))
+  } else {
+    await db
+      .insert(integrations)
+      .values({ id: newId('integration'), projectId, type: 'segment', config: {}, secret })
+  }
+  return {
+    secret: raw,
+    url: `${env.CHORALA_API_URL}/api/v1/inbound/${projectId}`,
+  }
+}
+
+/** Validate an inbound webhook bearer token against the stored segment secret. */
+export async function verifyInboundSecret(projectId: string, token: string): Promise<boolean> {
+  const [row] = await db
+    .select({ secret: integrations.secret })
+    .from(integrations)
+    .where(and(eq(integrations.projectId, projectId), eq(integrations.type, 'segment')))
+  if (!row?.secret) return false
+  return decryptSecret(row.secret) === token
+}
+
+const str = (v: unknown) => (typeof v === 'string' ? v : undefined)
+const num = (v: unknown) =>
+  typeof v === 'number' ? v : typeof v === 'string' && v.trim() ? Number.parseInt(v, 10) : undefined
+
+/**
+ * Apply a Segment-compatible event: `identify` upserts an end-user (traits → segment), `group`
+ * upserts a company (name/plan/mrr/domain) and links the user to it. Other event types are ignored.
+ */
+export async function processInbound(projectId: string, event: InboundEvent) {
+  const t = event.traits ?? {}
+  if (event.type === 'identify' && event.userId) {
+    await upsertEndUser(projectId, {
+      id: event.userId,
+      email: str(t.email),
+      name: str(t.name),
+      avatar: str(t.avatar),
+      segment: t,
+    })
+    return { processed: 'identify' as const }
+  }
+  if (event.type === 'group' && event.groupId) {
+    const companyId = await upsertCompany(projectId, {
+      externalId: event.groupId,
+      name: str(t.name),
+      domain: str(t.domain) ?? str(t.website),
+      plan: str(t.plan),
+      mrr: num(t.mrr),
+    })
+    if (event.userId) {
+      await db
+        .update(endUsers)
+        .set({ companyId })
+        .where(and(eq(endUsers.projectId, projectId), eq(endUsers.externalId, event.userId)))
+    }
+    return { processed: 'group' as const }
+  }
+  return { processed: 'ignored' as const }
+}
+
+/** Generic disconnect by type (Discord / Segment). */
+export async function removeIntegration(
+  ctx: AuthContext,
+  projectId: string,
+  type: 'discord' | 'segment',
+) {
+  await getProject(ctx, projectId)
+  await db
+    .delete(integrations)
+    .where(and(eq(integrations.projectId, projectId), eq(integrations.type, type)))
+  return { removed: true }
 }

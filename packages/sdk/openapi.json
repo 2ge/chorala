@@ -781,6 +781,74 @@
         }
       }
     },
+    "/inbound/{projectId}": {
+      "post": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Segment-compatible inbound webhook (identify/group \u2192 end-users + companies). Bearer = the project inbound secret.",
+        "security": [
+          {
+            "PublicKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboundEvent"
+              }
+            }
+          }
+        }
+      }
+    },
     "/projects": {
       "get": {
         "tags": [
@@ -9105,6 +9173,41 @@
         },
         "required": [
           "question"
+        ]
+      },
+      "InboundEvent": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "identify",
+              "group",
+              "track",
+              "page",
+              "screen",
+              "alias"
+            ]
+          },
+          "userId": {
+            "type": "string"
+          },
+          "anonymousId": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "string"
+          },
+          "traits": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "type"
         ]
       },
       "CreateChangelogInput": {

@@ -23,6 +23,7 @@ import { changelogPublishedEmail, notificationEmail } from '@chorala/email'
 import { segmentDefinition } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { enqueueEmail } from '../queues.ts'
+import { notifyDiscord } from './integrations.ts'
 import { type Recipient, renderVars, resolveSegment } from './segments.ts'
 
 type ProjectRef = { id: string; name: string; customDomain: string | null }
@@ -162,6 +163,7 @@ export async function fanOutPostCreated(projectId: string, postId: string) {
   const [post] = await db.select({ title: posts.title }).from(posts).where(eq(posts.id, postId))
   if (!post) return
   await inAppForOrgMembers(projectId, 'post.created', { postId, title: post.title })
+  await notifyDiscord(projectId, `📥 New feedback: **${post.title}**`)
 }
 
 /** A changelog entry was published → email all subscribers. */
@@ -218,6 +220,7 @@ export async function fanOutChangelogPublished(projectId: string, changelogId: s
     .update(changelogEntries)
     .set({ recipientCount: sent })
     .where(eq(changelogEntries.id, changelogId))
+  await notifyDiscord(projectId, `📣 ${projectName} just shipped: **${entry.title}**`)
 }
 
 // ---- admin in-app notification centre ----

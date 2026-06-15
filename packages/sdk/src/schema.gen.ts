@@ -710,6 +710,73 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/inbound/{projectId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Segment-compatible inbound webhook (identify/group → end-users + companies). Bearer = the project inbound secret. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["InboundEvent"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/projects": {
         parameters: {
             query?: never;
@@ -5475,6 +5542,16 @@ export interface components {
         };
         AskInput: {
             question: string;
+        };
+        InboundEvent: {
+            /** @enum {string} */
+            type: "identify" | "group" | "track" | "page" | "screen" | "alias";
+            userId?: string;
+            anonymousId?: string;
+            groupId?: string;
+            traits?: {
+                [key: string]: unknown;
+            };
         };
         CreateChangelogInput: {
             title: string;

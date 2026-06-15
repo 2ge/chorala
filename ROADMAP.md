@@ -124,7 +124,17 @@ Closed gap #1 — the thing that makes us sellable to B2B SaaS.
   registration, same blocker as GitHub OAuth — the generic `/ingest` endpoint *is* the connector
   contract they post to); auto‑categorize‑to‑board and AI smart‑reply.
 
-### Phase 15 — Integration breadth · *medium, post‑v1 — needs a DECISIONS note*
+### Phase 15 — Integration breadth · *medium* · ✅ SHIPPED 2026‑06‑15 (partial — see deferred)
+- ✅ **Segment‑compatible inbound webhook** — `POST /inbound/:projectId` (Bearer = per‑project
+  secret) accepts `identify`/`group` events → auto‑upserts end‑users + companies (and links them).
+  Auto‑populates the data that powers revenue weighting (P11) + segments (P13) with no JWT wiring.
+- ✅ **Discord outbound** — post new feedback + shipped changelog entries to a Discord channel.
+- ✅ Settings cards for both. Zapier/Make work today via the existing webhooks + REST API.
+- **Deferred** (DECISIONS): Jira / Intercom / Zendesk **OAuth** connectors — same external‑app
+  blocker as GitHub OAuth; the `/inbound` webhook + Phase‑14 `/ingest` already cover the inbound
+  half. Discord delivery is fire‑and‑forget (not live‑tested without a real webhook URL).
+
+### Phase 15 (orig.) — Integration breadth · *needs a DECISIONS note*
 SPEC §1 caps v1 integrations at Slack/Linear/GitHub/webhooks. Expanding is a deliberate
 post‑v1 call. Highest leverage: **Jira**, **Segment** (CDP identify), **Zapier/Make**
 (unlocks the long tail for free), then Intercom/Zendesk/Discord.

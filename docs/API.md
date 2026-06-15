@@ -381,6 +381,18 @@ non-2xx.
 **Events:** `post.created`, `post.status_changed`, `post.merged`, `comment.created`,
 `changelog.published`, `vote.created`.
 
+### Inbound webhook (Segment-compatible) — `POST /inbound/:projectId`
+Push customer data in to auto-populate end-users + companies (powers revenue weighting +
+segments). Enable it in **Settings → Inbound webhook** to get a secret; send it as a Bearer token.
+```
+POST /api/v1/inbound/{projectId}      Authorization: Bearer <inbound secret>
+{ "type": "identify", "userId": "u_1", "traits": { "email": "a@b.com", "name": "Ann" } }
+{ "type": "group", "userId": "u_1", "groupId": "acme", "traits": { "name": "Acme", "plan": "pro", "mrr": 4200 } }
+```
+`identify` upserts the end-user (traits → segment); `group` upserts the company and links the
+user. Point Segment (or any source) here. **Discord**: connect an incoming-webhook URL in Settings
+to post new feedback + shipped changelog entries to a channel.
+
 ---
 
 ## 8. Embed (JS) — `widget.js`

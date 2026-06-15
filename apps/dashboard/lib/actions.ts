@@ -293,6 +293,25 @@ export async function disconnectGithub(projectId: string) {
   revalidatePath(`${adminPath(projectId)}/settings`)
 }
 
+export async function connectDiscord(projectId: string, webhookUrl: string) {
+  const ctx = await requireAuthContext()
+  await integrations.setDiscordIntegration(ctx, projectId, webhookUrl.trim())
+  revalidatePath(`${adminPath(projectId)}/settings`)
+}
+
+export async function connectSegment(projectId: string) {
+  const ctx = await requireAuthContext()
+  const res = await integrations.setSegmentIntegration(ctx, projectId)
+  revalidatePath(`${adminPath(projectId)}/settings`)
+  return res // { secret, url } — shown once
+}
+
+export async function disconnectIntegration(projectId: string, type: 'discord' | 'segment') {
+  const ctx = await requireAuthContext()
+  await integrations.removeIntegration(ctx, projectId, type)
+  revalidatePath(`${adminPath(projectId)}/settings`)
+}
+
 export async function createGithubIssue(projectId: string, postId: string) {
   const ctx = await requireAuthContext()
   const link = await integrations.createGithubIssue(ctx, projectId, postId)
