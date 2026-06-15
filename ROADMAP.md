@@ -150,7 +150,75 @@ SAML/SCIM admin SSO, custom admin roles (we have owner/admin/member today), **au
 
 ---
 
-## 4. Suggested sequencing
+## 4. Best‑on‑market — the rest of the surface (Phases 18+)
+
+After 16–17 the core is unbeatable; these close every remaining gap against the *whole* field
+(Canny, Featurebase, Frill, Nolt, Upvoty, Sleekplan, Productboard, Aha!). Demand‑ordered, each
+one phase. Several need external credentials (OAuth apps, an IdP) we can't self‑provision yet —
+flagged ⛔; the rest are fully buildable on the current stack.
+
+### Phase 18 — Integrations, completed
+**Jira** & **Linear** two‑way sync, full **Slack** (post + slash actions), **Intercom** /
+**Zendesk** ⛔ (pull conversations, push status), **Zapier / Make** (publish triggers + actions
+on top of webhooks), **Notion / ClickUp / Azure DevOps / Asana**. Closes the integrations matrix
+every incumbent advertises. (Extends the deferred half of Phase 15.)
+
+### Phase 19 — Analytics & insights
+Theme trends over time, vote velocity, **sentiment**, board‑health and engagement dashboards,
+exportable reports (CSV/PDF), and Productboard‑style **insight linking** (quotes → features).
+Reviewers flag Featurebase's analytics as shallow — this is a wedge.
+
+### Phase 20 — AI depth (Autopilot v2)
+Sentiment scoring, **auto‑categorise** new feedback to boards/tags (extends clustering),
+AI **smart‑reply** drafting, AI roadmap suggestions, and weekly **AI digests** ("what your users
+asked for this week"). All on the bundled/Ollama provider — still no per‑credit AI tax.
+
+### Phase 21 — Automation & workflow engine
+A rules engine: on event → tag / assign / set status / notify / sync. Auto‑tagging, SLAs, and
+**saved views** (filters + columns + sort). The deferred pieces of Phase 12, generalised.
+
+### Phase 22 — Roadmap & prioritization power
+Multiple roadmap **views** (now/next/later, timeline/Gantt), **private & internal** roadmaps,
+a value×effort **prioritization matrix**, and framework templates (RICE / ICE / custom) layered
+on the Phase‑12 scoring.
+
+### Phase 23 — Notifications & digests
+Weekly email **digests**, per‑user notification preferences, **Slack / Teams** (Discord shipped),
+customisable email templates, and web push. Builds on the existing fan‑out + Resend pipeline.
+
+### Phase 24 — Community & moderation
+Spam + profanity filters, user **reputation/karma**, **pinned & locked** posts, report‑abuse,
+and a comment moderation queue. (Overlaps Phase 17's moderation; this is the community‑scale depth.)
+
+### Phase 25 — Capture surfaces breadth
+In‑app **changelog widget/popover**, **roadmap embed**, a floating **feedback button**,
+an **email‑to‑board** address, and a **browser extension** — every place feedback is born.
+
+### Phase 26 — Mobile
+A real **React Native SDK** (the v1 stub → shipped) + native bridges, mobile push, and a
+mobile‑optimised portal. (SPEC §1 made mobile a v1 non‑goal — a conscious post‑v1 call.)
+
+### Phase 27 — Privacy, compliance & data
+GDPR **export/delete** tooling, retention policies, anonymisation, audit exports, a SOC 2 path,
+and configurable **data residency**. Pairs with Phase 17; required to sell to regulated buyers.
+
+### Phase 28 — White‑label & multi‑brand
+Custom CSS/branding, email branding, **multiple brands per org**, and a fully unbranded portal —
+the agency / multi‑product tier.
+
+### Deliberately NOT building (it's the positioning, not a gap)
+Full **helpdesk / ticketing inbox**, an **AI support agent** (Featurebase "Fibi"), a bundled
+**knowledge base**, and being a generic **CRM of record**. Staying feedback‑first — and flat‑priced,
+open‑core, with bundled AI — is *why* we win. We integrate with those tools (Phase 18), we don't
+become them.
+
+**Net:** with 16–28 done, Chorala matches or beats every competitor on every axis they market,
+while keeping the three things none of them have together — **flat pricing (users/votes free),
+open‑core/self‑host, and bundled AI at $0 marginal cost.**
+
+---
+
+## 5. Suggested sequencing (original core spine)
 
 ```
 NOW ──► 10 (bug capture)  ──► 11 (companies + MRR)  ──► 12 (scoring/triage)  ──► 13 (segments)

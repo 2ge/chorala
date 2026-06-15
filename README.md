@@ -9,14 +9,22 @@
 **Chorala** is the product (chorala.com). Internally the code keeps the `@chorala/*` package
 scope and `CHORALA_` env prefix as stable identifiers (not user-visible).
 
-- **Embeddable everywhere** — a tiny Preact widget in a Shadow DOM (≈12KB gzip) drops
-  into any site with zero CSS leakage, plus a hosted portal, roadmap, and changelog.
-- **Multilingual** — ideas auto-translate; users in different languages vote on the
-  *same* canonical idea.
-- **AI-native** — dedup suggestions, clustering, summarization, translation via a
-  pluggable LLM provider (Ollama default; OpenAI/Anthropic optional; degrades to off).
-- **MCP server** — triage feedback from inside Claude / Cursor.
-- **Open source (AGPL) + managed cloud** — self-host with one command.
+- **The whole loop** — feedback boards with voting + comments, a public roadmap, and a
+  changelog that emails every voter the moment an idea ships. Statuses, tags, merge & dedup.
+- **AI Autopilot** — paste a support thread and AI extracts the feature requests as drafts
+  for review; "ask your feedback" in plain English; dedup, clustering & summaries. Pluggable
+  provider (Ollama default; OpenAI/Anthropic optional; degrades cleanly to off — no AI tax).
+- **Revenue-weighted prioritization** — sync companies + MRR (via the identify JWT or an
+  inbound CDP webhook) and see the dollars behind every request; filter by plan / company / MRR.
+- **Audience segments + targeted changelog** — build segments from any attribute and announce
+  only to the people an update is for, personalised with `{{first_name}}` / `{{company}}`.
+- **Weighted scoring & triage** — custom numeric fields → RICE/ICE-style scores, CSV export,
+  vote-on-behalf, owner assignment. **Bug capture**: annotated screenshots + auto browser context.
+- **Embeddable everywhere** — a tiny Preact widget in a Shadow DOM (zero CSS leakage), a hosted
+  portal on your custom domain, **multilingual** (same canonical idea across languages).
+- **Developer-first** — typed SDK from an OpenAPI 3.1 spec, self-discoverable API (RFC 8631/9727
+  + llms.txt), signed webhooks, GitHub & Discord, and a native **MCP server** for Claude / Cursor.
+- **Open source (AGPL core, MIT widget/SDK/MCP) + managed cloud** — self-host with one command.
 
 ## Quick start
 
