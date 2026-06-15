@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-const GITHUB = 'https://github.com/chorala/chorala'
+const GITHUB = 'https://github.com/2ge/chorala'
 const DEMO = 'https://feedback.musicaha.com'
 
 export const metadata: Metadata = {
