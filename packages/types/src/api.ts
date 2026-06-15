@@ -44,6 +44,9 @@ export type CreateCommentInput = z.infer<typeof createCommentInput>
 export const localizedPost = post.extend({
   hasVoted: z.boolean().optional(),
   displayLocale: z.string().optional(),
+  // The post's status (name/color/kind) so public embedders can badge it. `closed`
+  // posts are excluded from the board list, so this never surfaces a closed status there.
+  status: status.nullable().optional(),
 })
 export type LocalizedPost = z.infer<typeof localizedPost>
 

@@ -3437,6 +3437,18 @@ export interface components {
             updatedAt: string;
             hasVoted?: boolean;
             displayLocale?: string;
+            status?: {
+                id: string;
+                projectId: string;
+                name: string;
+                color: string;
+                /** @enum {string} */
+                kind: "open" | "planned" | "in_progress" | "complete" | "closed";
+                position: number;
+                showOnRoadmap: boolean;
+                createdAt: string;
+                updatedAt: string;
+            } | null;
         };
         Board: {
             id: string;
@@ -3571,6 +3583,18 @@ export interface components {
                 updatedAt: string;
                 hasVoted?: boolean;
                 displayLocale?: string;
+                status?: {
+                    id: string;
+                    projectId: string;
+                    name: string;
+                    color: string;
+                    /** @enum {string} */
+                    kind: "open" | "planned" | "in_progress" | "complete" | "closed";
+                    position: number;
+                    showOnRoadmap: boolean;
+                    createdAt: string;
+                    updatedAt: string;
+                } | null;
             };
             comments: {
                 id: string;
@@ -3631,6 +3655,18 @@ export interface components {
                     updatedAt: string;
                     hasVoted?: boolean;
                     displayLocale?: string;
+                    status?: {
+                        id: string;
+                        projectId: string;
+                        name: string;
+                        color: string;
+                        /** @enum {string} */
+                        kind: "open" | "planned" | "in_progress" | "complete" | "closed";
+                        position: number;
+                        showOnRoadmap: boolean;
+                        createdAt: string;
+                        updatedAt: string;
+                    } | null;
                 }[];
             }[];
         };

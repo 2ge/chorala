@@ -9,7 +9,9 @@ import {
   eq,
   ilike,
   inArray,
+  isNull,
   newId,
+  notInArray,
   or,
   posts,
   postTags,
@@ -78,6 +80,13 @@ async function decorate(
     : []
   const voted = new Set(myVotes.map((v) => v.postId))
 
+  // Attach each post's status (name/color/kind) so public embedders can badge precisely.
+  const statusIds = [...new Set(rows.map((r) => r.statusId).filter((s): s is string => !!s))]
+  const statusRows = statusIds.length
+    ? await db.select().from(statuses).where(inArray(statuses.id, statusIds))
+    : []
+  const statusMap = new Map(statusRows.map((s) => [s.id, s]))
+
   return rows.map((r) => {
     const tr = trMap.get(r.id)
     return {
@@ -86,6 +95,7 @@ async function decorate(
       body: tr?.body ?? r.body,
       displayLocale: tr ? locale : r.originalLocale,
       hasVoted: endUserId ? voted.has(r.id) : undefined,
+      status: r.statusId ? (statusMap.get(r.statusId) ?? null) : null,
     }
   })
 }
@@ -134,6 +144,22 @@ export async function listPublicBoards(projectId: string, opts: PublicListOpts =
     const term = `%${opts.search}%`
     const m = or(ilike(posts.title, term), ilike(posts.body, term))
     if (m) filters.push(m)
+  }
+
+  // Hide closed/declined posts from the public board — keep it to active + shipped ideas.
+  const closedStatuses = await db
+    .select({ id: statuses.id })
+    .from(statuses)
+    .where(and(eq(statuses.projectId, projectId), eq(statuses.kind, 'closed')))
+  if (closedStatuses.length) {
+    const notClosed = or(
+      isNull(posts.statusId),
+      notInArray(
+        posts.statusId,
+        closedStatuses.map((s) => s.id),
+      ),
+    )
+    if (notClosed) filters.push(notClosed)
   }
 
   // Guard: no visible boards → no posts.

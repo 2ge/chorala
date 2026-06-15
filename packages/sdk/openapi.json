@@ -8,6 +8,10 @@
       "name": "AGPL-3.0"
     }
   },
+  "externalDocs": {
+    "url": "https://chorala.com/docs",
+    "description": "Interactive API reference"
+  },
   "servers": [
     {
       "url": "https://chorala.com/api/v1",
@@ -4278,6 +4282,68 @@
           },
           "displayLocale": {
             "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^status_[0-9A-Za-z_-]+$"
+                  },
+                  "projectId": {
+                    "type": "string",
+                    "pattern": "^proj_[0-9A-Za-z_-]+$"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "color": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "planned",
+                      "in_progress",
+                      "complete",
+                      "closed"
+                    ]
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "showOnRoadmap": {
+                    "type": "boolean"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "projectId",
+                  "name",
+                  "color",
+                  "kind",
+                  "position",
+                  "showOnRoadmap",
+                  "createdAt",
+                  "updatedAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -4957,6 +5023,68 @@
               },
               "displayLocale": {
                 "type": "string"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^status_[0-9A-Za-z_-]+$"
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "pattern": "^proj_[0-9A-Za-z_-]+$"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "color": {
+                        "type": "string"
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "open",
+                          "planned",
+                          "in_progress",
+                          "complete",
+                          "closed"
+                        ]
+                      },
+                      "position": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "showOnRoadmap": {
+                        "type": "boolean"
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "projectId",
+                      "name",
+                      "color",
+                      "kind",
+                      "position",
+                      "showOnRoadmap",
+                      "createdAt",
+                      "updatedAt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
@@ -5290,6 +5418,68 @@
                       },
                       "displayLocale": {
                         "type": "string"
+                      },
+                      "status": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "pattern": "^status_[0-9A-Za-z_-]+$"
+                              },
+                              "projectId": {
+                                "type": "string",
+                                "pattern": "^proj_[0-9A-Za-z_-]+$"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "color": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "open",
+                                  "planned",
+                                  "in_progress",
+                                  "complete",
+                                  "closed"
+                                ]
+                              },
+                              "position": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "showOnRoadmap": {
+                                "type": "boolean"
+                              },
+                              "createdAt": {
+                                "type": "string"
+                              },
+                              "updatedAt": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "projectId",
+                              "name",
+                              "color",
+                              "kind",
+                              "position",
+                              "showOnRoadmap",
+                              "createdAt",
+                              "updatedAt"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "required": [
