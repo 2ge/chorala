@@ -32,7 +32,13 @@ export function GithubIntegrationCard({ projectId, repo }: { projectId: string; 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <Label>Repository</Label>
-            <Input name="repo" placeholder="owner/name" defaultValue={repo} required />
+            <Input name="repo" placeholder="owner/repo" defaultValue={repo} required />
+            <p className="mt-1 text-xs leading-relaxed text-ink-faint">
+              Format <code>owner/repo</code> — <strong className="text-ink-soft">owner</strong> is
+              your GitHub username or organization, <strong className="text-ink-soft">repo</strong>{' '}
+              the repository name (e.g. <code>2ge/chorala</code>). It must already exist and the
+              token must have access to it.
+            </p>
           </div>
           <div>
             <Label>{connected ? 'Token (leave blank to keep)' : 'Personal access token'}</Label>
@@ -42,6 +48,18 @@ export function GithubIntegrationCard({ projectId, repo }: { projectId: string; 
               placeholder="ghp_… (repo scope)"
               required={!connected}
             />
+            <p className="mt-1 text-xs leading-relaxed text-ink-faint">
+              A classic PAT with the <code>repo</code> scope.{' '}
+              <a
+                href="https://github.com/settings/tokens/new?scopes=repo&description=Chorala"
+                target="_blank"
+                rel="noreferrer"
+                className="text-accent underline-offset-2 hover:underline"
+              >
+                Create one →
+              </a>{' '}
+              Stored encrypted at rest.
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
