@@ -1,6 +1,6 @@
 import { publicFeed } from '@chorala/core'
 import { notFound } from 'next/navigation'
-import { PortalBoard, StatusPill } from '@/components/portal-board'
+import { PortalBoard, StatusPill, TagChip } from '@/components/portal-board'
 import { PortalComment, PortalVote, SubscribeForm } from '@/components/portal-client'
 
 type Props = { projectId: string; publicKey: string; locale?: string; basePath?: string }
@@ -36,6 +36,7 @@ export async function BoardView({ projectId, publicKey, locale, basePath = '/' }
           status: p.status
             ? { name: p.status.name, color: p.status.color, kind: p.status.kind }
             : null,
+          tags: p.tags ?? [],
         }))}
         basePath={basePath}
       />
@@ -71,6 +72,9 @@ export async function PostDetailView({
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl leading-tight tracking-[-0.02em]">{post.title}</h1>
             {post.status && <StatusPill status={post.status} />}
+            {post.tags?.map((t) => (
+              <TagChip key={t.name} tag={t} />
+            ))}
           </div>
           {post.body && (
             <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink-soft">{post.body}</p>

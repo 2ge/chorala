@@ -18,6 +18,7 @@ import {
   postTranslations,
   sql,
   statuses,
+  tags,
   votes,
 } from '@chorala/db'
 import type { CreateCommentInput, CreatePostInput, PostSort } from '@chorala/types'
@@ -93,6 +94,19 @@ async function decorate(
     : []
   const statusMap = new Map(statusRows.map((s) => [s.id, s]))
 
+  // Attach each post's tags (name/color) for topic chips on the portal/widget.
+  const tagRows = await db
+    .select({ postId: postTags.postId, name: tags.name, color: tags.color })
+    .from(postTags)
+    .innerJoin(tags, eq(tags.id, postTags.tagId))
+    .where(inArray(postTags.postId, ids))
+  const tagMap = new Map<string, { name: string; color: string }[]>()
+  for (const t of tagRows) {
+    const list = tagMap.get(t.postId) ?? []
+    list.push({ name: t.name, color: t.color })
+    tagMap.set(t.postId, list)
+  }
+
   return rows.map((r) => {
     const tr = trMap.get(r.id)
     return {
@@ -102,6 +116,7 @@ async function decorate(
       displayLocale: tr ? locale : r.originalLocale,
       hasVoted: endUserId ? voted.has(r.id) : undefined,
       status: r.statusId ? (statusMap.get(r.statusId) ?? null) : null,
+      tags: tagMap.get(r.id) ?? [],
     }
   })
 }

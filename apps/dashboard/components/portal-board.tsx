@@ -6,6 +6,7 @@ import { PortalVote } from '@/components/portal-client'
 
 type Board = { id: string; slug: string; name: string; description: string | null; kind: string }
 type Status = { name: string; color: string; kind: string } | null
+type Tag = { name: string; color: string }
 type Post = {
   id: string
   boardId: string
@@ -16,6 +17,7 @@ type Post = {
   hasVoted?: boolean
   createdAt: string
   status?: Status
+  tags?: Tag[]
 }
 
 const KIND_BLURB: Record<string, string> = {
@@ -131,6 +133,9 @@ export function PortalBoard({
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-medium tracking-[-0.01em]">{p.title}</p>
                 {p.status && <StatusPill status={p.status} />}
+                {p.tags?.map((t) => (
+                  <TagChip key={t.name} tag={t} />
+                ))}
               </div>
               {p.body && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{p.body}</p>}
               <p className="mt-1.5 text-xs text-ink-faint">
@@ -166,6 +171,17 @@ function Chip({
     >
       {children}
     </button>
+  )
+}
+
+export function TagChip({ tag }: { tag: { name: string; color: string } }) {
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium"
+      style={{ background: `${tag.color}1a`, color: tag.color }}
+    >
+      {tag.name}
+    </span>
   )
 }
 

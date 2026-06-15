@@ -4898,6 +4898,10 @@ export interface components {
                 createdAt: string;
                 updatedAt: string;
             } | null;
+            tags?: {
+                name: string;
+                color: string;
+            }[];
         };
         Attachment: {
             id: string;
@@ -5185,6 +5189,10 @@ export interface components {
                     createdAt: string;
                     updatedAt: string;
                 } | null;
+                tags?: {
+                    name: string;
+                    color: string;
+                }[];
             };
             comments: {
                 id: string;
@@ -5258,6 +5266,10 @@ export interface components {
                         createdAt: string;
                         updatedAt: string;
                     } | null;
+                    tags?: {
+                        name: string;
+                        color: string;
+                    }[];
                 }[];
             }[];
         };

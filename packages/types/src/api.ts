@@ -83,6 +83,8 @@ export const localizedPost = post.extend({
   // The post's status (name/color/kind) so public embedders can badge it. `closed`
   // posts are excluded from the board list, so this never surfaces a closed status there.
   status: status.nullable().optional(),
+  // Topic tags (name/color) for chips on the portal/widget.
+  tags: z.array(z.object({ name: z.string(), color: z.string() })).optional(),
 })
 export type LocalizedPost = z.infer<typeof localizedPost>
 

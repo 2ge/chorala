@@ -6103,6 +6103,25 @@
                 "type": "null"
               }
             ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "color"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
@@ -7596,6 +7615,25 @@
                     "type": "null"
                   }
                 ]
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "color": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "color"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -8002,6 +8040,25 @@
                             "type": "null"
                           }
                         ]
+                      },
+                      "tags": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "color": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "color"
+                          ],
+                          "additionalProperties": false
+                        }
                       }
                     },
                     "required": [
