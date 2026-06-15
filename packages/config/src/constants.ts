@@ -8,6 +8,7 @@ export const ID_PREFIXES = {
   project: 'proj',
   endUser: 'eu',
   board: 'board',
+  company: 'co',
   status: 'status',
   post: 'post',
   postTranslation: 'ptr',

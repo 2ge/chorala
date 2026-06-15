@@ -9,7 +9,7 @@ import {
   statusKind,
   webhookEvent,
 } from './common.ts'
-import { attachment, comment, endUser, post, postTranslation, status } from './entities.ts'
+import { attachment, comment, company, endUser, post, postTranslation, status } from './entities.ts'
 
 // =====================================================================
 // Public / widget API (SPEC §8.2)
@@ -246,3 +246,27 @@ export const analyticsResponse = z.object({
   clusterThemes: z.array(z.object({ label: z.string(), summary: z.string(), count: z.number() })),
 })
 export type AnalyticsResponse = z.infer<typeof analyticsResponse>
+
+// --- Companies (B2B revenue intelligence, Phase 11) ---
+
+/** A company plus rollups: how many users it has and the demand it's driving. */
+export const companyWithStats = company.extend({
+  userCount: z.number().int(),
+  postCount: z.number().int(),
+})
+export type CompanyWithStats = z.infer<typeof companyWithStats>
+
+export const updateCompanyInput = z.object({
+  name: z.string().min(1).optional(),
+  domain: z.string().nullable().optional(),
+  mrr: z.number().int().nonnegative().optional(),
+  plan: z.string().nullable().optional(),
+})
+export type UpdateCompanyInput = z.infer<typeof updateCompanyInput>
+
+/**
+ * Admin post-list row: the post plus `revenueImpact` — the Σ MRR of the distinct companies
+ * whose users voted for it. The demand signal that sits *alongside* the raw vote count.
+ */
+export const adminPostListItem = post.extend({ revenueImpact: z.number().int() })
+export type AdminPostListItem = z.infer<typeof adminPostListItem>

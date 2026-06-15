@@ -1,26 +1,45 @@
-import { boards as boardSvc, posts as postSvc, statuses as statusSvc } from '@chorala/core'
+import {
+  boards as boardSvc,
+  companies as companySvc,
+  posts as postSvc,
+  statuses as statusSvc,
+} from '@chorala/core'
+import type { PostSort } from '@chorala/types'
 import Link from 'next/link'
 import { PinButton, StatusSelect } from '@/components/post-controls'
 import { Badge, Button, Card, Input, Label, Select, VotePill } from '@/components/ui'
 import { adminCreatePost } from '@/lib/actions'
 import { requireAuthContext } from '@/lib/session'
 
+const money = (n: number) => `$${n.toLocaleString('en-US')}`
+
 export default async function PostsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ projectId: string }>
-  searchParams: Promise<{ appVersion?: string }>
+  searchParams: Promise<{ appVersion?: string; companyId?: string; sort?: string }>
 }) {
   const { projectId } = await params
-  const { appVersion } = await searchParams
+  const { appVersion, companyId, sort: sortRaw } = await searchParams
+  const byRevenue = sortRaw === 'revenue'
+  const sort: PostSort = byRevenue ? 'revenue' : 'top'
   const ctx = await requireAuthContext()
-  const [posts, statuses, boards] = await Promise.all([
-    postSvc.listPosts(ctx, projectId, { appVersion }),
+  const [posts, statuses, boards, company] = await Promise.all([
+    postSvc.listPosts(ctx, projectId, { appVersion, companyId, sort }),
     statusSvc.listStatuses(ctx, projectId),
     boardSvc.listBoards(ctx, projectId),
+    companyId ? companySvc.getCompany(ctx, projectId, companyId).catch(() => null) : null,
   ])
   const statusById = new Map(statuses.map((s) => [s.id, s]))
+  const qs = (next: Record<string, string | undefined>) => {
+    const sp = new URLSearchParams()
+    if (appVersion) sp.set('appVersion', appVersion)
+    if (companyId) sp.set('companyId', companyId)
+    for (const [k, v] of Object.entries(next)) v ? sp.set(k, v) : sp.delete(k)
+    const s = sp.toString()
+    return `/admin/${projectId}/posts${s ? `?${s}` : ''}`
+  }
 
   return (
     <div className="space-y-6">
@@ -29,15 +48,47 @@ export default async function PostsPage({
           <h1 className="font-display text-3xl tracking-[-0.02em]">Posts</h1>
           <p className="mt-1 text-sm text-ink-soft">Triage what your users are asking for.</p>
         </div>
-        <span className="rounded-full border border-line bg-raised px-3 py-1 text-sm font-semibold tabular-nums">
-          {posts.length} ideas
-        </span>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-full border border-line bg-raised p-0.5 text-xs font-semibold">
+            <Link
+              href={qs({ sort: undefined })}
+              className={`rounded-full px-2.5 py-1 transition ${!byRevenue ? 'bg-accent text-white' : 'text-ink-soft hover:text-ink'}`}
+            >
+              Top
+            </Link>
+            <Link
+              href={qs({ sort: 'revenue' })}
+              className={`rounded-full px-2.5 py-1 transition ${byRevenue ? 'bg-accent text-white' : 'text-ink-soft hover:text-ink'}`}
+            >
+              By revenue
+            </Link>
+          </div>
+          <span className="rounded-full border border-line bg-raised px-3 py-1 text-sm font-semibold tabular-nums">
+            {posts.length} ideas
+          </span>
+        </div>
       </div>
 
       {appVersion && (
         <div className="flex items-center gap-3 rounded-xl border border-accent/30 bg-accent-soft px-4 py-2.5 text-sm">
           <span className="text-ink-soft">
             Filtered to app version <span className="font-semibold text-accent">v{appVersion}</span>
+          </span>
+          <Link
+            href={qs({ appVersion: undefined })}
+            className="ml-auto font-medium text-ink-soft transition hover:text-ink"
+          >
+            Clear ✕
+          </Link>
+        </div>
+      )}
+
+      {companyId && (
+        <div className="flex items-center gap-3 rounded-xl border border-accent/30 bg-accent-soft px-4 py-2.5 text-sm">
+          <span className="text-ink-soft">
+            Requests from{' '}
+            <span className="font-semibold text-accent">{company?.name ?? 'this company'}</span>
+            {company ? ` · ${money(company.mrr)} MRR` : ''}
           </span>
           <Link
             href={`/admin/${projectId}/posts`}
@@ -114,6 +165,14 @@ export default async function PostsPage({
                     </svg>
                     {p.commentCount}
                   </span>
+                  {p.revenueImpact > 0 && (
+                    <span
+                      title="Total MRR of the companies whose users voted for this"
+                      className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-semibold tabular-nums text-emerald-600 dark:text-emerald-400"
+                    >
+                      {money(p.revenueImpact)}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex w-full items-center justify-end gap-2 sm:w-auto">

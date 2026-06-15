@@ -290,3 +290,13 @@ choice. Format: `- [phase] chose X over Y because Z`.
   shared on-disk store is never publicly reachable. Only `appVersion` stays first-class/public.
 - [phase10] The widget surfaces the screenshot control **only on `kind=bug` boards**; the
   auto-collected `context` map (browser/os/url/locale/screen) is attached to every submission.
+- [phase11] Revenue impact = Σ MRR of the **distinct companies** whose users voted (not Σ over
+  voters), so a 3-seat account counts its MRR once. Computed as a correlated SQL subquery on the
+  posts list, exposed as `revenueImpact` alongside (never replacing) `voteCount`.
+- [phase11] Company filters on the posts list (`companyId`/`plan`/`minMrr`) match the **post
+  author's** company (the segment that *asked*), while revenue impact aggregates **voters'**
+  companies (the demand behind it) — two different, intentional lenses.
+- [phase11] In a correlated subquery used inside a SELECT projection, the outer column must be a
+  literal `"posts"."id"` / `"companies"."id"` — drizzle renders an interpolated `${table.id}`
+  unqualified there (qualified only in WHERE/ORDER BY), which collides with the inner tables' own
+  `id` columns ("column reference id is ambiguous"). Verified live before shipping.

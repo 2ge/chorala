@@ -1518,7 +1518,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List posts */
+        /** List posts (filters: board, status, appVersion, company, plan, minMrr; sort incl. revenue) */
         get: {
             parameters: {
                 query?: never;
@@ -1536,7 +1536,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["Post"][];
+                        "application/json": components["schemas"]["AdminPostListItem"][];
                     };
                 };
                 /** @description Bad request */
@@ -1896,6 +1896,70 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["Attachment"][];
                     };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/posts/{id}/customer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The post author’s end-user + company (revenue context) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
                 /** @description Bad request */
                 400: {
@@ -2575,6 +2639,191 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/companies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List companies + rollups (users, posts), richest first */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CompanyWithStats"][];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/companies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a company */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Company"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit a company (mrr / plan / name / domain) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateCompanyInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Company"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/projects/{projectId}/changelog": {
@@ -3723,6 +3972,7 @@ export interface components {
             avatarUrl: string | null;
             isAnonymous: boolean;
             locale: string;
+            companyId: string | null;
             metadata: {
                 [key: string]: unknown;
             };
@@ -3754,6 +4004,56 @@ export interface components {
             color: string;
             createdAt: string;
             updatedAt: string;
+        };
+        Company: {
+            id: string;
+            projectId: string;
+            externalId: string | null;
+            name: string;
+            domain: string | null;
+            mrr: number;
+            plan: string | null;
+            metadata: {
+                [key: string]: unknown;
+            };
+            createdAt: string;
+            updatedAt: string;
+        };
+        CompanyWithStats: {
+            id: string;
+            projectId: string;
+            externalId: string | null;
+            name: string;
+            domain: string | null;
+            mrr: number;
+            plan: string | null;
+            metadata: {
+                [key: string]: unknown;
+            };
+            createdAt: string;
+            updatedAt: string;
+            userCount: number;
+            postCount: number;
+        };
+        AdminPostListItem: {
+            id: string;
+            boardId: string;
+            projectId: string;
+            authorEndUserId: string | null;
+            authorMemberId: string | null;
+            title: string;
+            body: string;
+            originalLocale: string;
+            statusId: string | null;
+            isPinned: boolean;
+            voteCount: number;
+            commentCount: number;
+            mergedIntoPostId: string | null;
+            eta: string | null;
+            appVersion: string | null;
+            createdAt: string;
+            updatedAt: string;
+            revenueImpact: number;
         };
         ChangelogEntry: {
             id: string;
@@ -3943,6 +4243,7 @@ export interface components {
                 avatarUrl: string | null;
                 isAnonymous: boolean;
                 locale: string;
+                companyId: string | null;
                 metadata: {
                     [key: string]: unknown;
                 };
@@ -4082,6 +4383,12 @@ export interface components {
         CreateTagInput: {
             name: string;
             color: string;
+        };
+        UpdateCompanyInput: {
+            name?: string;
+            domain?: string | null;
+            mrr?: number;
+            plan?: string | null;
         };
         CreateChangelogInput: {
             title: string;

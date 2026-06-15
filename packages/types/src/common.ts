@@ -30,7 +30,8 @@ export const webhookEvent = z.enum([
   'changelog.published',
   'vote.created',
 ])
-export const postSort = z.enum(['top', 'new', 'trending', 'oldest'])
+// `revenue` (Σ MRR of voters' companies) is an admin-only sort; public lists fall back to `top`.
+export const postSort = z.enum(['top', 'new', 'trending', 'oldest', 'revenue'])
 
 export type OrgPlan = z.infer<typeof orgPlan>
 export type MemberRole = z.infer<typeof memberRole>
@@ -75,5 +76,16 @@ export const endUserJwtPayload = z.object({
   name: z.string().optional(),
   avatar: z.url().optional(),
   segment: z.record(z.string(), z.unknown()).optional(),
+  // Optional B2B account this user belongs to — drives revenue-weighted prioritization.
+  // `id` is your external company id (used to upsert + de-dupe); `mrr` in whole currency units.
+  company: z
+    .object({
+      id: z.string().min(1),
+      name: z.string().optional(),
+      domain: z.string().optional(),
+      mrr: z.number().int().nonnegative().optional(),
+      plan: z.string().optional(),
+    })
+    .optional(),
 })
 export type EndUserJwtPayload = z.infer<typeof endUserJwtPayload>

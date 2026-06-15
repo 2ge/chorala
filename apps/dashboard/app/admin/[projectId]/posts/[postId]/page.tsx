@@ -25,6 +25,8 @@ const SectionLabel = ({ children }: { children: ReactNode }) => (
   </p>
 )
 
+const money = (n: number) => `$${n.toLocaleString('en-US')}`
+
 export default async function PostDetail({
   params,
 }: {
@@ -44,6 +46,7 @@ export default async function PostDetail({
     issue,
     context,
     attachments,
+    customer,
   ] = await Promise.all([
     postSvc.getPost(ctx, projectId, postId),
     statusSvc.listStatuses(ctx, projectId),
@@ -56,6 +59,7 @@ export default async function PostDetail({
     integrations.getPostIssue(ctx, projectId, postId),
     postSvc.getContext(ctx, projectId, postId),
     storageSvc.listAttachmentsForPost(ctx, projectId, postId),
+    postSvc.getPostCustomer(ctx, projectId, postId),
   ])
   const contextEntries = Object.entries(context.context ?? {})
   const hasContext = !!context.appVersion || contextEntries.length > 0
@@ -142,6 +146,34 @@ export default async function PostDetail({
         </div>
 
         <div className="space-y-4">
+          {(customer.company || customer.endUser) && (
+            <Card className="p-5">
+              <SectionLabel>Customer</SectionLabel>
+              {customer.endUser && (
+                <p className="text-sm font-medium text-ink">
+                  {customer.endUser.name ||
+                    customer.endUser.email ||
+                    (customer.endUser.isAnonymous ? 'Anonymous' : 'Unknown')}
+                </p>
+              )}
+              {customer.company ? (
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <Link
+                    href={`/admin/${projectId}/posts?companyId=${customer.company.id}`}
+                    className="min-w-0 truncate text-sm text-ink-soft transition hover:text-accent"
+                  >
+                    {customer.company.name}
+                    {customer.company.plan ? ` · ${customer.company.plan}` : ''}
+                  </Link>
+                  <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    {money(customer.company.mrr)}
+                  </span>
+                </div>
+              ) : (
+                <p className="mt-1 text-xs text-ink-faint">No company linked.</p>
+              )}
+            </Card>
+          )}
           <DedupSuggestions projectId={projectId} postId={postId} suggestions={dedupSuggestions} />
           <Card className="space-y-4 p-5">
             <div>

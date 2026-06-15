@@ -71,14 +71,17 @@ The `context` jsonb + first‑class `appVersion` landed 2026‑06‑15; Phase 10
 - ✅ Bug boards (`kind=bug`) get the screenshot control + a bug‑framed form; the Context panel
   renders the auto‑collected map. Host opt‑in for version via `data-app-version` / `Chorala.init({ appVersion })`.
 
-### Phase 11 — B2B revenue intelligence · *medium, highest sales value*
-Close gap #1 — the thing that makes us sellable to B2B SaaS.
-- `companies` entity; `endUser.companyId`; company holds `mrr`, `plan`, custom attributes.
-- Extend the **identify JWT** (already exists) to carry company + MRR; upsert on identify.
-- **Revenue‑weighted prioritization:** post value = Σ(voter company MRR); sort/badge by it.
-  Keep raw vote count too — never replace the "votes are free" story, *augment* it.
-- Filter posts/roadmap by plan / company / MRR band.
-- *Honors the pricing promise:* we weight by revenue **without** metering or charging per user.
+### Phase 11 — B2B revenue intelligence · *medium, highest sales value* · ✅ SHIPPED 2026‑06‑15
+Closed gap #1 — the thing that makes us sellable to B2B SaaS.
+- ✅ `companies` entity; `endUser.companyId`; company holds `mrr`, `plan`, `domain`, metadata.
+- ✅ Identify JWT extended with an optional `company` claim → upserts the account (keyed by
+  external id) and stamps `company_id` on the user, every identify.
+- ✅ **Revenue‑weighted prioritization:** post value = Σ MRR of the *distinct* companies whose
+  users voted (a company with 3 voters counts once). `?sort=revenue` + a green $ badge on the
+  posts list — *alongside* the raw vote count, never replacing it.
+- ✅ Filter posts by company / plan / minMrr (`?companyId=`, `?plan=`, `?minMrr=`); Companies
+  dashboard tab with per‑account rollups; "Customer" card on post detail (who asked + MRR).
+- *Honors the pricing promise:* weights by revenue **without** metering or charging per user.
 
 ### Phase 12 — Prioritization & triage workflow · *medium*
 - Custom **numeric fields** on posts → pluggable **scoring** (RICE / ICE / custom weighted).

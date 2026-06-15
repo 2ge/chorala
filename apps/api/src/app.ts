@@ -12,6 +12,7 @@ import { apiKeysRoutes } from './routes/apiKeys.ts'
 import { boardsRoutes } from './routes/boards.ts'
 import { changelogRoutes } from './routes/changelog.ts'
 import { commentsRoutes } from './routes/comments.ts'
+import { companiesRoutes } from './routes/companies.ts'
 import { orgRoutes } from './routes/org.ts'
 import { postsRoutes } from './routes/posts.ts'
 import { projectsRoutes } from './routes/projects.ts'
@@ -100,6 +101,7 @@ export function createApp() {
   api.route('/projects/:projectId/posts', postsRoutes)
   api.route('/projects/:projectId/posts/:postId/comments', commentsRoutes)
   api.route('/projects/:projectId/tags', tagsRoutes)
+  api.route('/projects/:projectId/companies', companiesRoutes)
   api.route('/projects/:projectId/changelog', changelogRoutes)
   api.route('/projects/:projectId/keys', apiKeysRoutes)
   api.route('/projects/:projectId/analytics', analyticsRoutes)

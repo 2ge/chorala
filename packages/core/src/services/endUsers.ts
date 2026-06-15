@@ -1,5 +1,6 @@
 import { and, db, endUsers, eq, newId } from '@chorala/db'
 import { badRequest } from '../errors.ts'
+import { upsertFromIdentity as upsertCompany } from './companies.ts'
 
 /** Identity claims carried by the host-signed end-user JWT (SPEC §8.2). */
 export type Identity = {
@@ -8,10 +9,23 @@ export type Identity = {
   name?: string
   avatar?: string
   segment?: Record<string, unknown>
+  // `company.id` is the host's external company id (becomes the company's `externalId`).
+  company?: { id: string; name?: string; domain?: string; mrr?: number; plan?: string }
 }
 
-/** Upsert an identified end-user keyed by (project, externalId). */
+/** Upsert an identified end-user keyed by (project, externalId), syncing their company too. */
 export async function upsertFromIdentity(projectId: string, identity: Identity) {
+  // Sync the account first so we can stamp company_id on the user in the same pass.
+  const companyId = identity.company
+    ? await upsertCompany(projectId, {
+        externalId: identity.company.id,
+        name: identity.company.name,
+        domain: identity.company.domain,
+        mrr: identity.company.mrr,
+        plan: identity.company.plan,
+      })
+    : undefined
+
   const [existing] = await db
     .select()
     .from(endUsers)
@@ -25,6 +39,7 @@ export async function upsertFromIdentity(projectId: string, identity: Identity) 
         name: identity.name ?? existing.name,
         avatarUrl: identity.avatar ?? existing.avatarUrl,
         segment: identity.segment ?? existing.segment,
+        companyId: companyId ?? existing.companyId,
         isAnonymous: false,
       })
       .where(eq(endUsers.id, existing.id))
@@ -43,6 +58,7 @@ export async function upsertFromIdentity(projectId: string, identity: Identity) 
       name: identity.name,
       avatarUrl: identity.avatar,
       segment: identity.segment ?? {},
+      companyId,
       isAnonymous: false,
     })
     .returning()

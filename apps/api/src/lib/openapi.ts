@@ -24,6 +24,9 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   EndUser: [T.endUser, 'output'],
   Project: [T.project, 'output'],
   Tag: [T.tag, 'output'],
+  Company: [T.company, 'output'],
+  CompanyWithStats: [T.companyWithStats, 'output'],
+  AdminPostListItem: [T.adminPostListItem, 'output'],
   ChangelogEntry: [T.changelogEntry, 'output'],
   Member: [T.member, 'output'],
   Organization: [T.organization, 'output'],
@@ -52,6 +55,7 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   MergePostInput: [T.mergePostInput, 'input'],
   TagPostInput: [T.tagPostInput, 'input'],
   CreateTagInput: [T.createTagInput, 'input'],
+  UpdateCompanyInput: [T.updateCompanyInput, 'input'],
   CreateChangelogInput: [T.createChangelogInput, 'input'],
   UpdateChangelogInput: [T.updateChangelogInput, 'input'],
   CreateApiKeyInput: [T.createApiKeyInput, 'input'],
@@ -313,8 +317,9 @@ const ROUTES: Route[] = [
     path: '/projects/{projectId}/posts',
     tag: 'Posts',
     sec: 'admin',
-    summary: 'List posts',
-    resp: arr('Post'),
+    summary:
+      'List posts (filters: board, status, appVersion, company, plan, minMrr; sort incl. revenue)',
+    resp: arr('AdminPostListItem'),
   },
   {
     method: 'post',
@@ -355,6 +360,13 @@ const ROUTES: Route[] = [
     sec: 'admin',
     summary: 'List a post’s attachments (screenshots)',
     resp: arr('Attachment'),
+  },
+  {
+    method: 'get',
+    path: '/projects/{projectId}/posts/{id}/customer',
+    tag: 'Posts',
+    sec: 'admin',
+    summary: 'The post author’s end-user + company (revenue context)',
   },
   {
     method: 'patch',
@@ -460,6 +472,33 @@ const ROUTES: Route[] = [
     tag: 'Tags',
     sec: 'admin',
     summary: 'Delete a tag',
+  },
+
+  // --- Companies (B2B revenue intelligence) ---
+  {
+    method: 'get',
+    path: '/projects/{projectId}/companies',
+    tag: 'Companies',
+    sec: 'admin',
+    summary: 'List companies + rollups (users, posts), richest first',
+    resp: arr('CompanyWithStats'),
+  },
+  {
+    method: 'get',
+    path: '/projects/{projectId}/companies/{id}',
+    tag: 'Companies',
+    sec: 'admin',
+    summary: 'Get a company',
+    resp: ref('Company'),
+  },
+  {
+    method: 'patch',
+    path: '/projects/{projectId}/companies/{id}',
+    tag: 'Companies',
+    sec: 'admin',
+    summary: 'Edit a company (mrr / plan / name / domain)',
+    body: 'UpdateCompanyInput',
+    resp: ref('Company'),
   },
 
   // --- Changelog (admin) ---

@@ -3,8 +3,10 @@ import {
   and,
   asc,
   boards,
+  companies,
   db,
   desc,
+  endUsers,
   eq,
   ilike,
   inArray,
@@ -52,10 +54,31 @@ type ListOpts = {
   boardId?: string
   statusId?: string
   appVersion?: string
+  /** Filter to posts authored by users of this company / plan / minimum account MRR. */
+  companyId?: string
+  plan?: string
+  minMrr?: number
   search?: string
   sort?: PostSort
   includeMerged?: boolean
 }
+
+/**
+ * Revenue impact (Phase 11): Σ MRR of the *distinct* companies whose users voted for a post.
+ * Distinct so a company with three voters counts its MRR once. Correlated to the outer row.
+ */
+// `"posts"."id"` is written as a literal (not ${posts.id}) so the correlation stays qualified
+// in the SELECT projection too — drizzle renders an interpolated column unqualified there,
+// which collides with the inner tables' own `id` columns ("column reference id is ambiguous").
+const revenueImpactSql = sql<number>`coalesce((
+  select sum(t.mrr)::int from (
+    select distinct c.id, c.mrr
+    from votes v
+    join end_users eu on v.end_user_id = eu.id
+    join companies c on eu.company_id = c.id
+    where v.post_id = "posts"."id"
+  ) t
+), 0)`
 
 function orderFor(sort: PostSort | undefined) {
   switch (sort) {
@@ -65,10 +88,18 @@ function orderFor(sort: PostSort | undefined) {
       return [asc(posts.createdAt)]
     case 'trending':
       return [desc(posts.voteCount), desc(posts.createdAt)]
+    case 'revenue':
+      return [sql`${revenueImpactSql} desc`, desc(posts.voteCount)]
     default:
       return [desc(posts.isPinned), desc(posts.voteCount)]
   }
 }
+
+// posts authored by a user whose company matches a predicate on the companies row
+const byAuthorCompany = (pred: ReturnType<typeof sql>) =>
+  sql`${posts.authorEndUserId} in (
+    select eu.id from end_users eu join companies c on eu.company_id = c.id where ${pred}
+  )`
 
 export async function listPosts(ctx: AuthContext, projectId: string, opts: ListOpts = {}) {
   await getProject(ctx, projectId)
@@ -76,6 +107,9 @@ export async function listPosts(ctx: AuthContext, projectId: string, opts: ListO
   if (opts.boardId) filters.push(eq(posts.boardId, opts.boardId))
   if (opts.statusId) filters.push(eq(posts.statusId, opts.statusId))
   if (opts.appVersion) filters.push(eq(posts.appVersion, opts.appVersion))
+  if (opts.companyId) filters.push(byAuthorCompany(sql`c.id = ${opts.companyId}`))
+  if (opts.plan) filters.push(byAuthorCompany(sql`c.plan = ${opts.plan}`))
+  if (opts.minMrr) filters.push(byAuthorCompany(sql`c.mrr >= ${opts.minMrr}`))
   if (!opts.includeMerged) filters.push(sql`${posts.mergedIntoPostId} is null`)
   if (opts.search) {
     const term = `%${opts.search}%`
@@ -83,7 +117,7 @@ export async function listPosts(ctx: AuthContext, projectId: string, opts: ListO
     if (match) filters.push(match)
   }
   return db
-    .select(postColumns)
+    .select({ ...postColumns, revenueImpact: revenueImpactSql })
     .from(posts)
     .where(and(...filters))
     .orderBy(...orderFor(opts.sort))
@@ -142,6 +176,37 @@ export async function getContext(ctx: AuthContext, projectId: string, id: string
     .where(and(eq(posts.id, id), eq(posts.projectId, projectId)))
   if (!row) throw notFound('Post')
   return { appVersion: row.appVersion, context: (row.context ?? {}) as Record<string, unknown> }
+}
+
+/**
+ * The post author's end-user + their company (Phase 11). Powers the "Customer" card on the
+ * admin post detail — who asked, and what account/MRR they represent. Admin-only.
+ */
+export async function getPostCustomer(ctx: AuthContext, projectId: string, id: string) {
+  await getProject(ctx, projectId)
+  const [post] = await db
+    .select({ authorEndUserId: posts.authorEndUserId })
+    .from(posts)
+    .where(and(eq(posts.id, id), eq(posts.projectId, projectId)))
+  if (!post) throw notFound('Post')
+  if (!post.authorEndUserId) return { endUser: null, company: null }
+
+  const [eu] = await db
+    .select({
+      id: endUsers.id,
+      name: endUsers.name,
+      email: endUsers.email,
+      isAnonymous: endUsers.isAnonymous,
+      companyId: endUsers.companyId,
+    })
+    .from(endUsers)
+    .where(eq(endUsers.id, post.authorEndUserId))
+  if (!eu) return { endUser: null, company: null }
+
+  const company = eu.companyId
+    ? ((await db.select().from(companies).where(eq(companies.id, eu.companyId)))[0] ?? null)
+    : null
+  return { endUser: eu, company }
 }
 
 async function assertBoardInProject(projectId: string, boardId: string) {

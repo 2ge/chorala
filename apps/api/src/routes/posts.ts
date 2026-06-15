@@ -24,6 +24,9 @@ export const postsRoutes = new Hono<AppEnv>()
         boardId: c.req.query('boardId'),
         statusId: c.req.query('statusId'),
         appVersion: c.req.query('appVersion'),
+        companyId: c.req.query('companyId'),
+        plan: c.req.query('plan'),
+        minMrr: c.req.query('minMrr') ? Number(c.req.query('minMrr')) : undefined,
         search: c.req.query('search'),
         sort: postSort.catch('top').parse(sortRaw),
         includeMerged: c.req.query('includeMerged') === 'true',
@@ -56,6 +59,10 @@ export const postsRoutes = new Hono<AppEnv>()
         c.req.param('id'),
       ),
     ),
+  )
+  // The post author's end-user + their company (revenue context).
+  .get('/:id/customer', async (c) =>
+    c.json(await posts.getPostCustomer(c.get('auth'), reqParam(c, 'projectId'), c.req.param('id'))),
   )
   .patch('/:id', async (c) =>
     c.json(

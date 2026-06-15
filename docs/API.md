@@ -51,7 +51,7 @@ Better Auth cookie (see §5). The dashboard calls the admin API same-origin. Opt
 ### 2.1 IDs
 Prefixed nanoids — `post_…`, `pk_…`, `hk_…`, `board_…`, `status_…`, `comment_…`,
 `project_…`, `organization_…`, `member_…`, `user_…`, `endUser_…`, `tag_…`,
-`changelog_…`, `webhook_…`, `att_…` (attachment).
+`changelog_…`, `webhook_…`, `att_…` (attachment), `co_…` (company).
 
 ### 2.2 Errors
 Always `HTTP <status>` + body:
@@ -206,11 +206,12 @@ PATCH /:id · DELETE /:id
 
 ### Posts — `/projects/:projectId/posts`
 ```
-GET    /                  list (filters: board, status, tag, appVersion, search, sort)
+GET    /                  list (filters: board, status, tag, appVersion, companyId, plan, minMrr; sort incl. revenue)
 POST   /                  { boardId, title, body?, statusId?, locale? }            → 201
 GET    /:id
 GET    /:id/context        → { appVersion, context }   // submission metadata map (admin-only)
 GET    /:id/attachments    → Attachment[]              // screenshots (metadata; bytes via dashboard)
+GET    /:id/customer       → { endUser, company }      // who filed it + their account/MRR
 PATCH  /:id               { title?, body?, statusId?, boardId?, isPinned?, eta? }
 DELETE /:id
 POST   /:id/status        { statusId: "status_…" | null }     // moves on the roadmap, fires integrations
@@ -232,6 +233,20 @@ GET /  · POST / { body, parentCommentId?, isInternal? }  · DELETE /:id
 ```
 GET /  · POST / { name, color }  · DELETE /:id
 ```
+
+### Companies — `/projects/:projectId/companies`  (B2B revenue intelligence)
+```
+GET   /                  list + rollups (userCount, postCount), richest (MRR) first
+GET   /:id
+PATCH /:id               { name?, domain?, mrr?, plan? }   // edit revenue when not synced via JWT
+```
+Companies are created/updated from the identify JWT's `company` claim (§6). They drive:
+- **`GET …/posts?sort=revenue`** — orders by `revenueImpact` = Σ MRR of the *distinct*
+  companies whose users voted (each account counted once). Every admin post row carries
+  `revenueImpact` next to `voteCount`.
+- **Author-segment filters** on the posts list: `?companyId=`, `?plan=`, `?minMrr=` (posts
+  authored by users of that company / plan / MRR floor).
+- **`GET …/posts/:id/customer`** → `{ endUser, company }` — who filed it and their account.
 
 ### Changelog — `/projects/:projectId/changelog`
 ```
@@ -299,12 +314,14 @@ public calls.
 ```ts
 import { SignJWT } from 'jose'
 const token = await new SignJWT({ id: user.id, email: user.email, name: user.name,
-                                  segment: { plan: 'pro', mrr: 4200 } })
+                                  segment: { plan: 'pro' },
+                                  company: { id: 'acct_42', name: 'Globex', mrr: 4200, plan: 'pro' } })
   .setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime('1h')
   .sign(new TextEncoder().encode(END_USER_JWT_SECRET))
 ```
-`segment` powers prioritization (e.g. weight votes by MRR). Anonymous visitors fall back to
-the `chorala_uid` cookie.
+The optional **`company`** claim (`{ id, name?, domain?, mrr?, plan? }`) upserts a B2B account
+(keyed by `id`) and links the user to it — powering **revenue-weighted prioritization** (§4).
+`segment` is free-form attributes. Anonymous visitors fall back to the `chorala_uid` cookie.
 
 ---
 

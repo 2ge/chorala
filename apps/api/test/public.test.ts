@@ -1,5 +1,5 @@
 import { env } from '@chorala/config'
-import { attachments, db, eq, projects } from '@chorala/db'
+import { attachments, companies, db, eq, projects } from '@chorala/db'
 import { SignJWT } from 'jose'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createApp } from '../src/app.ts'
@@ -232,6 +232,30 @@ describe('identified flow (host JWT)', () => {
       body: JSON.stringify({ jwt: 'definitely.not.valid' }),
     })
     expect(res.status).toBe(401)
+  })
+
+  test('a company in the JWT upserts the account and links the end-user (Phase 11)', async () => {
+    const jwt = await signUser({
+      id: 'jwt-buyer-1',
+      email: 'buyer@globex.com',
+      company: { id: 'globex', name: 'Globex Corp', mrr: 4200, plan: 'enterprise' },
+    })
+    const res = await app.request('/api/v1/public/identify', {
+      method: 'POST',
+      headers: { ...KEY(), 'content-type': 'application/json' },
+      body: JSON.stringify({ jwt }),
+    })
+    expect(res.status).toBe(200)
+    const { endUser } = (await res.json()) as { endUser: { id: string; companyId: string | null } }
+    expect(endUser.companyId).toMatch(/^co_/)
+
+    const [co] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.id, endUser.companyId as string))
+    expect(co?.externalId).toBe('globex')
+    expect(co?.mrr).toBe(4200)
+    expect(co?.plan).toBe('enterprise')
   })
 })
 

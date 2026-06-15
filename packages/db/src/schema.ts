@@ -152,6 +152,10 @@ export const endUsers = pgTable(
     avatarUrl: text('avatar_url'),
     isAnonymous: boolean('is_anonymous').default(true).notNull(),
     locale: text('locale').default('en').notNull(),
+    // Account/company this user belongs to — powers revenue-weighted prioritization (Phase 11).
+    companyId: text('company_id').references((): AnyPgColumn => companies.id, {
+      onDelete: 'set null',
+    }),
     metadata: jsonb('metadata').$type<Json>().default({}).notNull(),
     segment: jsonb('segment').$type<Json>().default({}).notNull(),
     ...ts,
@@ -163,6 +167,35 @@ export const endUsers = pgTable(
     uniqueIndex('end_users_project_email_uq')
       .on(t.projectId, t.email)
       .where(sql`${t.email} is not null`),
+    index('end_users_company_idx').on(t.companyId),
+  ],
+)
+
+/**
+ * Customer accounts (B2B). End-users belong to a company; a company carries `mrr`/`plan` so
+ * feedback can be weighted by revenue ("$40k of MRR wants this"). Synced from the identify
+ * JWT (keyed by external_id) or edited in the dashboard.
+ */
+export const companies = pgTable(
+  'companies',
+  {
+    id: pk('company'),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    externalId: text('external_id'),
+    name: text('name').notNull(),
+    domain: text('domain'),
+    mrr: integer('mrr').default(0).notNull(),
+    plan: text('plan'),
+    metadata: jsonb('metadata').$type<Json>().default({}).notNull(),
+    ...ts,
+  },
+  (t) => [
+    uniqueIndex('companies_project_external_uq')
+      .on(t.projectId, t.externalId)
+      .where(sql`${t.externalId} is not null`),
+    index('companies_project_idx').on(t.projectId),
   ],
 )
 

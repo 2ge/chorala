@@ -62,8 +62,22 @@ export const endUser = z
     avatarUrl: z.url().nullable(),
     isAnonymous: z.boolean(),
     locale: z.string(),
+    companyId: prefixedId('co').nullable(),
     metadata: jsonObject,
     segment: jsonObject,
+  })
+  .extend(timestamps.shape)
+
+export const company = z
+  .object({
+    id: prefixedId('co'),
+    projectId: prefixedId('proj'),
+    externalId: z.string().nullable(),
+    name: z.string(),
+    domain: z.string().nullable(),
+    mrr: z.number().int(),
+    plan: z.string().nullable(),
+    metadata: jsonObject,
   })
   .extend(timestamps.shape)
 
@@ -275,6 +289,7 @@ export type Organization = z.infer<typeof organization>
 export type Member = z.infer<typeof member>
 export type Project = z.infer<typeof project>
 export type EndUser = z.infer<typeof endUser>
+export type Company = z.infer<typeof company>
 export type Board = z.infer<typeof board>
 export type Status = z.infer<typeof status>
 export type Post = z.infer<typeof post>
