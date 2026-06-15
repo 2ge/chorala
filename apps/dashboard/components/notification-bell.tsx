@@ -29,20 +29,19 @@ export function NotificationBell() {
   const [unread, setUnread] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
 
-  async function load() {
-    try {
-      const r = await fetch('/api/v1/org/notifications', { credentials: 'include' })
-      if (r.ok) {
-        const d = (await r.json()) as { items?: Notif[]; unread?: number }
-        setItems(d.items ?? [])
-        setUnread(d.unread ?? 0)
-      }
-    } catch {
-      /* ignore */
-    }
-  }
-
   useEffect(() => {
+    const load = async () => {
+      try {
+        const r = await fetch('/api/v1/org/notifications', { credentials: 'include' })
+        if (r.ok) {
+          const d = (await r.json()) as { items?: Notif[]; unread?: number }
+          setItems(d.items ?? [])
+          setUnread(d.unread ?? 0)
+        }
+      } catch {
+        /* ignore */
+      }
+    }
     load()
     const id = setInterval(load, 30_000)
     const onClick = (e: MouseEvent) => {
