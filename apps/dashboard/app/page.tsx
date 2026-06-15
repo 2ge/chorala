@@ -8,7 +8,7 @@ const DEMO = 'https://feedback.musicaha.com'
 export const metadata: Metadata = {
   title: 'Chorala — open-source feedback boards, roadmap & changelog',
   description:
-    'Collect product feedback, let users vote, and turn the signal into a public roadmap and changelog. Open-core, embeddable, multilingual, AI-native. Self-host or cloud — unlimited votes, always.',
+    'Collect product feedback, let users vote, and ship a roadmap + changelog people follow. AI Autopilot captures requests from support threads; revenue weighting and segments prioritise by MRR. Open-core, embeddable, API-first. Self-host or cloud — unlimited votes, always.',
   robots: { index: true, follow: true },
   alternates: {
     canonical: 'https://chorala.com',
@@ -76,34 +76,34 @@ function Icon({ path }: { path: string }) {
 
 const FEATURES = [
   {
-    name: 'Boards & voting',
+    name: 'Boards, voting & roadmap',
     icon: 'M7 14l3-3 3 2 4-5M5 5v14h14',
-    body: 'Public idea boards where users post, upvote and discuss. One-tap voting, threaded comments, custom statuses — anonymous or authenticated.',
+    body: 'Public idea boards where users post, upvote and discuss — anonymous or via SSO. Triage with statuses and tags, then publish a roadmap and a changelog that emails every voter the moment it ships.',
   },
   {
-    name: 'Roadmap',
-    icon: 'M4 6h6M4 12h10M4 18h7M16 4l4 4-4 4',
-    body: 'Drag prioritised ideas across Planned → In progress → Shipped. Publishes a clean public roadmap your users can actually follow.',
-  },
-  {
-    name: 'Changelog',
-    icon: 'M12 3v6l4 2M3 12a9 9 0 1018 0 9 9 0 00-18 0',
-    body: 'Announce what you shipped, tag releases, and automatically notify everyone who voted. Close the loop, every time.',
-  },
-  {
-    name: 'AI triage',
+    name: 'AI Autopilot',
     icon: 'M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z',
-    body: 'Duplicate suggestions, theme clustering and summaries — pluggable provider (local Ollama by default, or OpenAI / Anthropic). Feedback never has to leave your box.',
+    body: 'Paste a support thread → AI extracts the feature requests as drafts for review. Ask your feedback in plain English. Dedup, clustering and summaries on a pluggable provider (local Ollama by default) — nothing leaves your box.',
   },
   {
-    name: 'Embeddable widget',
+    name: 'Revenue-weighted priorities',
+    icon: 'M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6',
+    body: 'Sync companies + MRR and see the dollars behind every request — “$40k of revenue wants this,” each account counted once. Filter the board by plan, company or MRR band.',
+  },
+  {
+    name: 'Segments & targeted changelog',
+    icon: 'M22 3H2l8 9.46V19l4 2v-8.54L22 3z',
+    body: 'Build audiences from any attribute (plan, MRR, locale, domain) and announce only to the people an update is for — personalised with {{first_name}} and {{company}}. The thing Canny can’t do.',
+  },
+  {
+    name: 'Embed widget + bug capture',
     icon: 'M9 7l-5 5 5 5M15 7l5 5-5 5',
-    body: 'A 2-line snippet drops a Preact widget into any site, sealed in a Shadow DOM so host CSS can never touch it. Floating or inline, 8 languages.',
+    body: 'A two-line snippet drops a Preact widget into any site, sealed in a Shadow DOM. Bug boards capture annotated screenshots and browser/OS/version context automatically. Floating or inline, multilingual.',
   },
   {
-    name: 'Integrations',
-    icon: 'M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1',
-    body: 'Sync feedback to GitHub issues, fire HMAC-signed webhooks, and expose your boards to AI clients (Claude, Cursor) over a native MCP server.',
+    name: 'Developer-first by design',
+    icon: 'M16 18l6-6-6-6M8 6l-6 6 6 6',
+    body: 'A typed SDK generated from an OpenAPI 3.1 spec, a self-discoverable API (RFC 8631/9727 + llms.txt), HMAC-signed webhooks, an inbound CDP webhook, GitHub & Discord, and a native MCP server for Claude / Cursor.',
   },
 ]
 
@@ -149,35 +149,33 @@ const ROADMAP: { label: string; tone: string; items: string[] }[] = [
     label: 'Shipped',
     tone: 'shipped',
     items: [
-      'Feedback boards & voting',
-      'Public roadmap',
-      'Changelog + voter notifications',
-      'Embeddable Shadow-DOM widget',
-      'AI dedup & theme clustering',
-      'GitHub issue sync',
-      'Signed webhooks + MCP server',
-      'Multilingual (8 locales) · 5 themes',
-      'One-command self-host (Docker)',
+      'Boards, voting, roadmap & changelog',
+      'AI Autopilot: ingest → drafts · ask your feedback',
+      'Companies + MRR revenue weighting',
+      'Segments + targeted, personalised changelog',
+      'Weighted scoring (RICE/ICE), CSV export, vote-on-behalf',
+      'Bug capture: screenshots + auto context',
+      'GitHub · Discord · inbound CDP webhook · MCP',
+      'Typed SDK from OpenAPI · signed webhooks',
+      'Multilingual · themes · one-command self-host',
     ],
   },
   {
-    label: 'Building now',
+    label: 'Next up',
     tone: 'now',
     items: [
-      'SSO (SAML / OIDC)',
-      'Weekly email digests',
-      'Slack & Discord notifications',
-      'Per-board analytics',
-      'Private & internal boards',
+      'In-app surveys & NPS / CSAT',
+      'Enterprise: SAML / SCIM SSO',
+      'Custom admin roles + audit log',
+      'Moderation & spam queue',
     ],
   },
   {
     label: 'Exploring',
     tone: 'later',
     items: [
-      'In-app micro-surveys',
-      'Custom fields & segments',
-      'Linear & Jira sync',
+      'Jira / Intercom / Zendesk connectors',
+      'AI smart-replies & auto-categorise',
       'Mobile SDK',
       'Salesforce / HubSpot',
     ],
@@ -201,7 +199,7 @@ const PRICING = [
     price: '$15',
     cadence: '/ month',
     blurb: 'For growing products that need their own home.',
-    features: ['3 admin seats', 'Custom domain', 'AI triage included', 'Deliverable email'],
+    features: ['3 admin seats', 'Custom domain', 'AI Autopilot + dedup', 'GitHub & Discord'],
     cta: 'Start Starter',
     highlight: false,
   },
@@ -211,7 +209,12 @@ const PRICING = [
     price: '$39',
     cadence: '/ month',
     blurb: 'For teams that want it fully theirs.',
-    features: ['10 admin seats', 'White-label (no badge)', 'SSO', 'EU data residency'],
+    features: [
+      '10 admin seats',
+      'White-label (no badge)',
+      'Revenue weighting & segments',
+      'EU data residency',
+    ],
     cta: 'Start Pro',
     highlight: true,
   },
@@ -245,6 +248,9 @@ export default function Landing() {
             </a>
             <a className="transition hover:text-ink" href="#why">
               Why Chorala
+            </a>
+            <a className="transition hover:text-ink" href="#developers">
+              Developers
             </a>
             <a className="transition hover:text-ink" href="#roadmap">
               Roadmap
@@ -452,6 +458,76 @@ export default function Landing() {
         </div>
       </Section>
 
+      {/* ---------- FOR DEVELOPERS ---------- */}
+      <Section
+        id="developers"
+        eyebrow="Built for developers"
+        title="Open source, API-first, no black boxes."
+        alt
+      >
+        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <p className="text-[15px] leading-relaxed text-ink-soft">
+              The whole platform is on GitHub under <strong className="text-ink">AGPL</strong> (the
+              widget, SDK and MCP are <strong className="text-ink">MIT</strong>, so you can embed
+              them anywhere). Every endpoint is generated from one zod contract and published as an{' '}
+              <strong className="text-ink">OpenAPI&nbsp;3.1</strong> spec — so the typed SDK, the
+              docs and your own clients never drift.
+            </p>
+            <ul className="mt-6 space-y-3">
+              {(
+                [
+                  ['OpenAPI 3.1 spec', '/api/v1/openapi.json'],
+                  ['Interactive API docs', '/docs'],
+                  ['Typed SDK — @chorala/sdk', GITHUB],
+                  ['MCP server for Claude / Cursor', GITHUB],
+                  ['llms.txt — discoverable by agents', '/llms.txt'],
+                ] as [string, string][]
+              ).map(([label, href]) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    target={href.startsWith('/') ? undefined : '_blank'}
+                    rel="noreferrer"
+                    className="group flex items-center gap-2.5 text-[15px] text-ink-soft transition hover:text-accent"
+                  >
+                    <span className="text-accent">→</span>
+                    <span className="underline-offset-4 group-hover:underline">{label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <a
+              href={GITHUB}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-7 inline-flex items-center gap-2 rounded-full border border-line-strong bg-raised px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+            >
+              ★ Star on GitHub
+            </a>
+          </div>
+
+          <div className="space-y-3">
+            <CodeCard title="embed.html" subtitle="One tag — the widget self-configures">
+              {`<script async src="https://chorala.com/widget.js"
+        data-chorala-key="pk_live_…"></script>`}
+            </CodeCard>
+            <CodeCard title="submit.sh" subtitle="Public API — votes & posts, no SDK needed">
+              {`curl -X POST https://chorala.com/api/v1/public/posts \\
+  -H "X-Chorala-Key: pk_live_…" \\
+  -H "Content-Type: application/json" \\
+  -d '{"boardSlug":"feature-requests",
+       "title":"Dark mode","body":"please 🙏"}'`}
+            </CodeCard>
+            <CodeCard title="self-host.sh" subtitle="The full platform, your infrastructure">
+              {`git clone https://github.com/2ge/chorala
+cp .env.example .env
+docker compose up   # → localhost, unlimited votes`}
+            </CodeCard>
+          </div>
+        </div>
+      </Section>
+
       {/* ---------- ROADMAP ---------- */}
       <Section
         id="roadmap"
@@ -612,9 +688,9 @@ export default function Landing() {
             title="Developers"
             links={[
               ['GitHub', GITHUB],
-              ['Widget', '#features'],
+              ['API docs', '/docs'],
+              ['OpenAPI spec', '/api/v1/openapi.json'],
               ['Self-host', GITHUB],
-              ['MCP server', '#features'],
             ]}
           />
           <FooterCol
@@ -639,6 +715,31 @@ export default function Landing() {
 }
 
 /* ---- sub-components ---- */
+
+function CodeCard({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string
+  subtitle: string
+  children: string
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-line bg-ink text-paper shadow-[0_18px_44px_-28px_rgba(28,24,21,0.6)]">
+      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+        <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+        <span className="ml-2 font-mono text-xs text-paper/60">{title}</span>
+        <span className="ml-auto hidden text-[11px] text-paper/40 sm:block">{subtitle}</span>
+      </div>
+      <pre className="overflow-x-auto px-4 py-3.5 font-mono text-[12.5px] leading-relaxed text-paper/90">
+        <code>{children}</code>
+      </pre>
+    </div>
+  )
+}
 
 function Section({
   id,
