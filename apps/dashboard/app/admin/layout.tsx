@@ -2,6 +2,7 @@ import { projects as projectService } from '@chorala/core'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { NotificationBell } from '@/components/notification-bell'
 import { SignOut } from '@/components/sign-out'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { requireAuthContext } from '@/lib/session'
@@ -48,6 +49,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <span className="hidden rounded-full border border-line bg-raised px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-soft sm:inline">
               {ctx.role}
             </span>
+            <NotificationBell />
             <ThemeSwitcher initial={theme} />
             <SignOut />
           </div>

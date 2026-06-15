@@ -1,4 +1,4 @@
-import { members, orgs } from '@chorala/core'
+import { members, notifications, orgs } from '@chorala/core'
 import { inviteMemberInput, memberRole, updateOrgSettingsInput } from '@chorala/types'
 import { Hono } from 'hono'
 import { z } from 'zod'
@@ -33,3 +33,6 @@ export const orgRoutes = new Hono<AppEnv>()
   .delete('/members/:id', async (c) =>
     c.json(await members.removeMember(c.get('auth'), c.req.param('id'))),
   )
+  // In-app notification centre for the signed-in admin.
+  .get('/notifications', async (c) => c.json(await notifications.listForMember(c.get('auth'))))
+  .post('/notifications/read', async (c) => c.json(await notifications.markAllRead(c.get('auth'))))
