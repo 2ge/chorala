@@ -92,6 +92,21 @@
   --color-accent-soft: #e9e9e5;
 }
 
+/* Custom palette: the user picks just paper/ink/accent (injected as --c-*); the rest of
+   the token set is derived here with color-mix, so any 3 colours yield a coherent theme. */
+:root[data-theme='custom'] {
+  --color-paper: var(--c-paper, #f7f3ec);
+  --color-ink: var(--c-ink, #1c1815);
+  --color-accent: var(--c-accent, #d9512a);
+  --color-raised: color-mix(in srgb, var(--color-paper) 94%, var(--color-ink));
+  --color-ink-soft: color-mix(in srgb, var(--color-ink) 65%, var(--color-paper));
+  --color-ink-faint: color-mix(in srgb, var(--color-ink) 40%, var(--color-paper));
+  --color-line: color-mix(in srgb, var(--color-paper) 85%, var(--color-ink));
+  --color-line-strong: color-mix(in srgb, var(--color-paper) 74%, var(--color-ink));
+  --color-accent-hover: color-mix(in srgb, var(--color-accent) 85%, #000);
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 15%, var(--color-paper));
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }

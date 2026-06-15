@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Fraunces, Hanken_Grotesk } from 'next/font/google'
 import { cookies } from 'next/headers'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { THEME_IDS } from '@/lib/themes'
 import './globals.css'
 
@@ -25,12 +25,34 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const cookieTheme = (await cookies()).get('chorala-theme')?.value
+  const jar = await cookies()
+  const cookieTheme = jar.get('chorala-theme')?.value
   // No saved theme → omit data-theme so CSS `prefers-color-scheme` decides (auto dark).
-  const theme = cookieTheme && THEME_IDS.includes(cookieTheme) ? cookieTheme : undefined
+  const valid = !!cookieTheme && (THEME_IDS.includes(cookieTheme) || cookieTheme === 'custom')
+  const theme = valid ? cookieTheme : undefined
+
+  // Custom palette: inject the 3 base colours on SSR so the derived tokens resolve with no flash.
+  let style: CSSProperties | undefined
+  if (cookieTheme === 'custom') {
+    try {
+      const c = JSON.parse(jar.get('chorala-custom')?.value ?? '{}')
+      style = {
+        '--c-paper': c.paper,
+        '--c-ink': c.ink,
+        '--c-accent': c.accent,
+      } as CSSProperties
+    } catch {
+      /* malformed cookie → fall back to custom defaults */
+    }
+  }
 
   return (
-    <html lang="en" data-theme={theme} className={`${sans.variable} ${display.variable}`}>
+    <html
+      lang="en"
+      data-theme={theme}
+      style={style}
+      className={`${sans.variable} ${display.variable}`}
+    >
       <body className="min-h-screen font-sans antialiased">{children}</body>
     </html>
   )
