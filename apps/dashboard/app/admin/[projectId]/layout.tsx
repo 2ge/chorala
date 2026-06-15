@@ -6,6 +6,7 @@ import { requireAuthContext } from '@/lib/session'
 const TABS: [string, string][] = [
   ['posts', 'Posts'],
   ['autopilot', 'Autopilot'],
+  ['moderation', 'Moderation'],
   ['roadmap', 'Roadmap'],
   ['changelog', 'Changelog'],
   ['preview', 'Preview'],
@@ -15,6 +16,7 @@ const TABS: [string, string][] = [
   ['analytics', 'Analytics'],
   ['settings', 'Settings'],
   ['members', 'Members'],
+  ['audit', 'Audit log'],
   ['keys', 'API Keys'],
 ]
 

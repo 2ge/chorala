@@ -8,6 +8,7 @@ import {
   comments,
   integrations,
   members,
+  moderation,
   posts,
   projects,
   publicFeed,
@@ -161,6 +162,26 @@ export async function dismissPost(projectId: string, id: string) {
   const ctx = await requireAuthContext()
   await posts.dismissPost(ctx, projectId, id)
   revalidatePath(`${adminPath(projectId)}/autopilot`)
+}
+
+// --- Moderation (Phase 17) ---
+export async function moderatePost(
+  projectId: string,
+  id: string,
+  action: 'hide' | 'unhide' | 'approve',
+) {
+  const ctx = await requireAuthContext()
+  await moderation.moderatePost(ctx, projectId, id, action)
+  revalidatePath(`${adminPath(projectId)}/moderation`)
+}
+export async function moderateComment(
+  projectId: string,
+  id: string,
+  action: 'hide' | 'unhide' | 'approve',
+) {
+  const ctx = await requireAuthContext()
+  await moderation.moderateComment(ctx, projectId, id, action)
+  revalidatePath(`${adminPath(projectId)}/moderation`)
 }
 
 // --- Surveys (Phase 16) ---

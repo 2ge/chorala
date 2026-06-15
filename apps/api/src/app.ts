@@ -14,6 +14,7 @@ import { changelogRoutes } from './routes/changelog.ts'
 import { commentsRoutes } from './routes/comments.ts'
 import { companiesRoutes } from './routes/companies.ts'
 import { inboundRoutes } from './routes/inbound.ts'
+import { moderationRoutes } from './routes/moderation.ts'
 import { orgRoutes } from './routes/org.ts'
 import { postsRoutes } from './routes/posts.ts'
 import { projectsRoutes } from './routes/projects.ts'
@@ -112,6 +113,7 @@ export function createApp() {
   api.route('/projects/:projectId/score-fields', scoreFieldsRoutes)
   api.route('/projects/:projectId/segments', segmentsRoutes)
   api.route('/projects/:projectId/surveys', surveysRoutes)
+  api.route('/projects/:projectId/moderation', moderationRoutes)
   api.route('/projects/:projectId/changelog', changelogRoutes)
   api.route('/projects/:projectId/keys', apiKeysRoutes)
   api.route('/projects/:projectId/analytics', analyticsRoutes)

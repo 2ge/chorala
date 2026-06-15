@@ -15,11 +15,16 @@ import {
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import {
   type AuthContext,
+  audit,
   boards,
+  canManageOrg,
+  canModerate,
   changelog,
+  comments as commentSvc,
   companies as companySvc,
   endUsers as endUserSvc,
   integrations,
+  moderation,
   posts,
   projects,
   publicFeed,
@@ -469,5 +474,93 @@ describe('changelog targeting (Phase 13)', () => {
     })
     expect(entry?.segmentId).toBe(seg!.id)
     expect(entry?.recipientCount).toBe(0)
+  })
+})
+
+describe('roles & moderation (Phase 17)', () => {
+  test('canManageOrg vs canModerate by role + apikey scope', () => {
+    const sess = (role: 'owner' | 'admin' | 'moderator' | 'member'): AuthContext => ({
+      kind: 'session',
+      orgId,
+      role,
+    })
+    expect(canManageOrg(sess('admin'))).toBe(true)
+    expect(canManageOrg(sess('moderator'))).toBe(false)
+    expect(canModerate(sess('moderator'))).toBe(true)
+    expect(canModerate(sess('member'))).toBe(false)
+    // API keys: only a write-scoped key may moderate.
+    expect(canModerate({ kind: 'apikey', orgId, scopes: ['write'] })).toBe(true)
+    expect(canModerate({ kind: 'apikey', orgId, scopes: ['read'] })).toBe(false)
+  })
+
+  test('detectSpam flags suspicious text, passes clean text', () => {
+    expect(moderation.detectSpam('A perfectly reasonable feature request')).toBeNull()
+    expect(moderation.detectSpam('Cheap loan, click here for free money!!!')).toBeTruthy()
+    expect(
+      moderation.detectSpam('http://a.co http://b.co http://c.co http://d.co http://e.co'),
+    ).toBe('Excessive links')
+  })
+
+  test('hiding a post removes it from the public board; unhide restores it', async () => {
+    const p = await newProject('mod')
+    const eu = await mkUser(p.id)
+    const { post } = await publicFeed.createPublicPost(p.id, eu, {
+      boardSlug: 'feature-requests',
+      title: 'Genuine idea',
+      body: 'please add dark mode',
+    })
+    const id = post!.id
+    const visible = async () =>
+      (await publicFeed.listPublicBoards(p.id)).posts.some((x) => x.id === id)
+    expect(await visible()).toBe(true)
+
+    await moderation.moderatePost(ctx, p.id, id, 'hide')
+    expect(await visible()).toBe(false)
+    await expect(publicFeed.getPublicPost(p.id, id)).rejects.toThrow()
+
+    await moderation.moderatePost(ctx, p.id, id, 'unhide')
+    expect(await visible()).toBe(true)
+  })
+
+  test('a spammy submission is flagged and lands in the moderation queue', async () => {
+    const p = await newProject('mod-spam')
+    const eu = await mkUser(p.id)
+    await publicFeed.createPublicPost(p.id, eu, {
+      boardSlug: 'feature-requests',
+      title: 'WIN A FREE CASINO BONUS',
+      body: 'buy now, limited offer, click here',
+    })
+    const queue = await moderation.listModerationQueue(ctx, p.id)
+    expect(queue.posts).toHaveLength(1)
+    expect(queue.posts[0]!.flaggedReason).toBeTruthy()
+  })
+
+  test('hiding a comment drops it from the thread and the comment count', async () => {
+    const p = await newProject('mod-c')
+    const eu = await mkUser(p.id)
+    const { post } = await publicFeed.createPublicPost(p.id, eu, {
+      boardSlug: 'feature-requests',
+      title: 'Has comments',
+      body: 'discuss',
+    })
+    const c = await publicFeed.addPublicComment(p.id, post!.id, eu, { body: 'a normal comment' })
+    expect((await commentSvc.listComments(p.id, post!.id)).length).toBe(1)
+
+    await moderation.moderateComment(ctx, p.id, c!.id, 'hide')
+    expect((await commentSvc.listComments(p.id, post!.id)).length).toBe(0)
+    // still reachable for moderators with includeHidden
+    expect((await commentSvc.listComments(p.id, post!.id, { includeHidden: true })).length).toBe(1)
+  })
+})
+
+describe('audit log (Phase 17)', () => {
+  test('mutations record entries; admins read them; non-admins cannot', async () => {
+    await newProject('audited') // records `project.created`
+    const log = await audit.listAuditLog(ctx)
+    expect(log.some((e) => e.action === 'project.created')).toBe(true)
+
+    // a plain member may not read the org audit trail
+    const memberCtx: AuthContext = { kind: 'session', orgId, role: 'member' }
+    await expect(audit.listAuditLog(memberCtx)).rejects.toThrow()
   })
 })

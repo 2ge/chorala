@@ -4,6 +4,7 @@ import {
   boards,
   changelogEntries,
   changelogSubscribers,
+  comments,
   db,
   desc,
   eq,
@@ -30,6 +31,7 @@ import {
   enqueueWebhookEvent,
 } from '../queues.ts'
 import { createComment, listComments } from './comments.ts'
+import { detectSpam } from './moderation.ts'
 import { postColumns } from './posts.ts'
 import { linkAttachmentsToPost } from './storage.ts'
 
@@ -144,6 +146,8 @@ export async function listPublicBoards(projectId: string, opts: PublicListOpts =
     sql`${posts.mergedIntoPostId} is null`,
     // Autopilot: AI-ingested posts awaiting review (or dismissed) never appear publicly.
     eq(posts.reviewStatus, 'none'),
+    // Moderation: hidden posts drop off the public board.
+    isNull(posts.hiddenAt),
   ]
   if (opts.boardSlug) {
     const board = visibleBoards.find((b) => b.slug === opts.boardSlug)
@@ -206,6 +210,7 @@ export async function getPublicPost(
       eq(posts.id, postId),
       eq(posts.projectId, projectId),
       eq(posts.reviewStatus, 'none'), // pending/dismissed AI drafts aren't publicly reachable
+      isNull(posts.hiddenAt), // moderator-hidden posts aren't publicly reachable
     ),
     [desc(posts.createdAt)],
   )
@@ -256,6 +261,9 @@ export async function createPublicPost(
     // first-class, filterable column; everything else lands in the admin-only `context` map.
     appVersion: input.appVersion,
     context: input.metadata ?? {},
+    // Moderation: cheap spam heuristic flags suspicious submissions for the queue (still
+    // visible — a human decides). No auto-hide, so false positives never silence real users.
+    flaggedReason: detectSpam(`${input.title}\n${input.body ?? ''}`),
   })
   // Link any screenshots uploaded just before submit (scoped to this end-user + project).
   if (input.attachmentIds?.length) {
@@ -276,12 +284,18 @@ export async function addPublicComment(
   input: CreateCommentInput,
 ) {
   // Public commenters can never post internal staff notes.
-  return createComment(
+  const row = await createComment(
     projectId,
     postId,
     { body: input.body, parentCommentId: input.parentCommentId, isInternal: false },
     { endUserId },
   )
+  // Flag spammy comments for the moderation queue (kept visible until a human acts).
+  const reason = detectSpam(input.body)
+  if (reason && row) {
+    await db.update(comments).set({ flaggedReason: reason }).where(eq(comments.id, row.id))
+  }
+  return row
 }
 
 export async function getRoadmap(

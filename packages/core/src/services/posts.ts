@@ -28,6 +28,7 @@ import {
   enqueuePostProcessing,
   enqueueWebhookEvent,
 } from '../queues.ts'
+import { recordAudit } from './audit.ts'
 import { getProject } from './projects.ts'
 import { computeScore, scoreWeights } from './scoreFields.ts'
 
@@ -418,6 +419,7 @@ export async function changeStatus(
   await enqueueWebhookEvent(projectId, 'post.status_changed', { postId: id, statusId })
   if (statusKind) await enqueueIntegrationSync(projectId, id, statusKind)
   await enqueueNotification('status-changed', { projectId, postId: id })
+  await recordAudit(ctx, 'post.status_changed', id, { projectId, statusId })
   return getPost(ctx, projectId, id)
 }
 

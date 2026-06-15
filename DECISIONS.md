@@ -364,3 +364,22 @@ choice. Format: `- [phase] chose X over Y because Z`.
   or a custom feedback domain 403'd unless the customer hand‑whitelisted Chorala's own domains —
   which they can't know to do. These are first‑party surfaces we control, so allowing them is safe;
   third‑party origins still require explicit `allowedOrigins`.
+- [phase17] "Custom admin roles" shipped as a single new `moderator` role rather than a full
+  per-permission RBAC matrix — the simplest slice that delivers separation of duties (content
+  moderation without org/billing/member control). `canModerate` = owner/admin/moderator (session)
+  OR a write-scoped API key (so automation can moderate); `canManageOrg` stays owner/admin only.
+  A richer custom-permission system can layer on later if demand appears.
+- [phase17] Moderation flags but never auto-hides. A cheap deterministic spam heuristic
+  (`detectSpam`: link-count, keyword list, all-caps, repeated-word) runs at public submit time and
+  sets `flaggedReason` — the content STAYS VISIBLE and a human decides (Approve/Hide). Chosen over
+  auto-hiding so false positives never silence real users, and over an AI classifier so it works
+  with provider=none (this box). Hidden content (`hiddenAt`) drops from the public board, the
+  single-post view, the roadmap and the comment count, but the row is retained for audit.
+- [phase17] Audit log: `recordAudit` is best-effort (try/catch, never throws) so a logging failure
+  can't break the mutation it records; called from core services (where `ctx` is available) after
+  the change succeeds. Read access (`listAuditLog`) is restricted to `canManageOrg` OR API-key
+  callers; a plain `member` session cannot read it. Actor is the session userId (resolved to
+  name/email via a left join) or `apikey:<projectId>` for automation.
+- [phase17] **Deferred**: SAML/SCIM admin SSO — it requires registering an app in an external IdP
+  (Okta/Azure AD/Google Workspace) and credentials we can't self-provision in this environment,
+  same blocker as the OAuth integrations. Better Auth has a SAML/SSO plugin path to slot in later.

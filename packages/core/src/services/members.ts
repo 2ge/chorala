@@ -3,6 +3,7 @@ import { and, db, eq, members, newId, users } from '@chorala/db'
 import type { InviteMemberInput, MemberRole } from '@chorala/types'
 import { type AuthContext, canManageOrg } from '../context.ts'
 import { conflict, forbidden, notFound } from '../errors.ts'
+import { recordAudit } from './audit.ts'
 
 export async function listMembers(ctx: AuthContext) {
   return db
@@ -50,6 +51,8 @@ export async function inviteMember(ctx: AuthContext, input: InviteMemberInput) {
     .insert(members)
     .values({ id: newId('member'), orgId: ctx.orgId, userId: user.id, role: input.role })
     .returning()
+  if (member)
+    await recordAudit(ctx, 'member.invited', member.id, { email: input.email, role: input.role })
   return member
 }
 
@@ -58,6 +61,7 @@ export async function updateMemberRole(ctx: AuthContext, memberId: string, role:
   const member = await getMemberInOrg(ctx.orgId, memberId)
   if (member.role === 'owner' && role !== 'owner') await assertNotLastOwner(ctx.orgId, memberId)
   const [row] = await db.update(members).set({ role }).where(eq(members.id, memberId)).returning()
+  await recordAudit(ctx, 'member.role_changed', memberId, { from: member.role, to: role })
   return row
 }
 
@@ -66,6 +70,7 @@ export async function removeMember(ctx: AuthContext, memberId: string) {
   const member = await getMemberInOrg(ctx.orgId, memberId)
   if (member.role === 'owner') await assertNotLastOwner(ctx.orgId, memberId)
   await db.delete(members).where(eq(members.id, memberId))
+  await recordAudit(ctx, 'member.removed', memberId, { role: member.role })
   return { id: memberId, deleted: true }
 }
 

@@ -64,6 +64,13 @@
       "when": 1781555808177,
       "tag": "0008_shallow_killmonger",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1781558082674,
+      "tag": "0009_sour_living_lightning",
+      "breakpoints": true
     }
   ]
 }

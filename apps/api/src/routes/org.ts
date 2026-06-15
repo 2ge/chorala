@@ -1,4 +1,4 @@
-import { members, notifications, orgs } from '@chorala/core'
+import { audit, members, notifications, orgs } from '@chorala/core'
 import { inviteMemberInput, memberRole, updateOrgSettingsInput } from '@chorala/types'
 import { Hono } from 'hono'
 import { z } from 'zod'
@@ -36,3 +36,13 @@ export const orgRoutes = new Hono<AppEnv>()
   // In-app notification centre for the signed-in admin.
   .get('/notifications', async (c) => c.json(await notifications.listForMember(c.get('auth'))))
   .post('/notifications/read', async (c) => c.json(await notifications.markAllRead(c.get('auth'))))
+  // Audit trail (Phase 17) — org admins only (enforced in the service).
+  .get('/audit-log', async (c) =>
+    c.json(
+      await audit.listAuditLog(c.get('auth'), {
+        action: c.req.query('action'),
+        before: c.req.query('before'),
+        limit: c.req.query('limit') ? Number(c.req.query('limit')) : undefined,
+      }),
+    ),
+  )

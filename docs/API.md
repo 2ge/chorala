@@ -310,6 +310,18 @@ GET /:id/results
 `/results` → `{ responseCount, nps, csatPercent, average, distribution{value:n}, choices{opt:n},
 texts[] }` — `nps`/`csatPercent`/`average` are `null` when not applicable to the type.
 
+### Moderation — `/projects/:projectId/moderation`  (Phase 17)
+```
+GET  /                         → { posts[], comments[] }   // flagged or hidden, awaiting review
+POST /posts/:id     { action }     action ∈ hide | unhide | approve
+POST /comments/:id  { action }     action ∈ hide | unhide | approve
+```
+New public posts/comments are run through a deterministic spam heuristic at submit time; anything
+suspicious gets a `flaggedReason` (still visible) and appears in the queue. **`hide`** drops it
+from the public board + comment count (row kept for audit), **`unhide`** restores it, **`approve`**
+just clears the flag. Requires moderation access (org admin, the `moderator` role, or a
+`write`-scoped API key).
+
 ### API keys — `/projects/:projectId/keys`
 ```
 GET /  · POST / { name, scopes?(["read"]) }  → { id, name, key, prefix }   // raw key shown ONCE
@@ -348,10 +360,14 @@ conversation as one request, and ask returns a keyword match without a synthesiz
 GET   /                            current org
 PATCH /                            { name?, defaultLocale?, locales?, settings? }
 GET   /members
-POST  /members                     { email, role(owner|admin|member) }    // invite
+POST  /members                     { email, role(owner|admin|moderator|member) }   // invite
 PATCH /members/:id                 { role }
 DELETE /members/:id
+GET   /audit-log?action=&before=&limit=    immutable governance trail (admins only)
 ```
+**Roles**: `owner`/`admin` manage everything; `moderator` can only run the moderation queue;
+`member` is read-only. `/audit-log` records member/project/org/key/status/moderation changes,
+newest first, with the actor resolved to a name/email.
 
 ---
 
@@ -465,7 +481,8 @@ authenticated with an `hk_…` key — 9 tools incl. `search_feedback`, `top_req
 | `statusKind` | `open`, `planned`, `in_progress`, `complete`, `closed` |
 | `boardKind` | `feature`, `bug`, `general` |
 | `changelogStatus` | `draft`, `published` |
-| `memberRole` | `owner`, `admin`, `member` |
+| `memberRole` | `owner`, `admin`, `moderator`, `member` |
+| `moderationAction` | `hide`, `unhide`, `approve` |
 | `surveyType` | `nps`, `csat`, `ces`, `rating`, `text`, `choice` |
 | `integrationType` | `slack`, `linear`, `github`, `discord`, `segment` |
 | `webhookEvent` | `post.created`, `post.status_changed`, `post.merged`, `comment.created`, `changelog.published`, `vote.created` |

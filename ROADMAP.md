@@ -146,9 +146,20 @@ Results aggregate into the same admin surface: response count, **NPS score**, CS
 average, value distribution, choice tallies, and recent free‑text. Surfaced as an explicit
 post‑v1 expansion beyond SPEC §1's non‑goal, kept flat‑priced (no per‑response metering).
 
-### Phase 17 — Enterprise & trust · *large, sell‑up tier*
-SAML/SCIM admin SSO, custom admin roles (we have owner/admin/member today), **audit‑log UI**
-(the `auditLog` entity already exists), moderation/spam queue, advanced privacy, EU residency.
+### Phase 17 — Enterprise & trust · ✅ SHIPPED (SAML/SCIM deferred)
+- **Custom admin role** — a `moderator` role between admin and member: runs the moderation
+  queue but can't touch billing, members or projects (`canModerate` capability + write-scoped
+  API keys).
+- **Audit‑log UI** — every governance action (member invite/role/remove, project CRUD, org
+  settings, API‑key create/revoke, post status changes, moderation) is appended to the org's
+  immutable `audit_log` and surfaced in an admin‑only timeline that resolves actor → name/email.
+- **Moderation / spam queue** — a deterministic (no‑AI) spam heuristic flags suspicious public
+  posts & comments at submit time; a moderator can **Approve** (clear flag), **Hide** (drop from
+  the public board, kept for audit) or **Restore**. Hidden content leaves the feed and the
+  comment count; nothing is ever auto‑deleted.
+
+Deferred: **SAML/SCIM admin SSO** (needs an external IdP — Okta/Azure AD app registration we
+can't self‑provision), advanced privacy & EU data residency. See DECISIONS.md.
 
 ---
 

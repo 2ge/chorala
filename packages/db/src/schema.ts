@@ -106,7 +106,10 @@ export const members = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    role: text('role').$type<'owner' | 'admin' | 'member'>().default('member').notNull(),
+    role: text('role')
+      .$type<'owner' | 'admin' | 'moderator' | 'member'>()
+      .default('member')
+      .notNull(),
     ...ts,
   },
   (t) => [
@@ -306,6 +309,11 @@ export const posts = pgTable(
       .default('none')
       .notNull(),
     source: jsonb('source').$type<Json>().default({}).notNull(),
+    // Moderation (Phase 17): `hiddenAt` removes a post from the public board (row kept for
+    // audit); `flaggedReason` (set by the spam heuristic or a moderator) surfaces it in the
+    // moderation queue. Both null = a normal, visible post.
+    hiddenAt: timestamp('hidden_at', { withTimezone: true }),
+    flaggedReason: text('flagged_reason'),
     ...ts,
   },
   (t) => [
@@ -397,6 +405,10 @@ export const comments = pgTable(
     }),
     body: text('body').notNull(),
     isInternal: boolean('is_internal').default(false).notNull(),
+    // Moderation (Phase 17): mirrors posts — `hiddenAt` drops the comment from public threads
+    // and the comment count; `flaggedReason` queues it for a moderator.
+    hiddenAt: timestamp('hidden_at', { withTimezone: true }),
+    flaggedReason: text('flagged_reason'),
     ...ts,
   },
   (t) => [index('comments_post_idx').on(t.postId)],

@@ -864,6 +864,36 @@ const ROUTES: Route[] = [
     sec: 'admin',
     summary: 'Remove a member',
   },
+  {
+    method: 'get',
+    path: '/org/audit-log',
+    tag: 'Organization',
+    sec: 'admin',
+    summary: 'Read the org audit trail (admins only)',
+  },
+
+  // --- Moderation (Phase 17) ---
+  {
+    method: 'get',
+    path: '/projects/{projectId}/moderation',
+    tag: 'Moderation',
+    sec: 'admin',
+    summary: 'Flagged + hidden posts and comments awaiting review',
+  },
+  {
+    method: 'post',
+    path: '/projects/{projectId}/moderation/posts/{id}',
+    tag: 'Moderation',
+    sec: 'admin',
+    summary: 'Moderate a post (hide | unhide | approve)',
+  },
+  {
+    method: 'post',
+    path: '/projects/{projectId}/moderation/comments/{id}',
+    tag: 'Moderation',
+    sec: 'admin',
+    summary: 'Moderate a comment (hide | unhide | approve)',
+  },
 ]
 
 let cached: object | null = null

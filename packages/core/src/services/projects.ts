@@ -13,6 +13,7 @@ import {
 import type { CreateProjectInput, UpdateProjectInput } from '@chorala/types'
 import { type AuthContext, canManageOrg } from '../context.ts'
 import { badRequest, conflict, forbidden, notFound } from '../errors.ts'
+import { recordAudit } from './audit.ts'
 
 export async function listProjects(ctx: AuthContext) {
   // An api-key caller only ever sees the single project it is scoped to.
@@ -83,6 +84,7 @@ export async function createProject(ctx: AuthContext, input: CreateProjectInput)
     { projectId: id, slug: 'bugs', name: 'Bugs', kind: 'bug', position: 1 },
   ])
 
+  await recordAudit(ctx, 'project.created', id, { slug: input.slug, name: input.name })
   return project
 }
 
@@ -102,6 +104,7 @@ export async function updateProject(ctx: AuthContext, id: string, input: UpdateP
     })
     .where(eq(projects.id, id))
     .returning()
+  await recordAudit(ctx, 'project.updated', id, {})
   return row
 }
 
@@ -109,6 +112,7 @@ export async function deleteProject(ctx: AuthContext, id: string) {
   if (!canManageOrg(ctx)) throw forbidden('Only org admins can delete projects')
   await getProject(ctx, id)
   await db.delete(projects).where(eq(projects.id, id))
+  await recordAudit(ctx, 'project.deleted', id, {})
   return { id, deleted: true }
 }
 

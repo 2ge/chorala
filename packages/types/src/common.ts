@@ -15,7 +15,9 @@ export const timestamps = z.object({
 
 // --- Enums (mirror SPEC §7) ---
 export const orgPlan = z.enum(['free', 'starter', 'pro'])
-export const memberRole = z.enum(['owner', 'admin', 'member'])
+// `moderator` (Phase 17): can run the moderation queue (hide/approve posts & comments) but
+// cannot manage the org — billing, members, projects stay owner/admin-only.
+export const memberRole = z.enum(['owner', 'admin', 'moderator', 'member'])
 export const boardKind = z.enum(['feature', 'bug', 'general'])
 export const statusKind = z.enum(['open', 'planned', 'in_progress', 'complete', 'closed'])
 export const changelogStatus = z.enum(['draft', 'published'])

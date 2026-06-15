@@ -2,6 +2,7 @@ import { db, eq, organizations } from '@chorala/db'
 import type { UpdateOrgSettingsInput } from '@chorala/types'
 import { type AuthContext, canManageOrg } from '../context.ts'
 import { forbidden, notFound } from '../errors.ts'
+import { recordAudit } from './audit.ts'
 
 export async function getOrg(ctx: AuthContext) {
   const [row] = await db.select().from(organizations).where(eq(organizations.id, ctx.orgId))
@@ -21,5 +22,6 @@ export async function updateOrgSettings(ctx: AuthContext, input: UpdateOrgSettin
     })
     .where(eq(organizations.id, ctx.orgId))
     .returning()
+  await recordAudit(ctx, 'org.settings_updated', ctx.orgId, {})
   return row
 }

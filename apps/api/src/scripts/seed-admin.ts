@@ -1,4 +1,5 @@
 import { db, eq, members, SEED_ADMIN, users } from '@chorala/db'
+import type { MemberRole } from '@chorala/types'
 import { auth } from '../auth.ts'
 
 /**
@@ -10,7 +11,7 @@ import { auth } from '../auth.ts'
 async function main() {
   const [existing] = await db.select().from(users).where(eq(users.email, SEED_ADMIN.email))
 
-  let memberships: { orgId: string; role: 'owner' | 'admin' | 'member' }[] = []
+  let memberships: { orgId: string; role: MemberRole }[] = []
   if (existing) {
     const rows = await db.select().from(members).where(eq(members.userId, existing.id))
     memberships = rows.map((m) => ({ orgId: m.orgId, role: m.role }))

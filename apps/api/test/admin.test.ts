@@ -250,6 +250,52 @@ describe('surveys (Phase 16)', () => {
   })
 })
 
+describe('moderation + audit (Phase 17)', () => {
+  test('a spammy public post lands in the queue → hide → 200', async () => {
+    // public submission via the widget API (spam heuristic flags it)
+    const submit = await app.request('/api/v1/public/posts', {
+      method: 'POST',
+      headers: { 'x-chorala-key': publicKey, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        boardSlug: 'feature-requests',
+        title: 'FREE MONEY casino bonus',
+        body: 'buy now, click here, limited offer',
+      }),
+    })
+    expect(submit.status).toBe(201)
+
+    const queue = (await (await app.request(`${base()}/moderation`, { headers: auth })).json()) as {
+      posts: { id: string; flaggedReason: string }[]
+    }
+    expect(queue.posts.length).toBeGreaterThanOrEqual(1)
+    const flagged = queue.posts[0]!
+    expect(flagged.flaggedReason).toBeTruthy()
+
+    const hide = await app.request(`${base()}/moderation/posts/${flagged.id}`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ action: 'hide' }),
+    })
+    expect(hide.status).toBe(200)
+
+    // hidden post is no longer publicly reachable
+    const pub = await app.request('/api/v1/public/boards', {
+      headers: { 'x-chorala-key': publicKey },
+    })
+    const body = (await pub.json()) as { posts: { id: string }[] }
+    expect(body.posts.some((p) => p.id === flagged.id)).toBe(false)
+  })
+
+  test('audit log records admin actions and is readable', async () => {
+    const res = await app.request('/api/v1/org/audit-log', { headers: auth })
+    expect(res.status).toBe(200)
+    const entries = (await res.json()) as { action: string }[]
+    expect(Array.isArray(entries)).toBe(true)
+    // the score-field / status changes above were recorded
+    expect(entries.some((e) => e.action.startsWith('post.'))).toBe(true)
+  })
+})
+
 describe('vote on behalf (Phase 12)', () => {
   test('records a vote for a customer by email', async () => {
     const posts = (await (await app.request(`${base()}/posts`, { headers: auth })).json()) as {

@@ -14,6 +14,15 @@ export type AuthContext = {
   scopes?: string[]
 }
 
-/** Roles allowed to perform org-admin mutations. */
+/** Roles allowed to perform org-admin mutations (members, projects, billing, settings). */
 export const canManageOrg = (ctx: AuthContext): boolean =>
   ctx.kind === 'session' && (ctx.role === 'owner' || ctx.role === 'admin')
+
+/**
+ * Who may moderate content (hide/approve posts & comments, run the moderation queue):
+ * org admins, the dedicated `moderator` role, and any `write`-scoped API key (automation).
+ */
+export const canModerate = (ctx: AuthContext): boolean =>
+  (ctx.kind === 'session' &&
+    (ctx.role === 'owner' || ctx.role === 'admin' || ctx.role === 'moderator')) ||
+  (ctx.kind === 'apikey' && (ctx.scopes?.includes('write') ?? false))

@@ -1,4 +1,4 @@
-import { and, asc, comments, db, eq, newId, posts, sql } from '@chorala/db'
+import { and, asc, comments, db, eq, isNull, newId, posts, sql } from '@chorala/db'
 import { notFound } from '../errors.ts'
 import { enqueueNotification, enqueueWebhookEvent } from '../queues.ts'
 
@@ -17,7 +17,7 @@ async function recountComments(postId: string) {
   await db
     .update(posts)
     .set({
-      commentCount: sql`(select count(*)::int from ${comments} where ${comments.postId} = ${postId} and ${comments.isInternal} = false)`,
+      commentCount: sql`(select count(*)::int from ${comments} where ${comments.postId} = ${postId} and ${comments.isInternal} = false and ${comments.hiddenAt} is null)`,
     })
     .where(eq(posts.id, postId))
 }
@@ -25,11 +25,13 @@ async function recountComments(postId: string) {
 export async function listComments(
   projectId: string,
   postId: string,
-  opts: { includeInternal?: boolean } = {},
+  opts: { includeInternal?: boolean; includeHidden?: boolean } = {},
 ) {
   await assertPostInProject(projectId, postId)
   const filters = [eq(comments.postId, postId)]
   if (!opts.includeInternal) filters.push(eq(comments.isInternal, false))
+  // Public threads (and the admin view by default) exclude moderator-hidden comments.
+  if (!opts.includeHidden) filters.push(isNull(comments.hiddenAt))
   return db
     .select()
     .from(comments)

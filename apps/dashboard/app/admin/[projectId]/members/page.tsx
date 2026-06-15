@@ -35,6 +35,7 @@ export default async function MembersPage({ params }: { params: Promise<{ projec
             <Label>Role</Label>
             <Select name="role" defaultValue="member">
               <option value="member">Member</option>
+              <option value="moderator">Moderator</option>
               <option value="admin">Admin</option>
               <option value="owner">Owner</option>
             </Select>
