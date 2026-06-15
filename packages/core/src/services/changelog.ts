@@ -2,7 +2,7 @@ import { and, changelogEntries, db, desc, eq, newId } from '@chorala/db'
 import type { CreateChangelogInput, UpdateChangelogInput } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { notFound } from '../errors.ts'
-import { enqueueWebhookEvent } from '../queues.ts'
+import { enqueueNotification, enqueueWebhookEvent } from '../queues.ts'
 import { getProject } from './projects.ts'
 
 export async function listChangelog(
@@ -50,6 +50,7 @@ export async function createChangelog(
     .returning()
   if (row?.status === 'published') {
     await enqueueWebhookEvent(projectId, 'changelog.published', { changelogId: row.id })
+    await enqueueNotification('changelog-published', { projectId, changelogId: row.id })
   }
   return row
 }
@@ -76,6 +77,7 @@ export async function updateChangelog(
     .returning()
   if (becomingPublished) {
     await enqueueWebhookEvent(projectId, 'changelog.published', { changelogId: id })
+    await enqueueNotification('changelog-published', { projectId, changelogId: id })
   }
   return row
 }

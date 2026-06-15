@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto'
 import { clusterThemes, createProvider, processPost, summarizePost } from '@chorala/ai'
 import { env } from '@chorala/config'
-import { integrations, QUEUE_PREFIX } from '@chorala/core'
+import { integrations, notifications, QUEUE_PREFIX } from '@chorala/core'
 import { and, db, eq, webhooks } from '@chorala/db'
 import { sendEmail } from '@chorala/email'
 import { type ConnectionOptions, type Job, Worker } from 'bullmq'
@@ -74,11 +74,33 @@ const integrationWorker = new Worker(
   opts,
 )
 
+// --- Notifications (fan-out to voters/subscribers/admins; emails go via the email queue) ---
+const notificationWorker = new Worker(
+  'notifications',
+  (job: Job) => {
+    const { projectId, postId, commentId, changelogId } = job.data
+    switch (job.name) {
+      case 'status-changed':
+        return notifications.fanOutStatusChange(projectId, postId)
+      case 'comment-created':
+        return notifications.fanOutCommentCreated(projectId, postId, commentId)
+      case 'post-created':
+        return notifications.fanOutPostCreated(projectId, postId)
+      case 'changelog-published':
+        return notifications.fanOutChangelogPublished(projectId, changelogId)
+      default:
+        return Promise.resolve()
+    }
+  },
+  opts,
+)
+
 for (const [name, worker] of [
   ['ai', aiWorker],
   ['webhooks', webhookWorker],
   ['email', emailWorker],
   ['integrations', integrationWorker],
+  ['notifications', notificationWorker],
 ] as const) {
   worker.on('failed', (job, err) =>
     console.error(`[worker:${name}] job ${job?.id} failed:`, err.message),
@@ -95,6 +117,7 @@ async function shutdown() {
     webhookWorker.close(),
     emailWorker.close(),
     integrationWorker.close(),
+    notificationWorker.close(),
   ])
   await redis.quit()
   process.exit(0)

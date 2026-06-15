@@ -20,6 +20,7 @@
     "@chorala/billing": "workspace:*",
     "@chorala/config": "workspace:*",
     "@chorala/db": "workspace:*",
+    "@chorala/email": "workspace:*",
     "@chorala/types": "workspace:*",
     "bullmq": "5.78.1",
     "drizzle-orm": "0.45.2",

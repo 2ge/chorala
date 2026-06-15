@@ -10,6 +10,7 @@ export const QUEUES = {
   webhooks: 'webhooks',
   email: 'email',
   integrations: 'integrations',
+  notifications: 'notifications',
 } as const
 
 let connection: Redis | null = null
@@ -80,4 +81,9 @@ export async function enqueueIntegrationSync(
   statusKind: string,
 ) {
   await safeAdd(QUEUES.integrations, 'github-sync', { projectId, postId, statusKind })
+}
+
+/** Fan-out a notification (status change, comment, changelog, new post) — handled by the worker. */
+export async function enqueueNotification(job: string, data: Record<string, unknown>) {
+  await safeAdd(QUEUES.notifications, job, data)
 }

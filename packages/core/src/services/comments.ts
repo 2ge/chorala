@@ -1,6 +1,6 @@
 import { and, asc, comments, db, eq, newId, posts, sql } from '@chorala/db'
 import { notFound } from '../errors.ts'
-import { enqueueWebhookEvent } from '../queues.ts'
+import { enqueueNotification, enqueueWebhookEvent } from '../queues.ts'
 
 type CommentAuthor = { endUserId?: string; memberId?: string }
 
@@ -61,6 +61,7 @@ export async function createComment(
   // Public comments fire a webhook; internal staff notes do not.
   if (!input.isInternal) {
     await enqueueWebhookEvent(projectId, 'comment.created', { postId, commentId: id })
+    await enqueueNotification('comment-created', { projectId, postId, commentId: id })
   }
   return row
 }

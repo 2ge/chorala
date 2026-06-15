@@ -18,7 +18,7 @@ import {
 import type { AdminCreatePostInput, PostSort, UpdatePostInput } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { badRequest, conflict, notFound } from '../errors.ts'
-import { enqueueIntegrationSync, enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
+import { enqueueIntegrationSync, enqueueNotification, enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
 import { getProject } from './projects.ts'
 
 /** Post columns excluding the (large, internal) embedding vector — never serialized to clients. */
@@ -188,6 +188,7 @@ export async function changeStatus(
   await db.update(posts).set({ statusId }).where(eq(posts.id, id))
   await enqueueWebhookEvent(projectId, 'post.status_changed', { postId: id, statusId })
   if (statusKind) await enqueueIntegrationSync(projectId, id, statusKind)
+  await enqueueNotification('status-changed', { projectId, postId: id })
   return getPost(ctx, projectId, id)
 }
 

@@ -20,7 +20,7 @@ import {
 } from '@chorala/db'
 import type { CreateCommentInput, CreatePostInput, PostSort } from '@chorala/types'
 import { badRequest, notFound } from '../errors.ts'
-import { enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
+import { enqueueNotification, enqueuePostProcessing, enqueueWebhookEvent } from '../queues.ts'
 import { createComment, listComments } from './comments.ts'
 import { postColumns } from './posts.ts'
 
@@ -199,6 +199,7 @@ export async function createPublicPost(
   // AI: embed + dedup + translate (no-op when AI is disabled); fire webhook event.
   await enqueuePostProcessing(id)
   await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: board.id })
+  await enqueueNotification('post-created', { projectId, postId: id })
   return getPublicPost(projectId, id, { locale: input.locale, endUserId })
 }
 

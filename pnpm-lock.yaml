@@ -230,6 +230,9 @@ importers:
       '@chorala/db':
         specifier: workspace:*
         version: link:../db
+      '@chorala/email':
+        specifier: workspace:*
+        version: link:../email
       '@chorala/types':
         specifier: workspace:*
         version: link:../types
