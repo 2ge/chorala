@@ -51,7 +51,7 @@ Better Auth cookie (see §5). The dashboard calls the admin API same-origin. Opt
 ### 2.1 IDs
 Prefixed nanoids — `post_…`, `pk_…`, `hk_…`, `board_…`, `status_…`, `comment_…`,
 `project_…`, `organization_…`, `member_…`, `user_…`, `endUser_…`, `tag_…`,
-`changelog_…`, `webhook_…`.
+`changelog_…`, `webhook_…`, `att_…` (attachment).
 
 ### 2.2 Errors
 Always `HTTP <status>` + body:
@@ -109,9 +109,41 @@ POST /public/posts
 ```
 Body:
 ```json
-{ "boardSlug": "feature-requests", "title": "Dark mode", "body": "…", "locale": "en" }
+{
+  "boardSlug": "feature-requests",
+  "title": "Dark mode",
+  "body": "…",
+  "locale": "en",
+  "appVersion": "2.4.1",
+  "metadata": { "browser": "Chrome 147", "plan": "pro" },
+  "attachmentIds": ["att_…"]
+}
 ```
 `title` 2–300 chars, `body` ≤ 20 000. → `201` `LocalizedPost`.
+
+**Submission context (Sentry/Canny-style).** Both are optional and modeled on Sentry's
+indexed-vs-free-form split:
+- **`appVersion`** — a first-class, **filterable** string promoted to its own column. It's
+  surfaced publicly on the post (`LocalizedPost.appVersion`) and admins can filter the post
+  list by it (`?appVersion=`).
+- **`metadata`** — a free-form map (userAgent, locale, platform, screen, plan, …). Stored
+  **admin-only**; never returned on the public payload. The widget auto-fills it (see §8).
+- **`attachmentIds`** — ids returned by `POST /public/attachments` (below), linked to the
+  post on create. Scoped to the same end-user, so only your own uploads attach.
+
+```
+POST /public/attachments
+```
+Upload a bug-report screenshot (or image) as a data URL, then thread the returned id into
+`attachmentIds`:
+```json
+{ "dataUrl": "data:image/png;base64,iVBORw0KGgo…", "kind": "screenshot" }
+```
+Accepts `image/png|jpeg|webp|gif`. Enforced limits: **5 MB/file**
+(`CHORALA_ATTACHMENT_MAX_BYTES`) and a **1 GB/project** quota
+(`CHORALA_ATTACHMENT_QUOTA_BYTES`); over either → `400`. → `201`
+`{ id, kind, mimeType, byteSize, width, height }`. Bytes are **admin-only** — never served on
+a public URL.
 
 ```
 POST   /public/posts/:id/vote     // cast a vote
@@ -174,9 +206,11 @@ PATCH /:id · DELETE /:id
 
 ### Posts — `/projects/:projectId/posts`
 ```
-GET    /                  list (filters: board, status, tag, search, sort)
+GET    /                  list (filters: board, status, tag, appVersion, search, sort)
 POST   /                  { boardId, title, body?, statusId?, locale? }            → 201
 GET    /:id
+GET    /:id/context        → { appVersion, context }   // submission metadata map (admin-only)
+GET    /:id/attachments    → Attachment[]              // screenshots (metadata; bytes via dashboard)
 PATCH  /:id               { title?, body?, statusId?, boardId?, isPinned?, eta? }
 DELETE /:id
 POST   /:id/status        { statusId: "status_…" | null }     // moves on the roadmap, fires integrations
@@ -184,6 +218,10 @@ POST   /:id/pin           toggle pin
 POST   /:id/merge         { targetPostId: "post_…" }          // votes/comments fold into target
 POST   /:id/tags          { tagIds: ["tag_…"] }
 ```
+`?appVersion=` filters the list to one app version (pairs with the public `appVersion` field).
+`GET /:id/context` returns the free-form `metadata` submitted with the post; `GET
+/:id/attachments` returns screenshot metadata — the raw bytes are streamed only through the
+authenticated dashboard, never a public URL.
 
 ### Comments — `/projects/:projectId/posts/:postId/comments`
 ```
@@ -293,11 +331,18 @@ self-configuring:
 <script async src="https://chorala.com/widget.js" data-chorala-key="pk_live_xxx"></script>
 ```
 Attributes: `data-chorala-key` (required), `data-mode` (`floating|inline|manual`),
-`data-locale`, `data-view` (`board|roadmap|changelog`), `data-color`, `data-jwt` (SSO).
+`data-locale`, `data-view` (`board|roadmap|changelog`), `data-color`, `data-jwt` (SSO),
+`data-app-version` (stamped onto every submission as the filterable `appVersion`).
 
 Programmatic control (`window.Chorala`): `init`, `identify({ jwt })`, `open(view?)`, `close`,
 `render(selector, { view })`, `on(event, cb)`. JS-computed config can also be set via
-`window.choralaSettings = { projectKey, user: { jwt } }` before the script.
+`window.choralaSettings = { projectKey, appVersion, user: { jwt } }` before the script.
+
+**Auto-collected context.** Every submission carries a `metadata` map the widget fills with
+no host config — `browser`, `os`, `url`, `locale`, `screen`, `viewport`, `timezone`,
+`referrer` (Sentry-style contexts; admin-only, see §3). On **bug boards** (`kind=bug`) the
+submit form also offers **screenshot capture** (Screen Capture API / file / paste) with
+redact + highlight annotation, uploaded via `POST /public/attachments`.
 
 On engagement the widget fires a `chorala:engaged` `CustomEvent` on the host window
 (`detail.type` ∈ `vote|comment|feedback|submit|engaged`) and, in iframes, `postMessage`s

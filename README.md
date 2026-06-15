@@ -75,7 +75,11 @@ One tag — the floating widget self-configures from `data-*` attributes:
 ```
 
 Optional: `data-mode` (`floating`|`inline`|`manual`), `data-locale`, `data-view`
-(`board`|`roadmap`|`changelog`), `data-color`.
+(`board`|`roadmap`|`changelog`), `data-color`, `data-app-version` (stamped on every
+submission as a filterable `appVersion`).
+
+Submissions auto-carry browser/OS/URL/locale/screen context (no host config), and **bug
+boards** offer screenshot capture + redact/highlight annotation.
 
 SSO is still one tag — pass the signed JWT as `data-jwt`:
 
