@@ -11,6 +11,8 @@ export const ID_PREFIXES = {
   company: 'co',
   scoreField: 'sf',
   segment: 'seg',
+  survey: 'sv',
+  surveyResponse: 'svr',
   status: 'status',
   post: 'post',
   postTranslation: 'ptr',

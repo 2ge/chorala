@@ -30,6 +30,7 @@ const ICONS: Record<string, ReactNode> = {
   ),
   companies: I('M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01'),
   segments: I('M22 3H2l8 9.46V19l4 2v-8.54L22 3z'),
+  surveys: I('M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11'),
   preview: I('M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7zM12 9a3 3 0 100 6 3 3 0 000-6z'),
   analytics: I('M4 20V10M10 20V4M16 20v-6M22 20H2'),
   settings: I(

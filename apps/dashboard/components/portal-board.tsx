@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { type FormEvent, useMemo, useState } from 'react'
 import { PortalVote } from '@/components/portal-client'
+import { PortalSurvey } from '@/components/portal-survey'
 
 type Board = { id: string; slug: string; name: string; description: string | null; kind: string }
 type Status = { name: string; color: string; kind: string } | null
@@ -56,6 +57,8 @@ export function PortalBoard({
 
   return (
     <div>
+      <PortalSurvey publicKey={publicKey} />
+
       {/* Board filter */}
       {boards.length > 1 && (
         <div className="mb-4 flex flex-wrap gap-2">

@@ -21,6 +21,7 @@ import { publicRoutes } from './routes/public.ts'
 import { scoreFieldsRoutes } from './routes/scoreFields.ts'
 import { segmentsRoutes } from './routes/segments.ts'
 import { statusesRoutes } from './routes/statuses.ts'
+import { surveysRoutes } from './routes/surveys.ts'
 import { tagsRoutes } from './routes/tags.ts'
 import type { AppEnv } from './types.ts'
 
@@ -110,6 +111,7 @@ export function createApp() {
   api.route('/projects/:projectId/companies', companiesRoutes)
   api.route('/projects/:projectId/score-fields', scoreFieldsRoutes)
   api.route('/projects/:projectId/segments', segmentsRoutes)
+  api.route('/projects/:projectId/surveys', surveysRoutes)
   api.route('/projects/:projectId/changelog', changelogRoutes)
   api.route('/projects/:projectId/keys', apiKeysRoutes)
   api.route('/projects/:projectId/analytics', analyticsRoutes)

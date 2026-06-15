@@ -64,6 +64,18 @@ describe('project key + CORS', () => {
     expect(res.status).toBe(200)
     expect(res.headers.get('access-control-allow-origin')).toBe('http://localhost:3000')
   })
+
+  test('the hosted Chorala origin is auto-allowed without whitelisting (first-party portal)', async () => {
+    // The hosted portal at CHORALA_PUBLIC_URL must work without the customer adding
+    // Chorala's own domain to allowed_origins — votes/comments/surveys from the
+    // hosted portal would otherwise 403 (the Phase 16 survey-submit bug).
+    const choralaOrigin = new URL(env.CHORALA_PUBLIC_URL).origin
+    const res = await app.request('/api/v1/public/boards', {
+      headers: { ...KEY(), origin: choralaOrigin },
+    })
+    expect(res.status).toBe(200)
+    expect(res.headers.get('access-control-allow-origin')).toBe(choralaOrigin)
+  })
 })
 
 describe('localization', () => {

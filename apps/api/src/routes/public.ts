@@ -1,4 +1,4 @@
-import { endUsers, publicFeed, storage, unauthorized, votes } from '@chorala/core'
+import { endUsers, publicFeed, storage, surveys, unauthorized, votes } from '@chorala/core'
 import {
   changelogSubscribeInput,
   createAttachmentInput,
@@ -6,6 +6,7 @@ import {
   createPostInput,
   identifyInput,
   postSort,
+  submitSurveyResponseInput,
 } from '@chorala/types'
 import { Hono } from 'hono'
 import { requireEndUser, resolveEndUser } from '../lib/identity.ts'
@@ -79,6 +80,18 @@ publicRoutes
     return c.json(
       await publicFeed.getRoadmap(project.id, { locale: c.req.query('locale'), endUserId: eu?.id }),
     )
+  })
+  // The active survey to show this visitor (segment-aware, skips already-answered), or null.
+  .get('/survey', async (c) => {
+    const project = c.get('project')
+    const eu = await resolveEndUser(c, project)
+    return c.json(await surveys.getActiveSurvey(project.id, eu?.id))
+  })
+  .post('/survey/:id/responses', async (c) => {
+    const project = c.get('project')
+    const eu = await requireEndUser(c, project)
+    const input = submitSurveyResponseInput.parse(await c.req.json())
+    return c.json(await surveys.submitResponse(project.id, c.req.param('id'), eu.id, input), 201)
   })
   .get('/changelog', async (c) => c.json(await publicFeed.getPublicChangelog(c.get('project').id)))
   .post('/changelog/subscribe', async (c) => {

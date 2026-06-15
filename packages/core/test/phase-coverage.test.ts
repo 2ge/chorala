@@ -25,6 +25,7 @@ import {
   publicFeed,
   segments,
   storage,
+  surveys,
   votes,
 } from '../src/index.ts'
 
@@ -392,6 +393,62 @@ describe('integrations breadth (Phase 15)', () => {
     await integrations.setDiscordIntegration(ctx, p.id, 'https://discord.com/api/webhooks/123/abc')
     const list = await integrations.listIntegrations(ctx, p.id)
     expect(list.some((i) => i.type === 'discord')).toBe(true)
+  })
+})
+
+describe('surveys (Phase 16)', () => {
+  test('NPS results compute; active survey de-dupes after a response', async () => {
+    const p = await newProject('survey')
+    const s = await surveys.createSurvey(ctx, p.id, {
+      name: 'Q3 NPS',
+      type: 'nps',
+      question: 'How likely…?',
+      config: { scaleMin: 0, scaleMax: 10 },
+      isActive: true,
+    })
+    const eu1 = await mkUser(p.id, { email: 's1@x.com' })
+    const eu2 = await mkUser(p.id, { email: 's2@x.com' })
+    const eu3 = await mkUser(p.id, { email: 's3@x.com' })
+
+    // shown to a fresh user…
+    expect((await surveys.getActiveSurvey(p.id, eu1))?.id).toBe(s!.id)
+
+    await surveys.submitResponse(p.id, s!.id, eu1, { value: 10 }) // promoter
+    await surveys.submitResponse(p.id, s!.id, eu2, { value: 9 }) // promoter
+    await surveys.submitResponse(p.id, s!.id, eu3, { value: 0 }) // detractor
+    // a second submit from the same user is ignored (one response per user)
+    await surveys.submitResponse(p.id, s!.id, eu1, { value: 1 })
+
+    // …but not again once they've answered
+    expect(await surveys.getActiveSurvey(p.id, eu1)).toBeNull()
+
+    const r = await surveys.getResults(ctx, p.id, s!.id)
+    expect(r.responseCount).toBe(3)
+    expect(r.nps).toBe(33) // (2 promoters − 1 detractor) / 3 → 33
+    expect(r.distribution).toEqual({ '0': 1, '9': 1, '10': 1 })
+  })
+
+  test('a targeted survey only shows to matching users', async () => {
+    const p = await newProject('survey-seg')
+    const co = newId('company')
+    await db.insert(companies).values({ id: co, projectId: p.id, name: 'Pro', plan: 'pro', mrr: 9 })
+    const pro = await mkUser(p.id, { email: 'pro@x.com', companyId: co })
+    const free = await mkUser(p.id, { email: 'free@x.com' })
+    const seg = await segments.createSegment(ctx, p.id, {
+      name: 'Pros',
+      definition: { match: 'all', rules: [{ field: 'plan', op: 'eq', value: 'pro' }] },
+    })
+    const s = await surveys.createSurvey(ctx, p.id, {
+      name: 'Pro CSAT',
+      type: 'csat',
+      question: 'Happy?',
+      config: { scaleMin: 1, scaleMax: 5 },
+      segmentId: seg!.id,
+      isActive: true,
+    })
+    expect((await surveys.getActiveSurvey(p.id, pro))?.id).toBe(s!.id)
+    expect(await surveys.getActiveSurvey(p.id, free)).toBeNull()
+    expect(await surveys.getActiveSurvey(p.id, undefined)).toBeNull() // anon, targeted
   })
 })
 

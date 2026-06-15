@@ -9,6 +9,7 @@ import {
   prefixedId,
   segmentDefinition,
   statusKind,
+  surveyType,
   webhookEvent,
 } from './common.ts'
 import {
@@ -336,6 +337,47 @@ export type IngestInput = z.infer<typeof ingestInput>
 
 export const askInput = z.object({ question: z.string().min(1).max(500) })
 export type AskInput = z.infer<typeof askInput>
+
+// --- Surveys (Phase 16) ---
+export const createSurveyInput = z.object({
+  name: z.string().min(1),
+  type: surveyType,
+  question: z.string().min(1).max(300),
+  config: z
+    .object({
+      scaleMin: z.number().int().optional(),
+      scaleMax: z.number().int().optional(),
+      lowLabel: z.string().optional(),
+      highLabel: z.string().optional(),
+      options: z.array(z.string()).optional(),
+    })
+    .default({}),
+  segmentId: z.string().nullable().optional(),
+  isActive: z.boolean().default(false),
+})
+export type CreateSurveyInput = z.infer<typeof createSurveyInput>
+export const updateSurveyInput = createSurveyInput.partial()
+export type UpdateSurveyInput = z.infer<typeof updateSurveyInput>
+
+/** A public respondent's answer — exactly one field is used per survey type. */
+export const submitSurveyResponseInput = z.object({
+  value: z.number().int().optional(),
+  text: z.string().max(2000).optional(),
+  choice: z.string().optional(),
+})
+export type SubmitSurveyResponseInput = z.infer<typeof submitSurveyResponseInput>
+
+/** Aggregated survey results for the admin dashboard. */
+export const surveyResults = z.object({
+  responseCount: z.number().int(),
+  average: z.number().nullable(),
+  nps: z.number().nullable(), // -100..100 for NPS surveys
+  csatPercent: z.number().nullable(), // 0..100 (top-2-box) for csat/rating
+  distribution: z.record(z.string(), z.number().int()), // value → count
+  choices: z.record(z.string(), z.number().int()), // option → count
+  texts: z.array(z.string()),
+})
+export type SurveyResults = z.infer<typeof surveyResults>
 
 // --- Integrations breadth (Phase 15) ---
 export const setDiscordInput = z.object({ webhookUrl: z.url() })

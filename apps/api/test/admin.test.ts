@@ -15,6 +15,7 @@ const app = createApp()
 let auth: Record<string, string>
 let projectId: string
 let boardId: string
+let publicKey: string
 let ctx: AuthContext
 
 beforeAll(async () => {
@@ -37,6 +38,7 @@ beforeAll(async () => {
     allowedOrigins: [],
   })
   projectId = project!.id
+  publicKey = project!.publicKey
   boardId = (await boardSvc.listBoards(ctx, projectId))[0]!.id
   await postSvc.createPost(ctx, projectId, { boardId, title: 'Seed post', body: '' })
   const key = await apiKeys.createApiKey(ctx, projectId, {
@@ -207,6 +209,44 @@ describe('inbound webhook (Phase 15)', () => {
       body: JSON.stringify({ type: 'identify', userId: 'cdp-2' }),
     })
     expect(bad.status).toBe(401)
+  })
+})
+
+describe('surveys (Phase 16)', () => {
+  test('create → public sees it & submits → results aggregate', async () => {
+    const create = await app.request(`${base()}/surveys`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        name: 'NPS',
+        type: 'nps',
+        question: 'How likely…?',
+        config: { scaleMin: 0, scaleMax: 10 },
+        isActive: true,
+      }),
+    })
+    expect(create.status).toBe(201)
+    const survey = (await create.json()) as { id: string }
+
+    // a public visitor is shown the active survey…
+    const active = await app.request('/api/v1/public/survey', {
+      headers: { 'x-chorala-key': publicKey },
+    })
+    expect(((await active.json()) as { id: string }).id).toBe(survey.id)
+
+    // …and submits a promoter score
+    const resp = await app.request(`/api/v1/public/survey/${survey.id}/responses`, {
+      method: 'POST',
+      headers: { 'x-chorala-key': publicKey, 'content-type': 'application/json' },
+      body: JSON.stringify({ value: 10 }),
+    })
+    expect(resp.status).toBe(201)
+
+    const results = (await (
+      await app.request(`${base()}/surveys/${survey.id}/results`, { headers: auth })
+    ).json()) as { responseCount: number; nps: number }
+    expect(results.responseCount).toBe(1)
+    expect(results.nps).toBe(100) // one promoter
   })
 })
 

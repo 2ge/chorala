@@ -457,6 +457,53 @@ export const changelogEntries = pgTable(
 )
 
 /**
+ * In-app surveys (Phase 16): NPS / CSAT / CES / rating / text / choice questions, optionally
+ * targeted at a segment. Shown to end-users on the portal/widget; results feed the feedback graph.
+ */
+export const surveys = pgTable(
+  'surveys',
+  {
+    id: pk('survey'),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    type: text('type').$type<'nps' | 'csat' | 'ces' | 'rating' | 'text' | 'choice'>().notNull(),
+    question: text('question').notNull(),
+    // { scaleMin, scaleMax, lowLabel?, highLabel?, options?: string[] }
+    config: jsonb('config').$type<Json>().default({}).notNull(),
+    segmentId: text('segment_id').references((): AnyPgColumn => segments.id, {
+      onDelete: 'set null',
+    }),
+    isActive: boolean('is_active').default(false).notNull(),
+    ...ts,
+  },
+  (t) => [index('surveys_project_idx').on(t.projectId)],
+)
+
+export const surveyResponses = pgTable(
+  'survey_responses',
+  {
+    id: pk('surveyResponse'),
+    surveyId: text('survey_id')
+      .notNull()
+      .references(() => surveys.id, { onDelete: 'cascade' }),
+    endUserId: text('end_user_id').references(() => endUsers.id, { onDelete: 'set null' }),
+    value: integer('value'), // numeric answer (nps/csat/ces/rating)
+    text: text('text'), // open-text answer
+    choice: text('choice'), // selected option (choice)
+    ...ts,
+  },
+  (t) => [
+    index('survey_responses_survey_idx').on(t.surveyId),
+    // one response per end-user per survey
+    uniqueIndex('survey_responses_user_uq')
+      .on(t.surveyId, t.endUserId)
+      .where(sql`${t.endUserId} is not null`),
+  ],
+)
+
+/**
  * Audience segments (Phase 13): a saved predicate over end-users + their company. Resolves to a
  * set of end-users — used to target changelog announcements (the differentiator vs Canny).
  */

@@ -14,10 +14,11 @@ import {
   scoreFields,
   segments,
   statuses,
+  surveys,
   tags,
   votes,
 } from '@chorala/core'
-import type { SegmentDefinition } from '@chorala/types'
+import type { CreateSurveyInput, SegmentDefinition } from '@chorala/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireAuthContext } from './session'
@@ -160,6 +161,25 @@ export async function dismissPost(projectId: string, id: string) {
   const ctx = await requireAuthContext()
   await posts.dismissPost(ctx, projectId, id)
   revalidatePath(`${adminPath(projectId)}/autopilot`)
+}
+
+// --- Surveys (Phase 16) ---
+export async function createSurvey(projectId: string, input: CreateSurveyInput) {
+  const ctx = await requireAuthContext()
+  await surveys.createSurvey(ctx, projectId, input)
+  revalidatePath(`${adminPath(projectId)}/surveys`)
+}
+
+export async function toggleSurvey(projectId: string, id: string, isActive: boolean) {
+  const ctx = await requireAuthContext()
+  await surveys.updateSurvey(ctx, projectId, id, { isActive })
+  revalidatePath(`${adminPath(projectId)}/surveys`)
+}
+
+export async function deleteSurvey(projectId: string, id: string) {
+  const ctx = await requireAuthContext()
+  await surveys.deleteSurvey(ctx, projectId, id)
+  revalidatePath(`${adminPath(projectId)}/surveys`)
 }
 
 export async function adminCreatePost(formData: FormData) {

@@ -11,6 +11,7 @@ const TABS: [string, string][] = [
   ['preview', 'Preview'],
   ['companies', 'Companies'],
   ['segments', 'Segments'],
+  ['surveys', 'Surveys'],
   ['analytics', 'Analytics'],
   ['settings', 'Settings'],
   ['members', 'Members'],

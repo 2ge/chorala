@@ -139,10 +139,12 @@ SPEC §1 caps v1 integrations at Slack/Linear/GitHub/webhooks. Expanding is a de
 post‑v1 call. Highest leverage: **Jira**, **Segment** (CDP identify), **Zapier/Make**
 (unlocks the long tail for free), then Intercom/Zendesk/Discord.
 
-### Phase 16 — Surveys & NPS · *medium, post‑v1, conflicts with SPEC §1 non‑goal*
-Featurebase bundles in‑app micro‑surveys + NPS/CSAT, triggered by URL/segment, feeding the
-feedback graph. SPEC marks surveys a v1 non‑goal — pursue only as an explicit post‑v1
-expansion. Cheap once Phase 13 segmentation + the widget exist.
+### Phase 16 — Surveys & NPS · ✅ SHIPPED
+In‑app micro‑surveys + **NPS / CSAT / CES / rating / open‑text / multiple‑choice**, optionally
+**targeted at a segment** (reusing Phase 13), rendered on the portal and answered once per user.
+Results aggregate into the same admin surface: response count, **NPS score**, CSAT top‑box %,
+average, value distribution, choice tallies, and recent free‑text. Surfaced as an explicit
+post‑v1 expansion beyond SPEC §1's non‑goal, kept flat‑priced (no per‑response metering).
 
 ### Phase 17 — Enterprise & trust · *large, sell‑up tier*
 SAML/SCIM admin SSO, custom admin roles (we have owner/admin/member today), **audit‑log UI**

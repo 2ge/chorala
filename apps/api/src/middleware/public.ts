@@ -29,10 +29,19 @@ async function enforceRateLimit(c: Context, projectId: string) {
   }
 }
 
+// The hosted portal (chorala.com/portal/…) and a project's own custom domain are first-party
+// surfaces — votes/comments/surveys must work from them without the customer hand-whitelisting
+// Chorala's own hostnames in allowed_origins. Derive the Chorala origin once at module load.
+const CHORALA_ORIGIN = new URL(env.CHORALA_PUBLIC_URL).origin
+
 function applyCors(c: Context, project: PublicProject): boolean {
   const origin = c.req.header('origin')
   if (!origin) return true // non-browser client (server-to-server / curl)
-  const allowed = project.allowedOrigins.includes('*') || project.allowedOrigins.includes(origin)
+  const allowed =
+    project.allowedOrigins.includes('*') ||
+    project.allowedOrigins.includes(origin) ||
+    origin === CHORALA_ORIGIN ||
+    (project.customDomain != null && origin === `https://${project.customDomain}`)
   if (!allowed) return false
   setCorsHeaders(c, origin)
   return true

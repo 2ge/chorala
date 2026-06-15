@@ -77,8 +77,10 @@ open if Redis is unavailable.
 
 ### 2.4 CORS
 Public endpoints answer cross-origin only for origins in the project's `allowedOrigins`
-(`*` allowed). Preflight (`OPTIONS`) is answered without the key; the real request enforces
-the allowlist (disallowed → `403`, no `Access-Control-Allow-Origin`).
+(`*` allowed). The hosted Chorala portal origin and the project's own `customDomain` are
+**first-party surfaces and always allowed** without listing them. Preflight (`OPTIONS`) is
+answered without the key; the real request enforces the allowlist (disallowed → `403`, no
+`Access-Control-Allow-Origin`).
 
 ### 2.5 Pagination
 List endpoints accept `?limit=` and `?cursor=` (where applicable) via the shared
@@ -175,6 +177,17 @@ POST /public/identify     body: { "jwt": "eyJ…" }
 ```
 Verifies the host-signed JWT and upserts the end-user. → `{ endUser, token }`. (Usually you
 just pass the JWT as `X-Chorala-User` per request instead — see §6.)
+
+### Surveys (NPS / CSAT / …)
+```
+GET  /public/survey                              → the active survey for this visitor, or null
+POST /public/survey/:id/responses    { value?, text?, choice? }   → 201
+```
+`GET /public/survey` returns the single active survey the visitor hasn't answered yet (and that
+matches their segment, if the survey is targeted), or `null`. Identify the visitor with
+`X-Chorala-User` for targeting + one-per-user dedup; anonymous visitors are deduped via the
+`chorala_uid` cookie. `value` is the numeric score (NPS 0–10, CSAT/CES/rating on the survey's
+scale); `text` for open-text; `choice` for multiple-choice. A duplicate submit is a no-op 201.
 
 ---
 
@@ -285,6 +298,17 @@ Publishing fires `changelog.published` and emails recipients. **`segmentId`** ta
 segment's end-users (else all subscribers); the entry records `recipientCount`. Title/body support
 **`{{first_name}}` / `{{name}}` / `{{email}}` / `{{company}}` / `{{plan}}`** variables, rendered
 per recipient.
+
+### Surveys — `/projects/:projectId/surveys`
+```
+GET  /  · POST / { name, type, question, config?, segmentId?, isActive? }   → 201
+GET /:id · PATCH /:id · DELETE /:id
+GET /:id/results
+```
+`type` ∈ `nps|csat|ces|rating|text|choice`. `config` carries `{ scaleMin, scaleMax, options[] }`
+(options for `choice`). `segmentId` targets the survey to a Phase-13 segment (else everyone).
+`/results` → `{ responseCount, nps, csatPercent, average, distribution{value:n}, choices{opt:n},
+texts[] }` — `nps`/`csatPercent`/`average` are `null` when not applicable to the type.
 
 ### API keys — `/projects/:projectId/keys`
 ```
@@ -442,5 +466,6 @@ authenticated with an `hk_…` key — 9 tools incl. `search_feedback`, `top_req
 | `boardKind` | `feature`, `bug`, `general` |
 | `changelogStatus` | `draft`, `published` |
 | `memberRole` | `owner`, `admin`, `member` |
-| `integrationType` | `slack`, `linear`, `github` |
+| `surveyType` | `nps`, `csat`, `ces`, `rating`, `text`, `choice` |
+| `integrationType` | `slack`, `linear`, `github`, `discord`, `segment` |
 | `webhookEvent` | `post.created`, `post.status_changed`, `post.merged`, `comment.created`, `changelog.published`, `vote.created` |

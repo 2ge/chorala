@@ -81,6 +81,20 @@ export async function resolveSegment(
   }))
 }
 
+/** Whether a single end-user matches a definition (used for survey targeting). */
+export async function isInSegment(
+  projectId: string,
+  def: SegmentDefinition,
+  endUserId: string,
+): Promise<boolean> {
+  const where = definitionSql(def)
+  const rows = await db.execute<{ n: number }>(sql`
+    select count(*)::int as n from end_users eu
+    left join companies c on eu.company_id = c.id
+    where eu.project_id = ${projectId} and eu.id = ${endUserId} and (${where})`)
+  return Number(Array.from(rows)[0]?.n ?? 0) > 0
+}
+
 /** How many end-users currently match a definition. */
 export async function matchCount(projectId: string, def: SegmentDefinition): Promise<number> {
   const where = definitionSql(def)

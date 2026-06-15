@@ -70,6 +70,10 @@ export const apiError = z.object({
 })
 export type ApiError = z.infer<typeof apiError>
 
+// --- Surveys (Phase 16) ---
+export const surveyType = z.enum(['nps', 'csat', 'ces', 'rating', 'text', 'choice'])
+export type SurveyType = z.infer<typeof surveyType>
+
 // --- Audience segments (Phase 13) ---
 /** Attributes a segment rule can test (resolved over end_users + their company). */
 export const segmentField = z.enum(['plan', 'mrr', 'locale', 'email_domain', 'has_company'])

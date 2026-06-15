@@ -11,6 +11,7 @@ import {
   prefixedId,
   segmentDefinition,
   statusKind,
+  surveyType,
   timestamps,
   webhookEvent,
 } from './common.ts'
@@ -221,6 +222,19 @@ export const segment = z
   })
   .extend(timestamps.shape)
 
+export const survey = z
+  .object({
+    id: prefixedId('sv'),
+    projectId: prefixedId('proj'),
+    name: z.string(),
+    type: surveyType,
+    question: z.string(),
+    config: jsonObject,
+    segmentId: prefixedId('seg').nullable(),
+    isActive: z.boolean(),
+  })
+  .extend(timestamps.shape)
+
 export const changelogSubscriber = z
   .object({
     id: prefixedId('sub'),
@@ -324,6 +338,7 @@ export type Comment = z.infer<typeof comment>
 export type Tag = z.infer<typeof tag>
 export type ChangelogEntry = z.infer<typeof changelogEntry>
 export type Segment = z.infer<typeof segment>
+export type Survey = z.infer<typeof survey>
 export type ChangelogSubscriber = z.infer<typeof changelogSubscriber>
 export type Notification = z.infer<typeof notification>
 export type Integration = z.infer<typeof integration>
