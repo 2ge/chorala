@@ -109,13 +109,20 @@ Closed gap #1 — the thing that makes us sellable to B2B SaaS.
 - **Deferred** (DECISIONS): segment‑restricted roadmap/board visibility (invasive on the public
   read path) and email open/click pixel tracking.
 
-### Phase 14 — AI capture ("Autopilot", done cheaper) · *large, biggest moat vs Canny*
-- **Inbound connectors:** Intercom / Zendesk / Slack threads → AI extracts feature requests →
-  files as **draft** posts for human review (never auto‑publish without opt‑in).
-- **Auto‑categorize** new feedback into product areas (extends our existing clustering).
-- **Smart follow‑up** replies; **"ask your feedback"** natural‑language query over posts.
-- Runs on our **pluggable, bundled AI** — Canny bills $0.10/credit and Featurebase
-  $0.29/resolution for the same thing; we do it at zero marginal cost on self‑host.
+### Phase 14 — AI capture ("Autopilot", done cheaper) · *large* · ✅ SHIPPED 2026‑06‑15
+- ✅ **Ingest → extract → review.** `POST /ingest` takes a raw support conversation;
+  `extractFeatureRequests` pulls out distinct requests as **pending** posts (hidden from the
+  public board + default list). A human approves (`/approve` → live) or dismisses (`/dismiss`)
+  in the **Review queue** — never auto‑published.
+- ✅ **"Ask your feedback"** — `POST /ask` answers a natural‑language question over a project's
+  posts (semantic search + LLM synthesis when enabled).
+- ✅ **Graceful degradation (SPEC §2):** AI off → ingest still captures the conversation as one
+  request; ask falls back to a keyword match. So Autopilot is useful at $0, and AI only makes it
+  *smarter* — Canny bills $0.10/credit and Featurebase $0.29/resolution for the same thing.
+- ✅ Dashboard **Autopilot** tab: paste‑to‑capture, ask box, review queue with source badges.
+- **Deferred** (DECISIONS): real Intercom/Zendesk/Slack **OAuth** connectors (need external app
+  registration, same blocker as GitHub OAuth — the generic `/ingest` endpoint *is* the connector
+  contract they post to); auto‑categorize‑to‑board and AI smart‑reply.
 
 ### Phase 15 — Integration breadth · *medium, post‑v1 — needs a DECISIONS note*
 SPEC §1 caps v1 integrations at Slack/Linear/GitHub/webhooks. Expanding is a deliberate

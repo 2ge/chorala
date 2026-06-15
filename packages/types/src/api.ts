@@ -306,13 +306,34 @@ export type UpdateCompanyInput = z.infer<typeof updateCompanyInput>
  * `revenueImpact` (Σ MRR of distinct voter companies), the weighted `score`, the assigned
  * owner, and the raw custom `fields`. None of these are exposed on the public payload.
  */
+export const reviewStatus = z.enum(['none', 'pending', 'dismissed'])
+export type ReviewStatus = z.infer<typeof reviewStatus>
+
 export const adminPostListItem = post.extend({
   revenueImpact: z.number().int(),
   score: z.number(),
   assigneeMemberId: prefixedId('mem').nullable(),
   fields: z.record(z.string(), z.number()),
+  reviewStatus: reviewStatus,
+  source: z.record(z.string(), z.unknown()),
 })
 export type AdminPostListItem = z.infer<typeof adminPostListItem>
+
+// --- Autopilot: AI capture (Phase 14) ---
+export const feedbackSource = z.enum(['intercom', 'zendesk', 'slack', 'email', 'manual'])
+export type FeedbackSource = z.infer<typeof feedbackSource>
+
+/** Ingest a raw support conversation → AI extracts feature requests as pending posts. */
+export const ingestInput = z.object({
+  source: feedbackSource.default('manual'),
+  text: z.string().min(1).max(20_000),
+  author: z.object({ email: z.email().optional(), name: z.string().optional() }).optional(),
+  url: z.string().optional(),
+})
+export type IngestInput = z.infer<typeof ingestInput>
+
+export const askInput = z.object({ question: z.string().min(1).max(500) })
+export type AskInput = z.infer<typeof askInput>
 
 // --- Score fields (weighted prioritization, Phase 12) ---
 export const createScoreFieldInput = z.object({

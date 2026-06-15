@@ -24,6 +24,7 @@ const listOpts = (c: Context<AppEnv>) => ({
   plan: c.req.query('plan'),
   minMrr: c.req.query('minMrr') ? Number(c.req.query('minMrr')) : undefined,
   assigneeMemberId: c.req.query('assignee'),
+  reviewStatus: c.req.query('review') as 'none' | 'pending' | 'dismissed' | 'all' | undefined,
   search: c.req.query('search'),
   sort: postSort.catch('top').parse(c.req.query('sort')),
   includeMerged: c.req.query('includeMerged') === 'true',
@@ -85,6 +86,13 @@ export const postsRoutes = new Hono<AppEnv>()
   )
   .delete('/:id', async (c) =>
     c.json(await posts.deletePost(c.get('auth'), reqParam(c, 'projectId'), c.req.param('id'))),
+  )
+  // Autopilot review queue: approve a pending AI-ingested post (→ live) or dismiss it.
+  .post('/:id/approve', async (c) =>
+    c.json(await posts.approvePost(c.get('auth'), reqParam(c, 'projectId'), c.req.param('id'))),
+  )
+  .post('/:id/dismiss', async (c) =>
+    c.json(await posts.dismissPost(c.get('auth'), reqParam(c, 'projectId'), c.req.param('id'))),
   )
   // Cast a vote on behalf of a customer (sales/support logging a request).
   .post('/:id/vote-for', async (c) =>

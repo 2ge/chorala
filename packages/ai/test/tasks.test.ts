@@ -14,7 +14,15 @@ import {
 } from '@chorala/db'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import type { CompleteOptions, LLMProvider } from '../src/index.ts'
-import { dedupPost, embedPost, NoopProvider, processPost, translatePost } from '../src/index.ts'
+import {
+  askFeedback,
+  dedupPost,
+  embedPost,
+  extractFeatureRequests,
+  NoopProvider,
+  processPost,
+  translatePost,
+} from '../src/index.ts'
 
 /** Deterministic bag-of-words embedding so similar text → high cosine similarity. */
 function embedText(text: string): number[] {
@@ -155,5 +163,52 @@ describe('graceful degradation (NoopProvider)', () => {
     expect(await dedupPost(noop, postA)).toEqual([])
     expect(await translatePost(noop, postA)).toEqual([])
     expect(await processPost(noop, postA)).toEqual({ suggestions: [], translated: [] })
+  })
+})
+
+describe('autopilot — extraction + ask (Phase 14)', () => {
+  test('extractFeatureRequests falls back to one request when AI is off', async () => {
+    const out = await extractFeatureRequests(
+      new NoopProvider(),
+      'Dark mode please\nit hurts my eyes',
+    )
+    expect(out).toHaveLength(1)
+    expect(out[0]?.title).toBe('Dark mode please')
+    expect(out[0]?.body).toContain('hurts my eyes')
+    expect(await extractFeatureRequests(new NoopProvider(), '   ')).toHaveLength(0)
+  })
+
+  test('extractFeatureRequests parses a JSON array from the model', async () => {
+    const arrayProvider: LLMProvider = {
+      name: 'arr',
+      enabled: true,
+      canEmbed: false,
+      async embed() {
+        return []
+      },
+      async complete() {
+        return JSON.stringify([
+          { title: 'Dark mode', body: 'a' },
+          { title: 'CSV export', body: 'b' },
+          { notATitle: true },
+        ])
+      },
+    }
+    const out = await extractFeatureRequests(arrayProvider, 'a support thread')
+    expect(out.map((o) => o.title)).toEqual(['Dark mode', 'CSV export']) // junk row dropped
+  })
+
+  test('askFeedback keyword-matches related posts when AI is off', async () => {
+    const res = await askFeedback(new NoopProvider(), projectId, 'dark mode at night')
+    expect(res.aiEnabled).toBe(false)
+    expect(res.answer).toBe('')
+    expect(res.sources.some((s) => s.title.toLowerCase().includes('dark mode'))).toBe(true)
+  })
+
+  test('askFeedback returns sources + a synthesized answer with embeddings', async () => {
+    const res = await askFeedback(provider, projectId, 'export ideas to csv')
+    expect(res.aiEnabled).toBe(true)
+    expect(res.answer).toBeTruthy()
+    expect(res.sources.length).toBeGreaterThan(0)
   })
 })

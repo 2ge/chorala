@@ -20,6 +20,7 @@ import {
   endUsers as endUserSvc,
   posts,
   projects,
+  publicFeed,
   segments,
   storage,
   votes,
@@ -296,6 +297,45 @@ describe('segment resolver matrix (Phase 13)', () => {
     expect(recips).toHaveLength(1)
     expect(recips[0]!.plan).toBe('pro')
     expect(recips[0]!.companyName).toBe('Pro Inc')
+  })
+})
+
+describe('autopilot review queue (Phase 14)', () => {
+  test('ingested posts are pending, hidden publicly, and approvable/dismissable', async () => {
+    const p = await newProject('autopilot')
+    const a = await posts.createReviewPost(ctx, p.id, {
+      title: 'Bulk export to CSV',
+      body: 'from a support chat',
+      source: { type: 'intercom' },
+    })
+    const b = await posts.createReviewPost(ctx, p.id, {
+      title: 'Dark mode please',
+      body: 'second ticket',
+      source: { type: 'zendesk' },
+    })
+    expect(a.reviewStatus).toBe('pending')
+
+    // default admin list excludes pending; the review queue shows them
+    const live = await posts.listPosts(ctx, p.id, {})
+    expect(live.some((r) => r.id === a.id)).toBe(false)
+    const queue = await posts.listPosts(ctx, p.id, { reviewStatus: 'pending' })
+    expect(queue.map((r) => r.id).sort()).toEqual([a.id, b.id].sort())
+
+    // the public board never shows pending drafts
+    const pub = await publicFeed.listPublicBoards(p.id, {})
+    expect(pub.posts.some((r) => r.id === a.id)).toBe(false)
+
+    // approve → live (public + admin); dismiss → gone from the queue, never public
+    await posts.approvePost(ctx, p.id, a.id)
+    await posts.dismissPost(ctx, p.id, b.id)
+    expect((await posts.listPosts(ctx, p.id, {})).some((r) => r.id === a.id)).toBe(true)
+    expect((await publicFeed.listPublicBoards(p.id, {})).posts.some((r) => r.id === a.id)).toBe(
+      true,
+    )
+    expect(await posts.listPosts(ctx, p.id, { reviewStatus: 'pending' })).toHaveLength(0)
+    expect(
+      (await posts.listPosts(ctx, p.id, { reviewStatus: 'dismissed' })).some((r) => r.id === b.id),
+    ).toBe(true)
   })
 })
 

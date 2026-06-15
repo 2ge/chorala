@@ -1,5 +1,6 @@
 'use server'
 
+import { askFeedback, createProvider, extractFeatureRequests } from '@chorala/ai'
 import {
   apiKeys,
   boards,
@@ -128,6 +129,37 @@ export async function deleteSegment(projectId: string, id: string) {
   const ctx = await requireAuthContext()
   await segments.deleteSegment(ctx, projectId, id)
   revalidatePath(adminPath(projectId), 'layout')
+}
+
+// --- Autopilot / AI capture (Phase 14) ---
+const aiProvider = createProvider()
+
+export async function ingestFeedback(projectId: string, source: string, text: string) {
+  const ctx = await requireAuthContext()
+  const items = await extractFeatureRequests(aiProvider, text)
+  for (const item of items) {
+    await posts.createReviewPost(ctx, projectId, { ...item, source: { type: source } })
+  }
+  revalidatePath(`${adminPath(projectId)}/autopilot`)
+  return { created: items.length, aiEnabled: aiProvider.enabled }
+}
+
+export async function askFeedbackAction(projectId: string, question: string) {
+  const ctx = await requireAuthContext()
+  await projects.getProject(ctx, projectId)
+  return askFeedback(aiProvider, projectId, question)
+}
+
+export async function approvePost(projectId: string, id: string) {
+  const ctx = await requireAuthContext()
+  await posts.approvePost(ctx, projectId, id)
+  revalidatePath(`${adminPath(projectId)}`, 'layout')
+}
+
+export async function dismissPost(projectId: string, id: string) {
+  const ctx = await requireAuthContext()
+  await posts.dismissPost(ctx, projectId, id)
+  revalidatePath(`${adminPath(projectId)}/autopilot`)
 }
 
 export async function adminCreatePost(formData: FormData) {

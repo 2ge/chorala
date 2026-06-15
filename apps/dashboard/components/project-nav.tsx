@@ -25,6 +25,9 @@ const ICONS: Record<string, ReactNode> = {
   posts: I('M8 9h8M8 13h5M4 5h16v12H9l-4 3z'),
   roadmap: I('M4 6h6M4 12h10M4 18h7M17 4l3 3-3 3M14 7h6'),
   changelog: I('M6 3h9l5 5v13H6zM14 3v6h6M9 13h6M9 17h4'),
+  autopilot: I(
+    'M12 2a3 3 0 013 3v1a5 5 0 013 4.5V14l2 3H4l2-3v-2.5A5 5 0 019 6V5a3 3 0 013-3zM9 20a3 3 0 006 0',
+  ),
   companies: I('M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01'),
   segments: I('M22 3H2l8 9.46V19l4 2v-8.54L22 3z'),
   analytics: I('M4 20V10M10 20V4M16 20v-6M22 20H2'),

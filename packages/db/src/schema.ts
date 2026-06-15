@@ -298,6 +298,14 @@ export const posts = pgTable(
       onDelete: 'set null',
     }),
     fields: jsonb('fields').$type<Record<string, number>>().default({}).notNull(),
+    // Autopilot (Phase 14): AI-ingested posts land as `pending` (hidden from the public board)
+    // for human review → `none` (live) on approve, `dismissed` on reject. `source` records
+    // where it came from ({ type: intercom|zendesk|slack|email|manual, url?, author? }).
+    reviewStatus: text('review_status')
+      .$type<'none' | 'pending' | 'dismissed'>()
+      .default('none')
+      .notNull(),
+    source: jsonb('source').$type<Json>().default({}).notNull(),
     ...ts,
   },
   (t) => [
@@ -305,6 +313,7 @@ export const posts = pgTable(
     index('posts_project_idx').on(t.projectId),
     index('posts_status_idx').on(t.statusId),
     index('posts_app_version_idx').on(t.projectId, t.appVersion),
+    index('posts_review_idx').on(t.projectId, t.reviewStatus),
     index('posts_embedding_idx').using('hnsw', t.embedding.op('vector_cosine_ops')),
   ],
 )

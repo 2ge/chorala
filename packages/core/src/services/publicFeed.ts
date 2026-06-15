@@ -124,7 +124,12 @@ export async function listPublicBoards(projectId: string, opts: PublicListOpts =
     .where(and(eq(boards.projectId, projectId), eq(boards.isPrivate, false)))
     .orderBy(asc(boards.position))
 
-  const filters = [eq(posts.projectId, projectId), sql`${posts.mergedIntoPostId} is null`]
+  const filters = [
+    eq(posts.projectId, projectId),
+    sql`${posts.mergedIntoPostId} is null`,
+    // Autopilot: AI-ingested posts awaiting review (or dismissed) never appear publicly.
+    eq(posts.reviewStatus, 'none'),
+  ]
   if (opts.boardSlug) {
     const board = visibleBoards.find((b) => b.slug === opts.boardSlug)
     if (!board) throw notFound('Board')
@@ -181,9 +186,14 @@ export async function getPublicPost(
   postId: string,
   opts: { locale?: string; endUserId?: string } = {},
 ) {
-  const [row] = await getPostRows(and(eq(posts.id, postId), eq(posts.projectId, projectId)), [
-    desc(posts.createdAt),
-  ])
+  const [row] = await getPostRows(
+    and(
+      eq(posts.id, postId),
+      eq(posts.projectId, projectId),
+      eq(posts.reviewStatus, 'none'), // pending/dismissed AI drafts aren't publicly reachable
+    ),
+    [desc(posts.createdAt)],
+  )
   if (!row) throw notFound('Post')
   const [post] = await decorate([row], opts.locale, opts.endUserId)
   const publicComments = await listComments(projectId, postId, { includeInternal: false })

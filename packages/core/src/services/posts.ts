@@ -52,11 +52,13 @@ export const postColumns = {
   updatedAt: posts.updatedAt,
 }
 
-/** Admin-only columns (owner + scoring inputs) layered on top of the public-safe set. */
+/** Admin-only columns (owner + scoring inputs + review state) over the public-safe set. */
 const adminPostColumns = {
   ...postColumns,
   assigneeMemberId: posts.assigneeMemberId,
   fields: posts.fields,
+  reviewStatus: posts.reviewStatus,
+  source: posts.source,
 }
 
 type ListOpts = {
@@ -68,6 +70,9 @@ type ListOpts = {
   plan?: string
   minMrr?: number
   assigneeMemberId?: string
+  // Autopilot review state. Defaults to live posts only (`none`); pass 'pending' for the
+  // review queue, or 'all' to include everything.
+  reviewStatus?: 'none' | 'pending' | 'dismissed' | 'all'
   search?: string
   sort?: PostSort
   includeMerged?: boolean
@@ -121,6 +126,9 @@ export async function listPosts(ctx: AuthContext, projectId: string, opts: ListO
   if (opts.plan) filters.push(byAuthorCompany(sql`c.plan = ${opts.plan}`))
   if (opts.minMrr) filters.push(byAuthorCompany(sql`c.mrr >= ${opts.minMrr}`))
   if (opts.assigneeMemberId) filters.push(eq(posts.assigneeMemberId, opts.assigneeMemberId))
+  // Default to live posts; the review queue passes 'pending', dashboards can pass 'all'.
+  const review = opts.reviewStatus ?? 'none'
+  if (review !== 'all') filters.push(eq(posts.reviewStatus, review))
   if (!opts.includeMerged) filters.push(sql`${posts.mergedIntoPostId} is null`)
   if (opts.search) {
     const term = `%${opts.search}%`
@@ -315,6 +323,55 @@ export async function createPost(ctx: AuthContext, projectId: string, input: Adm
   await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: input.boardId })
   await enqueueGithubAutoCreate(projectId, id)
   return getPost(ctx, projectId, id)
+}
+
+/**
+ * Create an AI-ingested post in the `pending` review state (Autopilot, Phase 14). It is hidden
+ * from the public board and the default admin list until a human approves it. Lands on the
+ * first feature board (or any board) and gets embedded/de-duped like a normal post.
+ */
+export async function createReviewPost(
+  ctx: AuthContext,
+  projectId: string,
+  input: { title: string; body: string; source: Record<string, unknown> },
+) {
+  await getProject(ctx, projectId)
+  const projectBoards = await db
+    .select({ id: boards.id, kind: boards.kind })
+    .from(boards)
+    .where(eq(boards.projectId, projectId))
+    .orderBy(asc(boards.position))
+  const board = projectBoards.find((b) => b.kind === 'feature') ?? projectBoards[0]
+  if (!board) throw badRequest('Project has no board to ingest into')
+
+  const id = newId('post')
+  await db.insert(posts).values({
+    id,
+    projectId,
+    boardId: board.id,
+    title: input.title.slice(0, 300) || 'Untitled feedback',
+    body: input.body,
+    reviewStatus: 'pending',
+    source: input.source,
+  })
+  await enqueuePostProcessing(id) // embed + dedup so review shows duplicate suggestions
+  return getPost(ctx, projectId, id)
+}
+
+/** Approve a pending AI-ingested post → it goes live (and fires the normal created hooks). */
+export async function approvePost(ctx: AuthContext, projectId: string, id: string) {
+  const post = await getPost(ctx, projectId, id)
+  if (post.reviewStatus !== 'pending') return post
+  await db.update(posts).set({ reviewStatus: 'none' }).where(eq(posts.id, id))
+  await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: post.boardId })
+  return getPost(ctx, projectId, id)
+}
+
+/** Dismiss a pending AI-ingested post → hidden from the review queue, never published. */
+export async function dismissPost(ctx: AuthContext, projectId: string, id: string) {
+  await getPost(ctx, projectId, id)
+  await db.update(posts).set({ reviewStatus: 'dismissed' }).where(eq(posts.id, id))
+  return { id, dismissed: true }
 }
 
 export async function updatePost(

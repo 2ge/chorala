@@ -13,6 +13,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@chorala/ai": "workspace:*",
     "@chorala/config": "workspace:*",
     "@chorala/core": "workspace:*",
     "@chorala/db": "workspace:*",

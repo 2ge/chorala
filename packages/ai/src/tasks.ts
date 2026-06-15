@@ -4,10 +4,13 @@ import {
   and,
   comments,
   db,
+  desc,
   eq,
   feedbackClusters,
+  ilike,
   inArray,
   newId,
+  or,
   organizations,
   posts,
   postTranslations,
@@ -224,6 +227,151 @@ export async function summarizePost(provider: LLMProvider, postId: string): Prom
       },
     ],
   })
+}
+
+export type ExtractedRequest = { title: string; body: string }
+
+/**
+ * Autopilot extraction (Phase 14): pull distinct feature requests / bug reports out of a raw
+ * support conversation. With AI enabled the model returns a JSON array; with AI disabled we
+ * gracefully fall back to capturing the whole conversation as a single request (so ingest still
+ * works — AI only makes it *smarter*, never required, SPEC §2).
+ */
+export async function extractFeatureRequests(
+  provider: LLMProvider,
+  text: string,
+): Promise<ExtractedRequest[]> {
+  const clean = text.trim()
+  if (!clean) return []
+
+  if (!provider.enabled) {
+    const title = (clean.split('\n')[0] ?? clean).slice(0, 120).trim() || clean.slice(0, 120)
+    return [{ title, body: clean.slice(0, 4000) }]
+  }
+
+  const raw = await provider.complete({
+    system:
+      'You extract product feature requests and bug reports from a customer support conversation. ' +
+      'Return ONLY a JSON array of {"title","body"} objects — one per DISTINCT request, the title a ' +
+      "crisp ≤100-char summary and the body a one-paragraph description in the customer's words. " +
+      'If the conversation contains no actionable product feedback, return [].',
+    messages: [{ role: 'user', content: clean.slice(0, 8000) }],
+    json: true,
+  })
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    const arr = Array.isArray(parsed)
+      ? parsed
+      : ((parsed as { requests?: unknown[]; items?: unknown[] }).requests ??
+        (parsed as { items?: unknown[] }).items ??
+        [])
+    return (arr as { title?: unknown; body?: unknown }[])
+      .filter((x) => x && typeof x.title === 'string' && x.title.trim())
+      .slice(0, 10)
+      .map((x) => ({
+        title: String(x.title).slice(0, 280).trim(),
+        body: typeof x.body === 'string' ? x.body.slice(0, 4000) : '',
+      }))
+  } catch {
+    return []
+  }
+}
+
+export type AskResult = {
+  answer: string
+  aiEnabled: boolean
+  sources: { id: string; title: string; voteCount: number }[]
+}
+
+/**
+ * "Ask your feedback" (Phase 14): answer a natural-language question over a project's posts.
+ * Uses semantic search when embeddings are available, else a keyword match; synthesizes an
+ * answer with the LLM when enabled, otherwise returns the related posts (graceful degradation).
+ */
+export async function askFeedback(
+  provider: LLMProvider,
+  projectId: string,
+  question: string,
+): Promise<AskResult> {
+  const q = question.trim()
+  if (!q) return { answer: '', aiEnabled: provider.enabled, sources: [] }
+
+  let sources: { id: string; title: string; voteCount: number; body: string }[] = []
+
+  if (provider.enabled && provider.canEmbed) {
+    const [embedding] = await provider.embed([q])
+    if (embedding) {
+      const literal = `[${embedding.join(',')}]`
+      const rows = await db.execute<{
+        id: string
+        title: string
+        body: string
+        vote_count: number
+      }>(sql`
+        select id, title, body, vote_count
+        from posts
+        where project_id = ${projectId} and merged_into_post_id is null
+          and review_status = 'none' and embedding is not null
+        order by embedding <=> ${literal}::vector
+        limit 8`)
+      sources = Array.from(rows).map((r) => ({
+        id: r.id,
+        title: r.title,
+        body: r.body,
+        voteCount: r.vote_count,
+      }))
+    }
+  }
+
+  if (sources.length === 0) {
+    // keyword fallback: match the question's significant words, rank by votes
+    const words = q
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((w) => w.length > 3)
+    const wordMatch = words.length
+      ? or(
+          ...words.map((w) => ilike(posts.title, `%${w}%`)),
+          ...words.map((w) => ilike(posts.body, `%${w}%`)),
+        )
+      : undefined
+    sources = await db
+      .select({ id: posts.id, title: posts.title, body: posts.body, voteCount: posts.voteCount })
+      .from(posts)
+      .where(
+        and(
+          eq(posts.projectId, projectId),
+          eq(posts.reviewStatus, 'none'),
+          sql`${posts.mergedIntoPostId} is null`,
+          ...(wordMatch ? [wordMatch] : []),
+        ),
+      )
+      .orderBy(desc(posts.voteCount))
+      .limit(8)
+  }
+
+  let answer = ''
+  if (provider.enabled && sources.length > 0) {
+    answer = await provider.complete({
+      system:
+        'You are a product analyst. Answer the question using ONLY the feedback posts provided. ' +
+        'Be concise (2-4 sentences) and cite themes, not post ids.',
+      messages: [
+        {
+          role: 'user',
+          content: `Question: ${q}\n\nFeedback posts:\n${sources
+            .map((s) => `- ${s.title}: ${s.body}`)
+            .join('\n')}`,
+        },
+      ],
+    })
+  }
+
+  return {
+    answer: answer.trim(),
+    aiEnabled: provider.enabled,
+    sources: sources.map((s) => ({ id: s.id, title: s.title, voteCount: s.voteCount })),
+  }
 }
 
 /** Draft a markdown changelog entry from a set of shipped posts (MCP tool). */

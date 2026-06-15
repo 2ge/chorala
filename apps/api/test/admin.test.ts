@@ -139,6 +139,55 @@ describe('companies + CSV export', () => {
   })
 })
 
+describe('autopilot (Phase 14)', () => {
+  test('ingest → pending review → approve → live; ask returns sources', async () => {
+    const ingest = await app.request(`${base()}/ingest`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        source: 'intercom',
+        text: 'We really need bulk CSV export of all ideas.',
+      }),
+    })
+    expect(ingest.status).toBe(201)
+    const { created } = (await ingest.json()) as { created: { id: string; reviewStatus: string }[] }
+    expect(created).toHaveLength(1) // AI off in tests → one captured request
+    const newId = created[0]!.id
+    expect(created[0]!.reviewStatus).toBe('pending')
+
+    // it's in the review queue, not the default (live) list
+    const queue = (await (
+      await app.request(`${base()}/posts?review=pending`, { headers: auth })
+    ).json()) as { id: string }[]
+    expect(queue.some((p) => p.id === newId)).toBe(true)
+    const live = (await (await app.request(`${base()}/posts`, { headers: auth })).json()) as {
+      id: string
+    }[]
+    expect(live.some((p) => p.id === newId)).toBe(false)
+
+    // approve → now live
+    const ok = await app.request(`${base()}/posts/${newId}/approve`, {
+      method: 'POST',
+      headers: auth,
+    })
+    expect(ok.status).toBe(200)
+    const live2 = (await (await app.request(`${base()}/posts`, { headers: auth })).json()) as {
+      id: string
+    }[]
+    expect(live2.some((p) => p.id === newId)).toBe(true)
+
+    // ask your feedback (keyword fallback when AI is off) finds it
+    const ask = await app.request(`${base()}/ask`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ question: 'export csv' }),
+    })
+    expect(ask.status).toBe(200)
+    const res = (await ask.json()) as { sources: { id: string }[]; aiEnabled: boolean }
+    expect(res.sources.some((s) => s.id === newId)).toBe(true)
+  })
+})
+
 describe('vote on behalf (Phase 12)', () => {
   test('records a vote for a customer by email', async () => {
     const posts = (await (await app.request(`${base()}/posts`, { headers: auth })).json()) as {

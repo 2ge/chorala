@@ -324,3 +324,20 @@ choice. Format: `- [phase] chose X over Y because Z`.
   segment evaluation onto the public read path) and email open/click pixel analytics (needs a
   tracking endpoint + image beacon). Recorded so the cut is explicit. Segments are reusable for
   these later — the resolver already returns the matching end-users.
+- [phase14] Autopilot is built around a generic `POST /ingest` (raw text + source) rather than
+  per-vendor OAuth. `extractFeatureRequests` returns the requests; the API route creates a
+  `pending` post per request. Real Intercom/Zendesk/Slack connectors are thin webhooks that POST
+  to `/ingest` — deferred for the same reason GitHub OAuth was (external app registration +
+  credentials we can't self-provision). The endpoint IS the connector contract.
+- [phase14] AI-ingested posts land in `review_status='pending'` (hidden from the public board AND
+  the default admin list) and require human approval → `none` (live) or `dismissed`. Never
+  auto-published — matches the SPEC "suggest, don't auto-act" stance (cf. dedup §11).
+- [phase14] Graceful degradation: with AI off, `extractFeatureRequests` captures the whole
+  conversation as ONE request (so ingest still works) and `askFeedback` returns a keyword match
+  with no synthesized answer. AI only upgrades extraction (multi-request) + ask (synthesis).
+- [phase14] `extractFeatureRequests`/`askFeedback` live in `@chorala/ai`; post creation + review
+  lifecycle in `@chorala/core`; the API route (which already imports both) glues them — so no new
+  core→ai dependency. The dashboard does take @chorala/ai for the ingest/ask server actions.
+- [phase14] **Deferred**: AI auto-categorization to a board (ingest lands on the first feature
+  board) and AI smart-reply drafting. The clustering/embedding pipeline already runs on ingested
+  posts, so these are additive later.

@@ -297,13 +297,26 @@ GET /?timeframe=30d&boardId=
 ```
 → `{ topPosts[], voteVelocity[], clusterThemes[] }`. `timeframe`: `7d|30d|90d|all`.
 
-### AI — `/projects/:projectId`
+### AI / Autopilot — `/projects/:projectId`
 ```
 GET  /posts/search?q=…             semantic search (pgvector); falls back to text if AI off
 POST /posts/:id/summarize          → AI summary of the thread
 POST /changelog/draft              { postIds: [...] } → drafted changelog entry
+POST /ingest                       { source, text, author?, url? }  → AI extracts feature
+                                     requests as PENDING posts (Autopilot) → 201 { created[] }
+POST /ask                          { question } → { answer, sources[], aiEnabled }
 ```
-All degrade gracefully when `CHORALA_AI_PROVIDER=none`.
+**Ingest** turns a raw support conversation into feedback. `source` ∈
+`intercom|zendesk|slack|email|manual`; real connectors are thin webhooks that POST here.
+Extracted posts land in `review_status="pending"` — **hidden from the public board** and the
+default admin list until a human approves them:
+```
+GET  /posts?review=pending         the review queue  (review ∈ none|pending|dismissed|all)
+POST /posts/:id/approve            → live
+POST /posts/:id/dismiss            → never published
+```
+All AI features **degrade gracefully** when `CHORALA_AI_PROVIDER=none` — ingest captures the
+conversation as one request, and ask returns a keyword match without a synthesized answer.
 
 ### Organization — `/org`
 ```
