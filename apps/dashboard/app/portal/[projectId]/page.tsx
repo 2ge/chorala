@@ -7,10 +7,10 @@ export default async function PortalBoard({
   searchParams,
 }: {
   params: Promise<{ projectId: string }>
-  searchParams: Promise<{ locale?: string }>
+  searchParams: Promise<{ locale?: string; tag?: string }>
 }) {
   const { projectId } = await params
-  const { locale } = await searchParams
+  const { locale, tag } = await searchParams
   const data = await getPortalProject(projectId)
   if (!data) notFound()
   return (
@@ -19,6 +19,7 @@ export default async function PortalBoard({
       publicKey={data.project.publicKey}
       locale={locale}
       basePath={`/portal/${projectId}/`}
+      initialTag={tag}
     />
   )
 }

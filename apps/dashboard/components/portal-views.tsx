@@ -5,7 +5,13 @@ import { PortalComment, PortalVote, SubscribeForm } from '@/components/portal-cl
 
 type Props = { projectId: string; publicKey: string; locale?: string; basePath?: string }
 
-export async function BoardView({ projectId, publicKey, locale, basePath = '/' }: Props) {
+export async function BoardView({
+  projectId,
+  publicKey,
+  locale,
+  basePath = '/',
+  initialTag,
+}: Props & { initialTag?: string }) {
   const { boards, posts } = await publicFeed.listPublicBoards(projectId, { locale, sort: 'top' })
   return (
     <div>
@@ -39,6 +45,7 @@ export async function BoardView({ projectId, publicKey, locale, basePath = '/' }
           tags: p.tags ?? [],
         }))}
         basePath={basePath}
+        initialTag={initialTag}
       />
     </div>
   )
@@ -73,7 +80,9 @@ export async function PostDetailView({
             <h1 className="font-display text-2xl leading-tight tracking-[-0.02em]">{post.title}</h1>
             {post.status && <StatusPill status={post.status} />}
             {post.tags?.map((t) => (
-              <TagChip key={t.name} tag={t} />
+              <a key={t.name} href={`${basePath}?tag=${encodeURIComponent(t.name)}`}>
+                <TagChip tag={t} />
+              </a>
             ))}
           </div>
           {post.body && (

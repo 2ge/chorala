@@ -6,13 +6,18 @@ import { getPortalProjectByDomain } from '@/lib/portal'
 export default async function SiteBoard({
   searchParams,
 }: {
-  searchParams: Promise<{ locale?: string }>
+  searchParams: Promise<{ locale?: string; tag?: string }>
 }) {
   const host = (await headers()).get('host') ?? ''
   const data = await getPortalProjectByDomain(host)
   if (!data) notFound()
-  const { locale } = await searchParams
+  const { locale, tag } = await searchParams
   return (
-    <BoardView projectId={data.project.id} publicKey={data.project.publicKey} locale={locale} />
+    <BoardView
+      projectId={data.project.id}
+      publicKey={data.project.publicKey}
+      locale={locale}
+      initialTag={tag}
+    />
   )
 }

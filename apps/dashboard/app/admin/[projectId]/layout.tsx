@@ -8,6 +8,7 @@ const TABS: [string, string][] = [
   ['autopilot', 'Autopilot'],
   ['roadmap', 'Roadmap'],
   ['changelog', 'Changelog'],
+  ['preview', 'Preview'],
   ['companies', 'Companies'],
   ['segments', 'Segments'],
   ['analytics', 'Analytics'],

@@ -31,24 +31,28 @@ export function PortalBoard({
   boards,
   posts,
   basePath,
+  initialTag,
 }: {
   publicKey: string
   boards: Board[]
   posts: Post[]
   basePath: string
+  initialTag?: string
 }) {
   const router = useRouter()
   const [boardId, setBoardId] = useState<string | null>(null)
+  const [tag, setTag] = useState<string | null>(initialTag ?? null)
   const [sort, setSort] = useState<'top' | 'new'>('top')
   const [showForm, setShowForm] = useState(false)
 
   const activeBoard = boards.find((b) => b.id === boardId) ?? null
   const visible = useMemo(() => {
-    const list = boardId ? posts.filter((p) => p.boardId === boardId) : posts
+    let list = boardId ? posts.filter((p) => p.boardId === boardId) : posts
+    if (tag) list = list.filter((p) => p.tags?.some((t) => t.name === tag))
     return [...list].sort((a, b) =>
       sort === 'new' ? +new Date(b.createdAt) - +new Date(a.createdAt) : b.voteCount - a.voteCount,
     )
-  }, [posts, boardId, sort])
+  }, [posts, boardId, tag, sort])
 
   return (
     <div>
@@ -69,6 +73,19 @@ export function PortalBoard({
       <p className="mb-4 text-sm text-ink-soft">
         {activeBoard?.description || KIND_BLURB[activeBoard?.kind ?? 'feature']}
       </p>
+
+      {tag && (
+        <button
+          type="button"
+          onClick={() => setTag(null)}
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-line-strong bg-raised px-3 py-1.5 text-sm transition hover:border-ink-faint"
+        >
+          <span className="text-ink-soft">
+            Tagged <span className="font-semibold text-[var(--brand)]">{tag}</span>
+          </span>
+          <span className="text-ink-faint">✕</span>
+        </button>
+      )}
 
       {/* Submit + sort */}
       <div className="mb-5 flex items-center gap-2">
@@ -129,19 +146,25 @@ export function PortalBoard({
               count={p.voteCount}
               voted={!!p.hasVoted}
             />
-            <a href={`${basePath}posts/${p.id}`} className="block min-w-0 grow pt-0.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="font-medium tracking-[-0.01em]">{p.title}</p>
-                {p.status && <StatusPill status={p.status} />}
+            <div className="min-w-0 grow pt-0.5">
+              <a href={`${basePath}posts/${p.id}`} className="block">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium tracking-[-0.01em]">{p.title}</p>
+                  {p.status && <StatusPill status={p.status} />}
+                </div>
+                {p.body && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{p.body}</p>}
+              </a>
+              <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-ink-faint">
+                <span>
+                  {p.commentCount} {p.commentCount === 1 ? 'comment' : 'comments'}
+                </span>
                 {p.tags?.map((t) => (
-                  <TagChip key={t.name} tag={t} />
+                  <button key={t.name} type="button" onClick={() => setTag(t.name)}>
+                    <TagChip tag={t} />
+                  </button>
                 ))}
               </div>
-              {p.body && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{p.body}</p>}
-              <p className="mt-1.5 text-xs text-ink-faint">
-                {p.commentCount} {p.commentCount === 1 ? 'comment' : 'comments'}
-              </p>
-            </a>
+            </div>
           </div>
         ))}
       </div>
