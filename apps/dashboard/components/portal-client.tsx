@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { type FormEvent, useState } from 'react'
 import { subscribeToChangelog } from '@/lib/actions'
 
@@ -55,6 +56,51 @@ export function PortalVote({
       <span className="text-[0.65em] leading-none">▲</span>
       {c}
     </button>
+  )
+}
+
+export function PortalComment({ publicKey, postId }: { publicKey: string; postId: string }) {
+  const router = useRouter()
+  const [body, setBody] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    if (!body.trim()) return
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/v1/public/posts/${postId}/comments`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'x-chorala-key': publicKey, 'content-type': 'application/json' },
+        body: JSON.stringify({ body: body.trim() }),
+      })
+      if (res.ok) {
+        setBody('')
+        router.refresh()
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-2">
+      <textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder="Add a comment…"
+        className="min-h-20 w-full resize-y rounded-[10px] border border-line-strong bg-raised px-3 py-2.5 text-sm outline-none transition placeholder:text-ink-faint focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/20"
+      />
+      <button
+        type="submit"
+        disabled={busy || !body.trim()}
+        className="rounded-[10px] px-4 py-2 text-sm font-semibold text-white transition active:translate-y-px disabled:opacity-60"
+        style={{ background: 'var(--brand)' }}
+      >
+        {busy ? 'Posting…' : 'Comment'}
+      </button>
+    </form>
   )
 }
 

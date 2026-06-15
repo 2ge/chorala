@@ -1,36 +1,98 @@
 import { publicFeed } from '@chorala/core'
-import { PortalVote, SubscribeForm } from '@/components/portal-client'
+import { notFound } from 'next/navigation'
+import { PortalBoard, StatusPill } from '@/components/portal-board'
+import { PortalComment, PortalVote, SubscribeForm } from '@/components/portal-client'
 
-type Props = { projectId: string; publicKey: string; locale?: string }
+type Props = { projectId: string; publicKey: string; locale?: string; basePath?: string }
 
-export async function BoardView({ projectId, publicKey, locale }: Props) {
-  const { posts } = await publicFeed.listPublicBoards(projectId, { locale, sort: 'top' })
+export async function BoardView({ projectId, publicKey, locale, basePath = '/' }: Props) {
+  const { boards, posts } = await publicFeed.listPublicBoards(projectId, { locale, sort: 'top' })
   return (
     <div>
       <div className="mb-5">
-        <h2 className="font-display text-3xl tracking-[-0.02em]">Ideas</h2>
-        <p className="mt-1 text-sm text-ink-soft">Vote for what you want us to build next.</p>
+        <h2 className="font-display text-3xl tracking-[-0.02em]">What should we build next?</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Suggest ideas, report bugs, and vote on what matters most to you — we read every one.
+        </p>
       </div>
+      <PortalBoard
+        publicKey={publicKey}
+        boards={boards.map((b) => ({
+          id: b.id,
+          slug: b.slug,
+          name: b.name,
+          description: b.description,
+          kind: b.kind,
+        }))}
+        posts={posts.map((p) => ({
+          id: p.id,
+          boardId: p.boardId,
+          title: p.title,
+          body: p.body,
+          voteCount: p.voteCount,
+          commentCount: p.commentCount,
+          hasVoted: p.hasVoted,
+          createdAt: String(p.createdAt),
+          status: p.status
+            ? { name: p.status.name, color: p.status.color, kind: p.status.kind }
+            : null,
+        }))}
+        basePath={basePath}
+      />
+    </div>
+  )
+}
+
+export async function PostDetailView({
+  projectId,
+  publicKey,
+  postId,
+  locale,
+  basePath = '/',
+}: Props & { postId: string }) {
+  const { post, comments } = await publicFeed.getPublicPost(projectId, postId, { locale })
+  if (!post) notFound()
+  return (
+    <div>
+      <a
+        href={basePath}
+        className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition hover:text-[var(--brand)]"
+      >
+        <span aria-hidden>←</span> Back to board
+      </a>
+      <div className="surface flex items-start gap-4 p-5">
+        <PortalVote
+          publicKey={publicKey}
+          postId={post.id}
+          count={post.voteCount}
+          voted={!!post.hasVoted}
+        />
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl leading-tight tracking-[-0.02em]">{post.title}</h1>
+            {post.status && <StatusPill status={post.status} />}
+          </div>
+          {post.body && (
+            <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink-soft">{post.body}</p>
+          )}
+        </div>
+      </div>
+
+      <h2 className="mb-3 mt-7 text-sm font-semibold uppercase tracking-[0.08em] text-ink-faint">
+        {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
+      </h2>
       <div className="space-y-2.5">
-        {posts.length === 0 && <p className="text-ink-faint">No ideas yet — be the first.</p>}
-        {posts.map((p) => (
-          <div
-            key={p.id}
-            className="surface flex items-start gap-4 p-4 transition hover:-translate-y-0.5"
-          >
-            <PortalVote
-              publicKey={publicKey}
-              postId={p.id}
-              count={p.voteCount}
-              voted={!!p.hasVoted}
-            />
-            <div className="min-w-0 pt-0.5">
-              <p className="font-medium tracking-[-0.01em]">{p.title}</p>
-              {p.body && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{p.body}</p>}
-              <p className="mt-1.5 text-xs text-ink-faint">{p.commentCount} comments</p>
-            </div>
+        {comments.map((c) => (
+          <div key={c.id} className="surface p-3.5 text-sm">
+            <p className="whitespace-pre-wrap leading-relaxed">{c.body}</p>
+            <p className="mt-1.5 text-xs text-ink-faint">
+              {new Date(c.createdAt).toLocaleDateString()}
+            </p>
           </div>
         ))}
+      </div>
+      <div className="mt-4">
+        <PortalComment publicKey={publicKey} postId={post.id} />
       </div>
     </div>
   )
