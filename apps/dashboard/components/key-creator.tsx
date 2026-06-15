@@ -35,11 +35,11 @@ export function KeyCreator({ projectId }: { projectId: string }) {
         </Button>
       </form>
       {created && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
-          <p className="mb-1 font-semibold text-amber-800">
+        <div className="rounded-lg border border-accent/25 bg-accent-soft p-3 text-sm">
+          <p className="mb-1 font-semibold text-accent">
             Copy this key now — it won’t be shown again:
           </p>
-          <code className="block break-all rounded bg-white p-2 text-xs">{created}</code>
+          <code className="block break-all rounded bg-ink/[0.06] p-2 text-xs">{created}</code>
         </div>
       )}
     </div>

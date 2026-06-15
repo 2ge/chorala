@@ -17,11 +17,11 @@ export default async function AnalyticsPage({
       <h1 className="text-xl font-bold">Analytics</h1>
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <Card className="p-5">
-          <h2 className="mb-3 text-sm font-semibold text-slate-500">Top requests</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink-soft">Top requests</h2>
           <ol className="space-y-2">
             {data.topPosts.slice(0, 8).map(({ post }, i) => (
               <li key={post.id} className="flex items-center gap-3 text-sm">
-                <span className="w-5 text-slate-400">{i + 1}</span>
+                <span className="w-5 text-ink-faint">{i + 1}</span>
                 <span className="grow truncate">{post.title}</span>
                 <span className="font-semibold">▲ {post.voteCount}</span>
               </li>
@@ -29,9 +29,9 @@ export default async function AnalyticsPage({
           </ol>
         </Card>
         <Card className="p-5">
-          <h2 className="mb-3 text-sm font-semibold text-slate-500">Vote velocity (30d)</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink-soft">Vote velocity (30d)</h2>
           {data.voteVelocity.length === 0 ? (
-            <p className="text-sm text-slate-400">No votes in this window.</p>
+            <p className="text-sm text-ink-faint">No votes in this window.</p>
           ) : (
             <div className="flex h-32 items-end gap-1">
               {data.voteVelocity.map((v) => (
@@ -47,9 +47,9 @@ export default async function AnalyticsPage({
         </Card>
       </div>
       <Card className="p-5">
-        <h2 className="mb-3 text-sm font-semibold text-slate-500">AI cluster themes</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink-soft">AI cluster themes</h2>
         {data.clusterThemes.length === 0 ? (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-ink-faint">
             No clusters yet — run the AI worker (Phase 6) to generate themes.
           </p>
         ) : (

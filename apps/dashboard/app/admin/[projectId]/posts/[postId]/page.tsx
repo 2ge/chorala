@@ -84,12 +84,12 @@ export default async function PostDetail({
                   key={c.id}
                   className={
                     c.isInternal
-                      ? 'rounded-xl border border-amber-200/70 bg-amber-50 p-3.5 text-sm'
+                      ? 'rounded-xl border border-accent/25/70 bg-accent-soft p-3.5 text-sm'
                       : 'rounded-xl bg-paper/70 p-3.5 text-sm'
                   }
                 >
                   {c.isInternal && (
-                    <Badge className="mb-1.5 border-amber-300/60 bg-amber-100 text-amber-700">
+                    <Badge className="mb-1.5 border-accent/30/60 bg-accent-soft text-accent">
                       Internal
                     </Badge>
                   )}

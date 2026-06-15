@@ -70,7 +70,7 @@ export function SubscribeForm({ projectId }: { projectId: string }) {
     setEmail('')
   }
 
-  if (done) return <p className="text-sm font-medium text-emerald-600">You’re subscribed. ✓</p>
+  if (done) return <p className="text-sm font-medium text-emerald-500">You’re subscribed. ✓</p>
   return (
     <form onSubmit={submit} className="flex gap-2">
       <input

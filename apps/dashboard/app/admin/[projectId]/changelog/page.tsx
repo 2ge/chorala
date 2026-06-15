@@ -17,7 +17,7 @@ export default async function ChangelogPage({
       <div>
         <h1 className="mb-4 text-xl font-bold">Changelog</h1>
         <Card className="p-5">
-          <h2 className="mb-3 text-sm font-semibold text-slate-500">New entry</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink-soft">New entry</h2>
           <form action={saveChangelog} className="space-y-3">
             <input type="hidden" name="projectId" value={projectId} />
             <div>
@@ -45,8 +45,8 @@ export default async function ChangelogPage({
       </div>
 
       <div className="space-y-3">
-        <h2 className="mt-10 text-sm font-semibold text-slate-500">Entries</h2>
-        {entries.length === 0 && <p className="text-sm text-slate-400">Nothing published yet.</p>}
+        <h2 className="mt-10 text-sm font-semibold text-ink-soft">Entries</h2>
+        {entries.length === 0 && <p className="text-sm text-ink-faint">Nothing published yet.</p>}
         {entries.map((e) => (
           <Card key={e.id} className="p-4">
             <div className="flex items-center gap-2">
@@ -55,13 +55,13 @@ export default async function ChangelogPage({
                 className={
                   e.status === 'published'
                     ? 'bg-green-100 text-green-700'
-                    : 'bg-slate-100 text-slate-500'
+                    : 'bg-ink/[0.06] text-ink-soft'
                 }
               >
                 {e.status}
               </Badge>
             </div>
-            <p className="mt-1 text-sm text-slate-500">{e.body}</p>
+            <p className="mt-1 text-sm text-ink-soft">{e.body}</p>
           </Card>
         ))}
       </div>

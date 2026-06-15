@@ -1,7 +1,7 @@
 import { env } from '@chorala/config'
 import { integrations, projects as projectSvc } from '@chorala/core'
 import { GithubIntegrationCard } from '@/components/integration-card'
-import { Button, Card, Input, Label, Textarea } from '@/components/ui'
+import { Button, Card, Input, Label, Select, Textarea } from '@/components/ui'
 import { updateProjectSettings } from '@/lib/actions'
 import { requireAuthContext } from '@/lib/session'
 
@@ -56,12 +56,19 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
                 <Hint>Accent</Hint>
               </div>
               <div>
-                <Input name="theme" defaultValue={widget.theme ?? 'light'} />
-                <Hint>light / dark</Hint>
+                <Select name="theme" defaultValue={widget.theme ?? 'light'}>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </Select>
+                <Hint>Theme</Hint>
               </div>
               <div>
-                <Input name="mode" defaultValue={widget.mode ?? 'floating'} />
-                <Hint>floating / inline</Hint>
+                <Select name="mode" defaultValue={widget.mode ?? 'floating'}>
+                  <option value="floating">Floating</option>
+                  <option value="inline">Inline</option>
+                  <option value="manual">Manual</option>
+                </Select>
+                <Hint>Mode</Hint>
               </div>
             </div>
           </div>

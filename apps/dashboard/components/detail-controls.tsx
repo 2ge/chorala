@@ -23,18 +23,18 @@ export function DedupSuggestions({
   if (visible.length === 0) return null
 
   return (
-    <Card className="border-amber-200 bg-amber-50 p-5">
-      <p className="mb-1 text-sm font-semibold text-amber-800">Possible duplicates</p>
-      <p className="mb-3 text-xs text-amber-700">
+    <Card className="border-accent/25 bg-accent-soft p-5">
+      <p className="mb-1 text-sm font-semibold text-accent">Possible duplicates</p>
+      <p className="mb-3 text-xs text-accent">
         AI found similar ideas. Merging keeps votes on the canonical post — it never happens
         automatically.
       </p>
       <div className="space-y-2">
         {visible.map((s) => (
-          <div key={s.postId} className="rounded-lg border border-amber-200 bg-white p-2">
+          <div key={s.postId} className="rounded-lg border border-accent/25 bg-ink/[0.06] p-2">
             <div className="flex items-center gap-2">
               <span className="grow truncate text-sm font-medium">{s.title}</span>
-              <Badge className="bg-amber-100 text-amber-700">
+              <Badge className="bg-accent-soft text-accent">
                 {Math.round(s.similarity * 100)}%
               </Badge>
             </div>
@@ -87,7 +87,7 @@ export function CommentForm({ projectId, postId }: { projectId: string; postId: 
         placeholder={internal ? 'Internal note (staff only)…' : 'Reply publicly…'}
       />
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-ink-soft">
           <input
             type="checkbox"
             checked={internal}
@@ -125,7 +125,7 @@ export function TagEditor({
     start(() => setPostTags(projectId, postId, [...next]))
   }
 
-  if (allTags.length === 0) return <p className="text-xs text-slate-400">No tags defined yet.</p>
+  if (allTags.length === 0) return <p className="text-xs text-ink-faint">No tags defined yet.</p>
   return (
     <div className="flex flex-wrap gap-1.5">
       {allTags.map((t) => {
@@ -140,7 +140,7 @@ export function TagEditor({
           >
             <Badge
               color={on ? t.color : undefined}
-              className={on ? '' : 'bg-slate-100 text-slate-500'}
+              className={on ? '' : 'bg-ink/[0.06] text-ink-soft'}
             >
               {on ? '✓ ' : ''}
               {t.name}

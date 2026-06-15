@@ -13,7 +13,7 @@ export default async function AdminHome() {
     <main className="mx-auto max-w-md p-8">
       <Card className="p-6">
         <h1 className="mb-1 text-lg font-bold">Create your first project</h1>
-        <p className="mb-4 text-sm text-slate-500">A project holds boards, posts and a widget.</p>
+        <p className="mb-4 text-sm text-ink-soft">A project holds boards, posts and a widget.</p>
         <form action={createProject} className="space-y-3">
           <div>
             <Label>Name</Label>

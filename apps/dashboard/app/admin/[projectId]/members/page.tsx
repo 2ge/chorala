@@ -11,20 +11,20 @@ export default async function MembersPage({ params }: { params: Promise<{ projec
   return (
     <div className="max-w-xl space-y-5">
       <h1 className="text-xl font-bold">Members</h1>
-      <Card className="divide-y divide-slate-100">
+      <Card className="divide-y divide-line">
         {members.map((m) => (
           <div key={m.id} className="flex items-center gap-3 p-3">
             <div className="grow">
               <p className="text-sm font-medium">{m.name || m.email}</p>
-              <p className="text-xs text-slate-400">{m.email}</p>
+              <p className="text-xs text-ink-faint">{m.email}</p>
             </div>
-            <Badge className="bg-slate-100 text-slate-600">{m.role}</Badge>
+            <Badge className="bg-ink/[0.06] text-ink-soft">{m.role}</Badge>
           </div>
         ))}
       </Card>
 
       <Card className="p-5">
-        <h2 className="mb-3 text-sm font-semibold text-slate-500">Invite a teammate</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink-soft">Invite a teammate</h2>
         <form action={inviteMember} className="flex items-end gap-2">
           <input type="hidden" name="projectId" value={projectId} />
           <div className="grow">
@@ -41,7 +41,7 @@ export default async function MembersPage({ params }: { params: Promise<{ projec
           </div>
           <Button type="submit">Invite</Button>
         </form>
-        <p className="mt-2 text-xs text-slate-400">
+        <p className="mt-2 text-xs text-ink-faint">
           End-users and votes are always unlimited — billing is per admin seat only.
         </p>
       </Card>
