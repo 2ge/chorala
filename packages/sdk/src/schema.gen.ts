@@ -3132,6 +3132,363 @@ export interface paths {
         };
         trace?: never;
     };
+    "/projects/{projectId}/segments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List segments + how many end-users match each */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SegmentWithCount"][];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a segment */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateSegmentInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Segment"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/segments/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Live match count for an unsaved definition */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SegmentDefinition"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            matchCount?: number;
+                        };
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/segments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a segment */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Segment"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a segment */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a segment */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSegmentInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Segment"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/projects/{projectId}/changelog": {
         parameters: {
             query?: never;
@@ -4351,6 +4708,51 @@ export interface components {
             createdAt: string;
             updatedAt: string;
         };
+        Segment: {
+            id: string;
+            projectId: string;
+            name: string;
+            definition: {
+                /**
+                 * @default all
+                 * @enum {string}
+                 */
+                match: "all" | "any";
+                /** @default [] */
+                rules: {
+                    /** @enum {string} */
+                    field: "plan" | "mrr" | "locale" | "email_domain" | "has_company";
+                    /** @enum {string} */
+                    op: "eq" | "neq" | "gt" | "gte" | "lt" | "lte";
+                    value: string;
+                }[];
+            };
+            createdAt: string;
+            updatedAt: string;
+        };
+        SegmentWithCount: {
+            id: string;
+            projectId: string;
+            name: string;
+            definition: {
+                /**
+                 * @default all
+                 * @enum {string}
+                 */
+                match: "all" | "any";
+                /** @default [] */
+                rules: {
+                    /** @enum {string} */
+                    field: "plan" | "mrr" | "locale" | "email_domain" | "has_company";
+                    /** @enum {string} */
+                    op: "eq" | "neq" | "gt" | "gte" | "lt" | "lte";
+                    value: string;
+                }[];
+            };
+            createdAt: string;
+            updatedAt: string;
+            matchCount: number;
+        };
         AdminPostListItem: {
             id: string;
             boardId: string;
@@ -4386,6 +4788,8 @@ export interface components {
             publishedAt: string | null;
             labels: string[];
             linkedPostIds: string[];
+            segmentId: string | null;
+            recipientCount: number;
             createdAt: string;
             updatedAt: string;
         };
@@ -4735,6 +5139,57 @@ export interface components {
             externalId?: string;
             name?: string;
         };
+        CreateSegmentInput: {
+            name: string;
+            definition: {
+                /**
+                 * @default all
+                 * @enum {string}
+                 */
+                match: "all" | "any";
+                /** @default [] */
+                rules: {
+                    /** @enum {string} */
+                    field: "plan" | "mrr" | "locale" | "email_domain" | "has_company";
+                    /** @enum {string} */
+                    op: "eq" | "neq" | "gt" | "gte" | "lt" | "lte";
+                    value: string;
+                }[];
+            };
+        };
+        UpdateSegmentInput: {
+            name?: string;
+            definition?: {
+                /**
+                 * @default all
+                 * @enum {string}
+                 */
+                match: "all" | "any";
+                /** @default [] */
+                rules: {
+                    /** @enum {string} */
+                    field: "plan" | "mrr" | "locale" | "email_domain" | "has_company";
+                    /** @enum {string} */
+                    op: "eq" | "neq" | "gt" | "gte" | "lt" | "lte";
+                    value: string;
+                }[];
+            };
+        };
+        SegmentDefinition: {
+            /**
+             * @default all
+             * @enum {string}
+             */
+            match: "all" | "any";
+            /** @default [] */
+            rules: {
+                /** @enum {string} */
+                field: "plan" | "mrr" | "locale" | "email_domain" | "has_company";
+                /** @enum {string} */
+                op: "eq" | "neq" | "gt" | "gte" | "lt" | "lte";
+                value: string;
+            }[];
+        };
         CreateChangelogInput: {
             title: string;
             body: string;
@@ -4747,6 +5202,7 @@ export interface components {
             labels: string[];
             /** @default [] */
             linkedPostIds: string[];
+            segmentId?: string | null;
         };
         UpdateChangelogInput: {
             title?: string;
@@ -4760,6 +5216,7 @@ export interface components {
             labels: string[];
             /** @default [] */
             linkedPostIds: string[];
+            segmentId?: string | null;
         };
         CreateApiKeyInput: {
             name: string;

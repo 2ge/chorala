@@ -51,7 +51,8 @@ Better Auth cookie (see §5). The dashboard calls the admin API same-origin. Opt
 ### 2.1 IDs
 Prefixed nanoids — `post_…`, `pk_…`, `hk_…`, `board_…`, `status_…`, `comment_…`,
 `project_…`, `organization_…`, `member_…`, `user_…`, `endUser_…`, `tag_…`,
-`changelog_…`, `webhook_…`, `att_…` (attachment), `co_…` (company), `sf_…` (score field).
+`changelog_…`, `webhook_…`, `att_…` (attachment), `co_…` (company), `sf_…` (score field),
+`seg_…` (segment).
 
 ### 2.2 Errors
 Always `HTTP <status>` + body:
@@ -262,12 +263,27 @@ Companies are created/updated from the identify JWT's `company` claim (§6). The
   authored by users of that company / plan / MRR floor).
 - **`GET …/posts/:id/customer`** → `{ endUser, company }` — who filed it and their account.
 
+### Segments — `/projects/:projectId/segments`  (audience targeting)
+```
+GET    /                 list segments + how many end-users match each
+POST   /preview          { match, rules } → { matchCount }   // live count for an unsaved def
+POST   /                 { name, definition }                → 201
+GET    /:id  · PATCH /:id · DELETE /:id
+```
+A **definition** is `{ match: "all"|"any", rules: [{ field, op, value }] }`.
+Fields: `plan`, `mrr`, `locale`, `email_domain`, `has_company` (over the end-user + their
+company). Ops: `eq, neq, gt, gte, lt, lte`. A segment resolves to the matching end-users — used
+to target changelog announcements.
+
 ### Changelog — `/projects/:projectId/changelog`
 ```
-GET /  · POST / { title, body, status(draft|published), labels[], linkedPostIds[] }
+GET /  · POST / { title, body, status(draft|published), labels[], linkedPostIds[], segmentId? }
 GET /:id · PATCH /:id · DELETE /:id
 ```
-Publishing notifies subscribers and fires `changelog.published`.
+Publishing fires `changelog.published` and emails recipients. **`segmentId`** targets only that
+segment's end-users (else all subscribers); the entry records `recipientCount`. Title/body support
+**`{{first_name}}` / `{{name}}` / `{{email}}` / `{{company}}` / `{{plan}}`** variables, rendered
+per recipient.
 
 ### API keys — `/projects/:projectId/keys`
 ```

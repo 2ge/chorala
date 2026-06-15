@@ -1,5 +1,5 @@
-import { changelog as changelogSvc } from '@chorala/core'
-import { Badge, Button, Card, Input, Label, Textarea } from '@/components/ui'
+import { changelog as changelogSvc, segments as segmentSvc } from '@chorala/core'
+import { Badge, Button, Card, Input, Label, Select, Textarea } from '@/components/ui'
 import { saveChangelog } from '@/lib/actions'
 import { requireAuthContext } from '@/lib/session'
 
@@ -10,7 +10,11 @@ export default async function ChangelogPage({
 }) {
   const { projectId } = await params
   const ctx = await requireAuthContext()
-  const entries = await changelogSvc.listChangelog(ctx, projectId)
+  const [entries, segments] = await Promise.all([
+    changelogSvc.listChangelog(ctx, projectId),
+    segmentSvc.listSegments(ctx, projectId),
+  ])
+  const segName = new Map(segments.map((s) => [s.id, s.name]))
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -31,6 +35,22 @@ export default async function ChangelogPage({
             <div>
               <Label>Labels (comma-separated)</Label>
               <Input name="labels" placeholder="new, improved, fixed" />
+            </div>
+            <div>
+              <Label>Audience</Label>
+              <Select name="segmentId" defaultValue="">
+                <option value="">Everyone (all subscribers)</option>
+                {segments.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} ({s.matchCount})
+                  </option>
+                ))}
+              </Select>
+              <p className="mt-1 text-xs text-ink-faint">
+                Target a segment to email only those users. Use <code>{'{{first_name}}'}</code>,{' '}
+                <code>{'{{company}}'}</code>, <code>{'{{plan}}'}</code> in the title/body to
+                personalize.
+              </p>
             </div>
             <div className="flex gap-2">
               <Button type="submit" name="publish" value="1">
@@ -60,6 +80,14 @@ export default async function ChangelogPage({
               >
                 {e.status}
               </Badge>
+              {e.segmentId && (
+                <Badge className="bg-accent/10 text-accent">
+                  → {segName.get(e.segmentId) ?? 'segment'}
+                </Badge>
+              )}
+              {e.status === 'published' && e.recipientCount > 0 && (
+                <span className="text-xs text-ink-faint">{e.recipientCount} emailed</span>
+              )}
             </div>
             <p className="mt-1 text-sm text-ink-soft">{e.body}</p>
           </Card>

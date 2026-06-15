@@ -313,3 +313,14 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase12] **Deferred** saved‑views and a generic rules/automation engine from this phase — they
   are the heaviest, least‑cohesive pieces and the worker already handles status‑change side effects.
   Revisit when there's demand; recorded here so the cut is explicit, not silent.
+- [phase13] A segment is a saved predicate over `end_users` left-joined to `companies`, compiled
+  to SQL from a fixed field whitelist (plan/mrr/locale/email_domain/has_company) + op whitelist
+  (eq/neq/gt/gte/lt/lte). Operators come from a `sql.raw` whitelist and values are parameterized
+  (`${}`), so the dynamic predicate can't be injected. Empty rules ⇒ `true` (everyone).
+- [phase13] Targeted changelog notifies the segment's **end_users with an email**; untargeted
+  keeps the existing **changelog_subscribers** path. `recipient_count` records actual reach. Both
+  paths run `{{var}}` substitution per recipient (renderVars), so personalization works either way.
+- [phase13] **Deferred** segment-restricted roadmap/board visibility (it would push per-request
+  segment evaluation onto the public read path) and email open/click pixel analytics (needs a
+  tracking endpoint + image beacon). Recorded so the cut is explicit. Segments are reusable for
+  these later — the resolver already returns the matching end-users.

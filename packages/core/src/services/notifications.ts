@@ -15,12 +15,15 @@ import {
   notifications,
   posts,
   projects,
+  segments,
   statuses,
   votes,
 } from '@chorala/db'
 import { changelogPublishedEmail, notificationEmail } from '@chorala/email'
+import { segmentDefinition } from '@chorala/types'
 import type { AuthContext } from '../context.ts'
 import { enqueueEmail } from '../queues.ts'
+import { type Recipient, renderVars, resolveSegment } from './segments.ts'
 
 type ProjectRef = { id: string; name: string; customDomain: string | null }
 
@@ -169,22 +172,52 @@ export async function fanOutChangelogPublished(projectId: string, changelogId: s
     .where(eq(changelogEntries.id, changelogId))
   const [project] = await db.select().from(projects).where(eq(projects.id, projectId))
   if (!entry || !project || entry.status !== 'published') return
-  const subs = await db
-    .select({ email: changelogSubscribers.email })
-    .from(changelogSubscribers)
-    .where(eq(changelogSubscribers.projectId, projectId))
   const url = portalUrl(project as ProjectRef)
-  for (const s of subs) {
+  const projectName = (project as ProjectRef).name
+
+  // Targeted: resolve the segment to matching end-users (with their attributes for variables).
+  // Untargeted: every changelog subscriber. Either way we personalise `{{vars}}` per recipient.
+  let recipients: Recipient[]
+  if (entry.segmentId) {
+    const [seg] = await db.select().from(segments).where(eq(segments.id, entry.segmentId))
+    recipients = seg
+      ? await resolveSegment(projectId, segmentDefinition.parse(seg.definition), {
+          withEmailOnly: true,
+        })
+      : []
+  } else {
+    const subs = await db
+      .select({ email: changelogSubscribers.email })
+      .from(changelogSubscribers)
+      .where(eq(changelogSubscribers.projectId, projectId))
+    recipients = subs.map((s) => ({
+      id: '',
+      email: s.email,
+      name: null,
+      locale: 'en',
+      companyName: null,
+      plan: null,
+    }))
+  }
+
+  let sent = 0
+  for (const r of recipients) {
+    if (!r.email) continue
     await enqueueEmail({
-      to: s.email,
+      to: r.email,
       ...changelogPublishedEmail({
-        projectName: (project as ProjectRef).name,
-        title: entry.title,
-        body: entry.body,
+        projectName,
+        title: renderVars(entry.title, r),
+        body: renderVars(entry.body, r),
         url: `${url}/changelog`,
       }),
     })
+    sent++
   }
+  await db
+    .update(changelogEntries)
+    .set({ recipientCount: sent })
+    .where(eq(changelogEntries.id, changelogId))
 }
 
 // ---- admin in-app notification centre ----

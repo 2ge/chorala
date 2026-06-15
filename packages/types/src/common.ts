@@ -70,6 +70,21 @@ export const apiError = z.object({
 })
 export type ApiError = z.infer<typeof apiError>
 
+// --- Audience segments (Phase 13) ---
+/** Attributes a segment rule can test (resolved over end_users + their company). */
+export const segmentField = z.enum(['plan', 'mrr', 'locale', 'email_domain', 'has_company'])
+export const segmentOp = z.enum(['eq', 'neq', 'gt', 'gte', 'lt', 'lte'])
+export const segmentRule = z.object({
+  field: segmentField,
+  op: segmentOp,
+  value: z.string(),
+})
+export const segmentDefinition = z.object({
+  match: z.enum(['all', 'any']).default('all'),
+  rules: z.array(segmentRule).max(20).default([]),
+})
+export type SegmentDefinition = z.infer<typeof segmentDefinition>
+
 /** The end-user identity JWT payload the host app signs (SPEC §8.2). */
 export const endUserJwtPayload = z.object({
   id: z.string().min(1),

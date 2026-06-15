@@ -11,10 +11,12 @@ import {
   projects,
   publicFeed,
   scoreFields,
+  segments,
   statuses,
   tags,
   votes,
 } from '@chorala/core'
+import type { SegmentDefinition } from '@chorala/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireAuthContext } from './session'
@@ -106,6 +108,28 @@ export async function deleteScoreField(projectId: string, id: string) {
   revalidatePath(adminPath(projectId), 'layout')
 }
 
+// --- Segments (Phase 13) ---
+export async function previewSegment(projectId: string, definition: SegmentDefinition) {
+  const ctx = await requireAuthContext()
+  return segments.previewSegment(ctx, projectId, definition)
+}
+
+export async function createSegment(
+  projectId: string,
+  name: string,
+  definition: SegmentDefinition,
+) {
+  const ctx = await requireAuthContext()
+  await segments.createSegment(ctx, projectId, { name, definition })
+  revalidatePath(adminPath(projectId), 'layout')
+}
+
+export async function deleteSegment(projectId: string, id: string) {
+  const ctx = await requireAuthContext()
+  await segments.deleteSegment(ctx, projectId, id)
+  revalidatePath(adminPath(projectId), 'layout')
+}
+
 export async function adminCreatePost(formData: FormData) {
   const ctx = await requireAuthContext()
   const projectId = String(formData.get('projectId'))
@@ -136,6 +160,7 @@ export async function saveChangelog(formData: FormData) {
   const projectId = String(formData.get('projectId'))
   const id = formData.get('id') ? String(formData.get('id')) : null
   const status = formData.get('publish') ? 'published' : 'draft'
+  const segmentId = String(formData.get('segmentId') ?? '') || null
   const payload = {
     title: String(formData.get('title')),
     body: String(formData.get('body') ?? ''),
@@ -145,6 +170,7 @@ export async function saveChangelog(formData: FormData) {
       .map((s) => s.trim())
       .filter(Boolean),
     linkedPostIds: [],
+    segmentId,
   }
   if (id) await changelog.updateChangelog(ctx, projectId, id, payload)
   else await changelog.createChangelog(ctx, projectId, payload)

@@ -1,5 +1,15 @@
 import { randomUUID } from 'node:crypto'
-import { client, db, endUsers, eq, members, newId, organizations, users } from '@chorala/db'
+import {
+  client,
+  companies,
+  db,
+  endUsers,
+  eq,
+  members,
+  newId,
+  organizations,
+  users,
+} from '@chorala/db'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import {
   AppError,
@@ -9,6 +19,7 @@ import {
   posts,
   projects,
   scoreFields,
+  segments,
   votes,
 } from '../src/index.ts'
 
@@ -189,6 +200,51 @@ describe('api keys', () => {
     expect(ranked[0]!.id).toBe(hi.id)
     expect(ranked.find((p) => p.id === hi.id)!.score).toBe(7)
     expect(ranked.find((p) => p.id === lo.id)!.score).toBe(-3)
+  })
+
+  test('segment resolves to matching end-users + renders vars (Phase 13)', async () => {
+    const project = await projects.createProject(ctx, {
+      name: 'Seg',
+      slug: 'seg-p',
+      isPublic: true,
+      allowedOrigins: [],
+    })
+    const pid = project!.id
+    const proCo = newId('company')
+    const freeCo = newId('company')
+    await db.insert(companies).values([
+      { id: proCo, projectId: pid, name: 'ProCorp', plan: 'pro', mrr: 5000 },
+      { id: freeCo, projectId: pid, name: 'FreeCorp', plan: 'free', mrr: 0 },
+    ])
+    await db.insert(endUsers).values([
+      {
+        id: newId('endUser'),
+        projectId: pid,
+        email: 'a@procorp.com',
+        name: 'Ann Pro',
+        companyId: proCo,
+        isAnonymous: false,
+      },
+      {
+        id: newId('endUser'),
+        projectId: pid,
+        email: 'b@freecorp.com',
+        name: 'Bo Free',
+        companyId: freeCo,
+        isAnonymous: false,
+      },
+    ])
+
+    const def = {
+      match: 'all' as const,
+      rules: [{ field: 'plan' as const, op: 'eq' as const, value: 'pro' }],
+    }
+    expect(await segments.matchCount(pid, def)).toBe(1)
+    const recips = await segments.resolveSegment(pid, def, { withEmailOnly: true })
+    expect(recips.map((r) => r.email)).toEqual(['a@procorp.com'])
+
+    const rendered = segments.renderVars('Hi {{first_name}} at {{company}} ({{plan}})', recips[0]!)
+    expect(rendered).toBe('Hi Ann at ProCorp (pro)')
   })
 
   test('vote on behalf upserts an end-user and is idempotent', async () => {

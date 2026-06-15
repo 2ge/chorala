@@ -45,6 +45,7 @@ export async function createChangelog(
       status: input.status,
       labels: input.labels,
       linkedPostIds: input.linkedPostIds,
+      segmentId: input.segmentId ?? null,
       publishedAt: input.status === 'published' ? new Date() : null,
     })
     .returning()
@@ -71,6 +72,7 @@ export async function updateChangelog(
       status: input.status,
       labels: input.labels,
       linkedPostIds: input.linkedPostIds,
+      segmentId: input.segmentId === undefined ? undefined : input.segmentId,
       publishedAt: becomingPublished ? new Date() : undefined,
     })
     .where(eq(changelogEntries.id, id))

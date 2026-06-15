@@ -9,6 +9,7 @@ import {
   memberRole,
   orgPlan,
   prefixedId,
+  segmentDefinition,
   statusKind,
   timestamps,
   webhookEvent,
@@ -206,6 +207,17 @@ export const changelogEntry = z
     publishedAt: isoDate.nullable(),
     labels: z.array(z.string()),
     linkedPostIds: z.array(prefixedId('post')),
+    segmentId: prefixedId('seg').nullable(),
+    recipientCount: z.number().int(),
+  })
+  .extend(timestamps.shape)
+
+export const segment = z
+  .object({
+    id: prefixedId('seg'),
+    projectId: prefixedId('proj'),
+    name: z.string(),
+    definition: segmentDefinition,
   })
   .extend(timestamps.shape)
 
@@ -311,6 +323,7 @@ export type Vote = z.infer<typeof vote>
 export type Comment = z.infer<typeof comment>
 export type Tag = z.infer<typeof tag>
 export type ChangelogEntry = z.infer<typeof changelogEntry>
+export type Segment = z.infer<typeof segment>
 export type ChangelogSubscriber = z.infer<typeof changelogSubscriber>
 export type Notification = z.infer<typeof notification>
 export type Integration = z.infer<typeof integration>

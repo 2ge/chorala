@@ -436,9 +436,34 @@ export const changelogEntries = pgTable(
     publishedAt: timestamp('published_at', { withTimezone: true }),
     labels: text('labels').array().default([]).notNull(),
     linkedPostIds: text('linked_post_ids').array().default([]).notNull(),
+    // Segment targeting (Phase 13): null = everyone; else only matching end-users are notified.
+    segmentId: text('segment_id').references((): AnyPgColumn => segments.id, {
+      onDelete: 'set null',
+    }),
+    // How many recipients the publish fan-out actually reached.
+    recipientCount: integer('recipient_count').default(0).notNull(),
     ...ts,
   },
   (t) => [index('changelog_project_idx').on(t.projectId)],
+)
+
+/**
+ * Audience segments (Phase 13): a saved predicate over end-users + their company. Resolves to a
+ * set of end-users — used to target changelog announcements (the differentiator vs Canny).
+ */
+export const segments = pgTable(
+  'segments',
+  {
+    id: pk('segment'),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    // { match: 'all'|'any', rules: [{ field, op, value }] }
+    definition: jsonb('definition').$type<Json>().default({}).notNull(),
+    ...ts,
+  },
+  (t) => [index('segments_project_idx').on(t.projectId)],
 )
 
 export const changelogSubscribers = pgTable(

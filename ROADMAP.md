@@ -96,12 +96,18 @@ Closed gap #1 — the thing that makes us sellable to B2B SaaS.
 - **Deferred** (conscious cut): saved views and a status‑change **rules engine** — see DECISIONS;
   the worker already fires notify/integration‑sync on status change.
 
-### Phase 13 — Segmentation & targeted communication · *medium*
-- **Segments** = saved attribute queries over end‑users/companies (plan, MRR, locale, …).
-- **Segment‑targeted changelog** — *leapfrog Canny, which can't do this at all.*
-- **Segment‑restricted** roadmap/board visibility.
-- Changelog **analytics** (views, email open/click) + **dynamic variables** (`{first_name}`,
-  `{company_plan}`) — we already own the email pipeline (Resend) and notifications fan‑out.
+### Phase 13 — Segmentation & targeted communication · *medium* · ✅ SHIPPED 2026‑06‑15
+- ✅ **Segments** (`segments` table) = a saved predicate over end‑users + their company
+  (`plan`, `mrr`, `locale`, `email_domain`, `has_company`; match all/any). A builder with a
+  **live match count** preview (`POST /segments/preview`); Segments dashboard tab.
+- ✅ **Segment‑targeted changelog** — `changelog_entries.segment_id`; on publish the fan‑out
+  resolves the segment and emails **only** matching end‑users (else all subscribers), recording
+  `recipient_count`. *The changelog segmentation Canny can't do.*
+- ✅ **Dynamic variables** — `{{first_name}}`, `{{name}}`, `{{email}}`, `{{company}}`,
+  `{{plan}}` rendered per‑recipient in the changelog email. Reuses the Resend pipeline + fan‑out.
+- ✅ Lightweight analytics: `recipient_count` ("N emailed") shown on each entry.
+- **Deferred** (DECISIONS): segment‑restricted roadmap/board visibility (invasive on the public
+  read path) and email open/click pixel tracking.
 
 ### Phase 14 — AI capture ("Autopilot", done cheaper) · *large, biggest moat vs Canny*
 - **Inbound connectors:** Intercom / Zendesk / Slack threads → AI extracts feature requests →

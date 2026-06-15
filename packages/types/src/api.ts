@@ -7,10 +7,20 @@ import {
   paginationQuery,
   postSort,
   prefixedId,
+  segmentDefinition,
   statusKind,
   webhookEvent,
 } from './common.ts'
-import { attachment, comment, company, endUser, post, postTranslation, status } from './entities.ts'
+import {
+  attachment,
+  comment,
+  company,
+  endUser,
+  post,
+  postTranslation,
+  segment,
+  status,
+} from './entities.ts'
 
 // =====================================================================
 // Public / widget API (SPEC §8.2)
@@ -194,10 +204,25 @@ export const createChangelogInput = z.object({
   status: changelogStatus.default('draft'),
   labels: z.array(z.string()).default([]),
   linkedPostIds: z.array(z.string()).default([]),
+  // Target a saved segment — only matching end-users are notified (null = everyone).
+  segmentId: z.string().nullable().optional(),
 })
 export type CreateChangelogInput = z.infer<typeof createChangelogInput>
 export const updateChangelogInput = createChangelogInput.partial()
 export type UpdateChangelogInput = z.infer<typeof updateChangelogInput>
+
+// --- Segments (Phase 13) ---
+export const createSegmentInput = z.object({
+  name: z.string().min(1),
+  definition: segmentDefinition,
+})
+export type CreateSegmentInput = z.infer<typeof createSegmentInput>
+export const updateSegmentInput = createSegmentInput.partial()
+export type UpdateSegmentInput = z.infer<typeof updateSegmentInput>
+
+/** A segment plus how many end-users currently match it. */
+export const segmentWithCount = segment.extend({ matchCount: z.number().int() })
+export type SegmentWithCount = z.infer<typeof segmentWithCount>
 
 export const createWebhookInput = z.object({
   url: z.url(),
