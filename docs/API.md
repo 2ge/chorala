@@ -97,7 +97,8 @@ GET /public/boards
 Query: `boardSlug`, `statusId`, `tagId`, `sort` (`top`|`new`|`trending`|`oldest`, default
 `top`), `locale`, `search`. → `{ boards: Board[], posts: LocalizedPost[] }`.
 **Closed/declined posts are excluded** (the board shows active + shipped ideas); each post
-includes its **`status`** (`{ name, color, kind }`, or `null`) so embedders can badge it.
+includes its **`status`** (`{ name, color, kind }`, or `null`) and its **`tags`**
+(`[{ name, color }]`) so embedders can badge + chip it. Filter by tag with `?tagId=`.
 
 ```
 GET /public/posts/:id?locale=
