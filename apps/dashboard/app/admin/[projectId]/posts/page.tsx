@@ -2,6 +2,7 @@ import {
   boards as boardSvc,
   companies as companySvc,
   posts as postSvc,
+  scoreFields as scoreFieldSvc,
   statuses as statusSvc,
 } from '@chorala/core'
 import type { PostSort } from '@chorala/types'
@@ -23,15 +24,19 @@ export default async function PostsPage({
   const { projectId } = await params
   const { appVersion, companyId, sort: sortRaw } = await searchParams
   const byRevenue = sortRaw === 'revenue'
-  const sort: PostSort = byRevenue ? 'revenue' : 'top'
+  const byScore = sortRaw === 'score'
+  const sort: PostSort = byRevenue ? 'revenue' : byScore ? 'score' : 'top'
   const ctx = await requireAuthContext()
-  const [posts, statuses, boards, company] = await Promise.all([
+  const [posts, statuses, boards, company, scoreFields] = await Promise.all([
     postSvc.listPosts(ctx, projectId, { appVersion, companyId, sort }),
     statusSvc.listStatuses(ctx, projectId),
     boardSvc.listBoards(ctx, projectId),
     companyId ? companySvc.getCompany(ctx, projectId, companyId).catch(() => null) : null,
+    scoreFieldSvc.listScoreFields(ctx, projectId),
   ])
+  const hasScoring = scoreFields.length > 0
   const statusById = new Map(statuses.map((s) => [s.id, s]))
+  const exportHref = `/api/v1/projects/${projectId}/posts?format=csv${appVersion ? `&appVersion=${encodeURIComponent(appVersion)}` : ''}${companyId ? `&companyId=${companyId}` : ''}&sort=${sort}`
   const qs = (next: Record<string, string | undefined>) => {
     const sp = new URLSearchParams()
     if (appVersion) sp.set('appVersion', appVersion)
@@ -52,7 +57,7 @@ export default async function PostsPage({
           <div className="flex rounded-full border border-line bg-raised p-0.5 text-xs font-semibold">
             <Link
               href={qs({ sort: undefined })}
-              className={`rounded-full px-2.5 py-1 transition ${!byRevenue ? 'bg-accent text-white' : 'text-ink-soft hover:text-ink'}`}
+              className={`rounded-full px-2.5 py-1 transition ${!byRevenue && !byScore ? 'bg-accent text-white' : 'text-ink-soft hover:text-ink'}`}
             >
               Top
             </Link>
@@ -60,9 +65,23 @@ export default async function PostsPage({
               href={qs({ sort: 'revenue' })}
               className={`rounded-full px-2.5 py-1 transition ${byRevenue ? 'bg-accent text-white' : 'text-ink-soft hover:text-ink'}`}
             >
-              By revenue
+              Revenue
             </Link>
+            {hasScoring && (
+              <Link
+                href={qs({ sort: 'score' })}
+                className={`rounded-full px-2.5 py-1 transition ${byScore ? 'bg-accent text-white' : 'text-ink-soft hover:text-ink'}`}
+              >
+                Score
+              </Link>
+            )}
           </div>
+          <a
+            href={exportHref}
+            className="rounded-full border border-line bg-raised px-3 py-1 text-xs font-semibold text-ink-soft transition hover:text-ink"
+          >
+            Export CSV
+          </a>
           <span className="rounded-full border border-line bg-raised px-3 py-1 text-sm font-semibold tabular-nums">
             {posts.length} ideas
           </span>
@@ -171,6 +190,14 @@ export default async function PostsPage({
                       className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-semibold tabular-nums text-emerald-600 dark:text-emerald-400"
                     >
                       {money(p.revenueImpact)}
+                    </span>
+                  )}
+                  {hasScoring && p.score !== 0 && (
+                    <span
+                      title="Weighted priority score"
+                      className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 font-semibold tabular-nums text-accent"
+                    >
+                      ★ {p.score}
                     </span>
                   )}
                 </div>

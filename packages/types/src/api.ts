@@ -6,6 +6,7 @@ import {
   memberRole,
   paginationQuery,
   postSort,
+  prefixedId,
   statusKind,
   webhookEvent,
 } from './common.ts'
@@ -166,8 +167,19 @@ export const updatePostInput = z.object({
   boardId: z.string().optional(),
   isPinned: z.boolean().optional(),
   eta: z.string().nullable().optional(),
+  // Triage (Phase 12): assign an owner and set custom numeric scoring fields (key→number).
+  assigneeMemberId: z.string().nullable().optional(),
+  fields: z.record(z.string(), z.number()).optional(),
 })
 export type UpdatePostInput = z.infer<typeof updatePostInput>
+
+/** Admin casts a vote on behalf of a user (sales/support logging a request). */
+export const voteForInput = z.object({
+  email: z.email().optional(),
+  externalId: z.string().optional(),
+  name: z.string().optional(),
+})
+export type VoteForInput = z.infer<typeof voteForInput>
 
 export const changePostStatusInput = z.object({ statusId: z.string().nullable() })
 export const mergePostInput = z.object({ targetPostId: z.string().min(1) })
@@ -265,8 +277,28 @@ export const updateCompanyInput = z.object({
 export type UpdateCompanyInput = z.infer<typeof updateCompanyInput>
 
 /**
- * Admin post-list row: the post plus `revenueImpact` — the Σ MRR of the distinct companies
- * whose users voted for it. The demand signal that sits *alongside* the raw vote count.
+ * Admin view of a post: the public shape plus admin-only triage data —
+ * `revenueImpact` (Σ MRR of distinct voter companies), the weighted `score`, the assigned
+ * owner, and the raw custom `fields`. None of these are exposed on the public payload.
  */
-export const adminPostListItem = post.extend({ revenueImpact: z.number().int() })
+export const adminPostListItem = post.extend({
+  revenueImpact: z.number().int(),
+  score: z.number(),
+  assigneeMemberId: prefixedId('mem').nullable(),
+  fields: z.record(z.string(), z.number()),
+})
 export type AdminPostListItem = z.infer<typeof adminPostListItem>
+
+// --- Score fields (weighted prioritization, Phase 12) ---
+export const createScoreFieldInput = z.object({
+  key: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9_]+$/, 'lowercase letters, numbers and underscores only'),
+  label: z.string().min(1),
+  weight: z.number().default(1),
+  position: z.number().int().optional(),
+})
+export type CreateScoreFieldInput = z.infer<typeof createScoreFieldInput>
+export const updateScoreFieldInput = createScoreFieldInput.partial()
+export type UpdateScoreFieldInput = z.infer<typeof updateScoreFieldInput>

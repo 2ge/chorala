@@ -300,3 +300,16 @@ choice. Format: `- [phase] chose X over Y because Z`.
   literal `"posts"."id"` / `"companies"."id"` — drizzle renders an interpolated `${table.id}`
   unqualified there (qualified only in WHERE/ORDER BY), which collides with the inner tables' own
   `id` columns ("column reference id is ambiguous"). Verified live before shipping.
+- [phase12] Scoring is **additive weighted** (score = Σ value×weight), not RICE's multiplicative
+  reach×impact×confidence/effort. A data‑driven weighted sum keeps the engine a tiny per‑project
+  field table + JS reducer (no formula parser), and models RICE/ICE ordering well enough via
+  negative weights for cost inputs (Effort = −1). Score is computed in app code, not SQL, since a
+  project's field set is small and the list isn't paginated.
+- [phase12] `sort=score` sorts in JS after fetch (the score is computed in app code); all other
+  sorts stay in SQL. Acceptable because the admin list returns a whole project's posts unpaginated.
+- [phase12] Company/plan/minMrr filters target the **author's** company; `revenueImpact` aggregates
+  **voters'** companies — kept from Phase 11. Score `fields` + `assignee` live on `adminPostColumns`
+  (admin‑only), never on the public‑safe `postColumns`.
+- [phase12] **Deferred** saved‑views and a generic rules/automation engine from this phase — they
+  are the heaviest, least‑cohesive pieces and the worker already handles status‑change side effects.
+  Revisit when there's demand; recorded here so the cut is explicit, not silent.

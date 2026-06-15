@@ -1,4 +1,4 @@
-import { posts, storage, tags } from '@chorala/core'
+import { posts, storage, tags, votes } from '@chorala/core'
 import {
   adminCreatePostInput,
   changePostStatusInput,
@@ -6,32 +6,41 @@ import {
   postSort,
   tagPostInput,
   updatePostInput,
+  voteForInput,
 } from '@chorala/types'
-import { Hono } from 'hono'
+import { type Context, Hono } from 'hono'
 import { z } from 'zod'
 import type { AppEnv } from '../types.ts'
 import { reqParam } from '../util.ts'
 
 const pinInput = z.object({ pinned: z.boolean() })
 
+// shared list filters (used by JSON list + CSV export)
+const listOpts = (c: Context<AppEnv>) => ({
+  boardId: c.req.query('boardId'),
+  statusId: c.req.query('statusId'),
+  appVersion: c.req.query('appVersion'),
+  companyId: c.req.query('companyId'),
+  plan: c.req.query('plan'),
+  minMrr: c.req.query('minMrr') ? Number(c.req.query('minMrr')) : undefined,
+  assigneeMemberId: c.req.query('assignee'),
+  search: c.req.query('search'),
+  sort: postSort.catch('top').parse(c.req.query('sort')),
+  includeMerged: c.req.query('includeMerged') === 'true',
+})
+
 // mounted at /projects/:projectId/posts
 export const postsRoutes = new Hono<AppEnv>()
   .get('/', async (c) => {
     const projectId = reqParam(c, 'projectId')
-    const sortRaw = c.req.query('sort')
-    return c.json(
-      await posts.listPosts(c.get('auth'), projectId, {
-        boardId: c.req.query('boardId'),
-        statusId: c.req.query('statusId'),
-        appVersion: c.req.query('appVersion'),
-        companyId: c.req.query('companyId'),
-        plan: c.req.query('plan'),
-        minMrr: c.req.query('minMrr') ? Number(c.req.query('minMrr')) : undefined,
-        search: c.req.query('search'),
-        sort: postSort.catch('top').parse(sortRaw),
-        includeMerged: c.req.query('includeMerged') === 'true',
-      }),
-    )
+    // `?format=csv` streams the same filtered list as a spreadsheet export.
+    if (c.req.query('format') === 'csv') {
+      const csv = await posts.exportPostsCsv(c.get('auth'), projectId, listOpts(c))
+      c.header('content-type', 'text/csv; charset=utf-8')
+      c.header('content-disposition', 'attachment; filename="posts.csv"')
+      return c.body(csv)
+    }
+    return c.json(await posts.listPosts(c.get('auth'), projectId, listOpts(c)))
   })
   .post('/', async (c) =>
     c.json(
@@ -76,6 +85,17 @@ export const postsRoutes = new Hono<AppEnv>()
   )
   .delete('/:id', async (c) =>
     c.json(await posts.deletePost(c.get('auth'), reqParam(c, 'projectId'), c.req.param('id'))),
+  )
+  // Cast a vote on behalf of a customer (sales/support logging a request).
+  .post('/:id/vote-for', async (c) =>
+    c.json(
+      await votes.voteForUser(
+        c.get('auth'),
+        reqParam(c, 'projectId'),
+        c.req.param('id'),
+        voteForInput.parse(await c.req.json()),
+      ),
+    ),
   )
   .post('/:id/status', async (c) =>
     c.json(

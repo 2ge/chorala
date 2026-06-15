@@ -30,8 +30,9 @@ export const webhookEvent = z.enum([
   'changelog.published',
   'vote.created',
 ])
-// `revenue` (Σ MRR of voters' companies) is an admin-only sort; public lists fall back to `top`.
-export const postSort = z.enum(['top', 'new', 'trending', 'oldest', 'revenue'])
+// `revenue` (Σ MRR of voters' companies) and `score` (weighted prioritization) are admin-only
+// sorts; public lists fall back to `top`.
+export const postSort = z.enum(['top', 'new', 'trending', 'oldest', 'revenue', 'score'])
 
 export type OrgPlan = z.infer<typeof orgPlan>
 export type MemberRole = z.infer<typeof memberRole>

@@ -68,6 +68,17 @@ export const endUser = z
   })
   .extend(timestamps.shape)
 
+export const scoreField = z
+  .object({
+    id: prefixedId('sf'),
+    projectId: prefixedId('proj'),
+    key: z.string(),
+    label: z.string(),
+    weight: z.number(),
+    position: z.number().int(),
+  })
+  .extend(timestamps.shape)
+
 export const company = z
   .object({
     id: prefixedId('co'),
@@ -290,6 +301,7 @@ export type Member = z.infer<typeof member>
 export type Project = z.infer<typeof project>
 export type EndUser = z.infer<typeof endUser>
 export type Company = z.infer<typeof company>
+export type ScoreField = z.infer<typeof scoreField>
 export type Board = z.infer<typeof board>
 export type Status = z.infer<typeof status>
 export type Post = z.infer<typeof post>

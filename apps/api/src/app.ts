@@ -17,6 +17,7 @@ import { orgRoutes } from './routes/org.ts'
 import { postsRoutes } from './routes/posts.ts'
 import { projectsRoutes } from './routes/projects.ts'
 import { publicRoutes } from './routes/public.ts'
+import { scoreFieldsRoutes } from './routes/scoreFields.ts'
 import { statusesRoutes } from './routes/statuses.ts'
 import { tagsRoutes } from './routes/tags.ts'
 import type { AppEnv } from './types.ts'
@@ -102,6 +103,7 @@ export function createApp() {
   api.route('/projects/:projectId/posts/:postId/comments', commentsRoutes)
   api.route('/projects/:projectId/tags', tagsRoutes)
   api.route('/projects/:projectId/companies', companiesRoutes)
+  api.route('/projects/:projectId/score-fields', scoreFieldsRoutes)
   api.route('/projects/:projectId/changelog', changelogRoutes)
   api.route('/projects/:projectId/keys', apiKeysRoutes)
   api.route('/projects/:projectId/analytics', analyticsRoutes)

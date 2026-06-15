@@ -10,8 +10,10 @@ import {
   posts,
   projects,
   publicFeed,
+  scoreFields,
   statuses,
   tags,
+  votes,
 } from '@chorala/core'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -63,6 +65,44 @@ export async function setPostTags(projectId: string, postId: string, tagIds: str
 export async function createTag(projectId: string, name: string, color: string) {
   const ctx = await requireAuthContext()
   await tags.createTag(ctx, projectId, { name, color })
+  revalidatePath(adminPath(projectId), 'layout')
+}
+
+// --- Triage (Phase 12) ---
+export async function setAssignee(projectId: string, postId: string, memberId: string | null) {
+  const ctx = await requireAuthContext()
+  await posts.updatePost(ctx, projectId, postId, { assigneeMemberId: memberId })
+  revalidatePath(`${adminPath(projectId)}/posts/${postId}`)
+}
+
+export async function setPostScoreFields(
+  projectId: string,
+  postId: string,
+  fields: Record<string, number>,
+) {
+  const ctx = await requireAuthContext()
+  await posts.updatePost(ctx, projectId, postId, { fields })
+  revalidatePath(`${adminPath(projectId)}/posts/${postId}`)
+}
+
+export async function voteForUser(projectId: string, postId: string, email: string) {
+  const ctx = await requireAuthContext()
+  await votes.voteForUser(ctx, projectId, postId, { email })
+  revalidatePath(`${adminPath(projectId)}/posts/${postId}`)
+}
+
+export async function createScoreField(
+  projectId: string,
+  input: { key: string; label: string; weight: number },
+) {
+  const ctx = await requireAuthContext()
+  await scoreFields.createScoreField(ctx, projectId, input)
+  revalidatePath(adminPath(projectId), 'layout')
+}
+
+export async function deleteScoreField(projectId: string, id: string) {
+  const ctx = await requireAuthContext()
+  await scoreFields.deleteScoreField(ctx, projectId, id)
   revalidatePath(adminPath(projectId), 'layout')
 }
 

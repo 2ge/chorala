@@ -36,6 +36,13 @@
       "when": 1781499071380,
       "tag": "0004_wise_wonder_man",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781530295709,
+      "tag": "0005_bright_hellion",
+      "breakpoints": true
     }
   ]
 }

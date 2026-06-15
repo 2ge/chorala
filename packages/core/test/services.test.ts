@@ -1,7 +1,16 @@
 import { randomUUID } from 'node:crypto'
 import { client, db, endUsers, eq, members, newId, organizations, users } from '@chorala/db'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { AppError, type AuthContext, apiKeys, posts, projects, votes } from '../src/index.ts'
+import {
+  AppError,
+  type AuthContext,
+  apiKeys,
+  boards,
+  posts,
+  projects,
+  scoreFields,
+  votes,
+} from '../src/index.ts'
 
 let orgId: string
 let userId: string
@@ -158,5 +167,44 @@ describe('api keys', () => {
     })
     const keyCtx: AuthContext = { kind: 'apikey', orgId, projectId: a!.id, scopes: ['read'] }
     await expect(projects.getProject(keyCtx, b!.id)).rejects.toThrow(AppError)
+  })
+
+  test('weighted score + sort=score (Phase 12)', async () => {
+    const project = await projects.createProject(ctx, {
+      name: 'Score',
+      slug: 'score-p',
+      isPublic: true,
+      allowedOrigins: [],
+    })
+    const pid = project!.id
+    const boardId = (await boards.listBoards(ctx, pid))[0]!.id
+    await scoreFields.createScoreField(ctx, pid, { key: 'reach', label: 'Reach', weight: 1 })
+    await scoreFields.createScoreField(ctx, pid, { key: 'effort', label: 'Effort', weight: -1 })
+    const lo = await posts.createPost(ctx, pid, { boardId, title: 'Low value', body: '' })
+    const hi = await posts.createPost(ctx, pid, { boardId, title: 'High value', body: '' })
+    await posts.updatePost(ctx, pid, lo.id, { fields: { reach: 2, effort: 5 } }) // 2-5 = -3
+    await posts.updatePost(ctx, pid, hi.id, { fields: { reach: 10, effort: 3 } }) // 10-3 = 7
+
+    const ranked = await posts.listPosts(ctx, pid, { sort: 'score' })
+    expect(ranked[0]!.id).toBe(hi.id)
+    expect(ranked.find((p) => p.id === hi.id)!.score).toBe(7)
+    expect(ranked.find((p) => p.id === lo.id)!.score).toBe(-3)
+  })
+
+  test('vote on behalf upserts an end-user and is idempotent', async () => {
+    const project = await projects.createProject(ctx, {
+      name: 'OnBehalf',
+      slug: 'onbehalf-p',
+      isPublic: true,
+      allowedOrigins: [],
+    })
+    const pid = project!.id
+    const boardId = (await boards.listBoards(ctx, pid))[0]!.id
+    const post = await posts.createPost(ctx, pid, { boardId, title: 'Wanted', body: '' })
+
+    const v1 = await votes.voteForUser(ctx, pid, post.id, { email: 'buyer@acme.com' })
+    expect(v1.voteCount).toBe(1)
+    const v2 = await votes.voteForUser(ctx, pid, post.id, { email: 'buyer@acme.com' })
+    expect(v2.voteCount).toBe(1) // same customer → no double count
   })
 })

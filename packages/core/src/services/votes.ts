@@ -1,6 +1,9 @@
-import { and, db, eq, newId, posts, sql, votes } from '@chorala/db'
-import { notFound } from '../errors.ts'
+import { and, db, endUsers, eq, isNull, newId, or, posts, sql, votes } from '@chorala/db'
+import type { VoteForInput } from '@chorala/types'
+import type { AuthContext } from '../context.ts'
+import { badRequest, notFound } from '../errors.ts'
 import { enqueueWebhookEvent } from '../queues.ts'
+import { getProject } from './projects.ts'
 
 /**
  * Toggle an end-user's vote on a post. Votes always attach to the **canonical** post
@@ -77,6 +80,49 @@ export async function setVote(
     .returning({ voteCount: posts.voteCount })
 
   return { voted: shouldVote, voteCount: row?.voteCount ?? 0 }
+}
+
+/**
+ * Admin casts a vote on a post on behalf of a customer (sales/support logging a request).
+ * Resolves the end-user by externalId or email, creating an identified one if needed, then
+ * records the vote. Idempotent — a duplicate vote for the same user is a no-op.
+ */
+export async function voteForUser(
+  ctx: AuthContext,
+  projectId: string,
+  postId: string,
+  input: VoteForInput,
+) {
+  await getProject(ctx, projectId)
+  if (!input.email && !input.externalId) throw badRequest('Provide an email or externalId')
+
+  const match = or(
+    input.externalId ? eq(endUsers.externalId, input.externalId) : undefined,
+    input.email ? eq(endUsers.email, input.email) : undefined,
+  )
+  const [existing] = await db
+    .select({ id: endUsers.id })
+    .from(endUsers)
+    .where(and(eq(endUsers.projectId, projectId), match ?? isNull(endUsers.id)))
+
+  let endUserId = existing?.id
+  if (!endUserId) {
+    const [created] = await db
+      .insert(endUsers)
+      .values({
+        id: newId('endUser'),
+        projectId,
+        externalId: input.externalId,
+        email: input.email,
+        name: input.name,
+        isAnonymous: false,
+      })
+      .returning({ id: endUsers.id })
+    if (!created) throw badRequest('Failed to create end user')
+    endUserId = created.id
+  }
+
+  return setVote(projectId, postId, endUserId, true)
 }
 
 export async function hasVoted(postId: string, endUserId: string) {

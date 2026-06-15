@@ -1,7 +1,9 @@
 import {
   comments as commentSvc,
   integrations,
+  members as memberSvc,
   posts as postSvc,
+  scoreFields as scoreFieldSvc,
   statuses as statusSvc,
   storage as storageSvc,
   tags as tagSvc,
@@ -16,6 +18,7 @@ import {
 } from '@/components/detail-controls'
 import { GithubIssueButton } from '@/components/github-button'
 import { PinButton, StatusSelect } from '@/components/post-controls'
+import { AssigneeSelect, ScoreEditor, VoteForForm } from '@/components/triage-controls'
 import { Badge, Card, VotePill } from '@/components/ui'
 import { requireAuthContext } from '@/lib/session'
 
@@ -47,6 +50,8 @@ export default async function PostDetail({
     context,
     attachments,
     customer,
+    members,
+    scoreFields,
   ] = await Promise.all([
     postSvc.getPost(ctx, projectId, postId),
     statusSvc.listStatuses(ctx, projectId),
@@ -60,6 +65,8 @@ export default async function PostDetail({
     postSvc.getContext(ctx, projectId, postId),
     storageSvc.listAttachmentsForPost(ctx, projectId, postId),
     postSvc.getPostCustomer(ctx, projectId, postId),
+    memberSvc.listMembers(ctx),
+    scoreFieldSvc.listScoreFields(ctx, projectId),
   ])
   const contextEntries = Object.entries(context.context ?? {})
   const hasContext = !!context.appVersion || contextEntries.length > 0
@@ -186,9 +193,38 @@ export default async function PostDetail({
               />
             </div>
             <div>
+              <SectionLabel>Owner</SectionLabel>
+              <AssigneeSelect
+                projectId={projectId}
+                postId={postId}
+                assigneeMemberId={post.assigneeMemberId}
+                members={members}
+              />
+            </div>
+            <div>
               <SectionLabel>Pin to top</SectionLabel>
               <PinButton projectId={projectId} postId={postId} pinned={post.isPinned} />
             </div>
+          </Card>
+
+          {scoreFields.length > 0 && (
+            <Card className="p-5">
+              <SectionLabel>Priority score</SectionLabel>
+              <ScoreEditor
+                projectId={projectId}
+                postId={postId}
+                fields={post.fields}
+                scoreFields={scoreFields}
+              />
+            </Card>
+          )}
+
+          <Card className="p-5">
+            <SectionLabel>Vote on behalf</SectionLabel>
+            <p className="mb-2 text-xs text-ink-faint">
+              Log a request from a customer call — adds their vote by email.
+            </p>
+            <VoteForForm projectId={projectId} postId={postId} />
           </Card>
 
           <Card className="p-5">

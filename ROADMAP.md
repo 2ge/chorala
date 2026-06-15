@@ -83,12 +83,18 @@ Closed gap #1 — the thing that makes us sellable to B2B SaaS.
   dashboard tab with per‑account rollups; "Customer" card on post detail (who asked + MRR).
 - *Honors the pricing promise:* weights by revenue **without** metering or charging per user.
 
-### Phase 12 — Prioritization & triage workflow · *medium*
-- Custom **numeric fields** on posts → pluggable **scoring** (RICE / ICE / custom weighted).
-- **Saved views** (filter + sort + visible columns) + **CSV export**.
-- **Vote on behalf** of a user (sales/support logging a request).
-- Post **assignment / owner**; internal **rules** (on status change → tag / notify / sync).
-- Builds on the `appVersion` filter pattern shipped in Phase‑9.5.
+### Phase 12 — Prioritization & triage workflow · *medium* · ✅ SHIPPED 2026‑06‑15
+- ✅ Custom **numeric fields** (`score_fields`, per‑project key/label/weight) → **weighted
+  score** = Σ (value × weight). Negative weights model cost inputs (Effort = −1) for RICE/ICE‑
+  style frameworks. `?sort=score` + a ★ badge; managed in Settings, set on each post detail.
+- ✅ **CSV export** of the (filtered) list — `?format=csv`, one column per score field, plus
+  votes/revenue/score/status/board. "Export CSV" button on the posts page.
+- ✅ **Vote on behalf** of a customer (`POST /posts/:id/vote-for` by email/externalId — upserts
+  an identified end‑user, idempotent). Form on the post detail.
+- ✅ Post **assignment / owner** (`assignee_member_id`) + `?assignee=` filter; owner select on
+  the detail.
+- **Deferred** (conscious cut): saved views and a status‑change **rules engine** — see DECISIONS;
+  the worker already fires notify/integration‑sync on status change.
 
 ### Phase 13 — Segmentation & targeted communication · *medium*
 - **Segments** = saved attribute queries over end‑users/companies (plan, MRR, locale, …).

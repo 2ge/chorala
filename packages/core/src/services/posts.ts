@@ -13,6 +13,7 @@ import {
   newId,
   or,
   posts,
+  scoreFields,
   sql,
   statuses,
   votes,
@@ -28,6 +29,7 @@ import {
   enqueueWebhookEvent,
 } from '../queues.ts'
 import { getProject } from './projects.ts'
+import { computeScore, scoreWeights } from './scoreFields.ts'
 
 /** Post columns excluding the (large, internal) embedding vector — never serialized to clients. */
 export const postColumns = {
@@ -50,6 +52,13 @@ export const postColumns = {
   updatedAt: posts.updatedAt,
 }
 
+/** Admin-only columns (owner + scoring inputs) layered on top of the public-safe set. */
+const adminPostColumns = {
+  ...postColumns,
+  assigneeMemberId: posts.assigneeMemberId,
+  fields: posts.fields,
+}
+
 type ListOpts = {
   boardId?: string
   statusId?: string
@@ -58,6 +67,7 @@ type ListOpts = {
   companyId?: string
   plan?: string
   minMrr?: number
+  assigneeMemberId?: string
   search?: string
   sort?: PostSort
   includeMerged?: boolean
@@ -110,17 +120,86 @@ export async function listPosts(ctx: AuthContext, projectId: string, opts: ListO
   if (opts.companyId) filters.push(byAuthorCompany(sql`c.id = ${opts.companyId}`))
   if (opts.plan) filters.push(byAuthorCompany(sql`c.plan = ${opts.plan}`))
   if (opts.minMrr) filters.push(byAuthorCompany(sql`c.mrr >= ${opts.minMrr}`))
+  if (opts.assigneeMemberId) filters.push(eq(posts.assigneeMemberId, opts.assigneeMemberId))
   if (!opts.includeMerged) filters.push(sql`${posts.mergedIntoPostId} is null`)
   if (opts.search) {
     const term = `%${opts.search}%`
     const match = or(ilike(posts.title, term), ilike(posts.body, term))
     if (match) filters.push(match)
   }
-  return db
-    .select({ ...postColumns, revenueImpact: revenueImpactSql })
+  const rows = await db
+    .select({ ...adminPostColumns, revenueImpact: revenueImpactSql })
     .from(posts)
     .where(and(...filters))
     .orderBy(...orderFor(opts.sort))
+
+  // Weighted score is computed in app code (small per-project field set) and attached here.
+  const weights = await scoreWeights(projectId)
+  const scored = rows.map((r) => ({ ...r, score: computeScore(r.fields ?? {}, weights) }))
+  if (opts.sort === 'score') scored.sort((a, b) => b.score - a.score)
+  return scored
+}
+
+const csvCell = (v: unknown) => {
+  const s = v == null ? '' : String(v)
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}
+
+/** Export the (filtered) post list as CSV — votes, revenue, score, and each score field. */
+export async function exportPostsCsv(
+  ctx: AuthContext,
+  projectId: string,
+  opts: ListOpts = {},
+): Promise<string> {
+  const rows = await listPosts(ctx, projectId, { ...opts, sort: opts.sort ?? 'score' })
+  const [boardList, statusList, fieldList] = await Promise.all([
+    db
+      .select({ id: boards.id, name: boards.name })
+      .from(boards)
+      .where(eq(boards.projectId, projectId)),
+    db
+      .select({ id: statuses.id, name: statuses.name })
+      .from(statuses)
+      .where(eq(statuses.projectId, projectId)),
+    db
+      .select({ key: scoreFields.key, label: scoreFields.label })
+      .from(scoreFields)
+      .where(eq(scoreFields.projectId, projectId))
+      .orderBy(asc(scoreFields.position)),
+  ])
+  const boardName = new Map(boardList.map((b) => [b.id, b.name]))
+  const statusName = new Map(statusList.map((s) => [s.id, s.name]))
+
+  const headers = [
+    'Title',
+    'Board',
+    'Status',
+    'Votes',
+    'Revenue Impact',
+    'Score',
+    'App Version',
+    'Created',
+    ...fieldList.map((f) => f.label),
+  ]
+  const lines = [headers.map(csvCell).join(',')]
+  for (const p of rows) {
+    lines.push(
+      [
+        p.title,
+        boardName.get(p.boardId) ?? '',
+        p.statusId ? (statusName.get(p.statusId) ?? '') : '',
+        p.voteCount,
+        p.revenueImpact,
+        p.score,
+        p.appVersion ?? '',
+        p.createdAt,
+        ...fieldList.map((f) => p.fields?.[f.key] ?? ''),
+      ]
+        .map(csvCell)
+        .join(','),
+    )
+  }
+  return `${lines.join('\n')}\n`
 }
 
 /** Semantic search by a query embedding (pgvector cosine). Returns posts + similarity. */
@@ -156,11 +235,12 @@ export async function semanticSearch(
 export async function getPost(ctx: AuthContext, projectId: string, id: string) {
   await getProject(ctx, projectId)
   const [row] = await db
-    .select(postColumns)
+    .select(adminPostColumns)
     .from(posts)
     .where(and(eq(posts.id, id), eq(posts.projectId, projectId)))
   if (!row) throw notFound('Post')
-  return row
+  const score = computeScore(row.fields ?? {}, await scoreWeights(projectId))
+  return { ...row, score }
 }
 
 /**
@@ -254,6 +334,8 @@ export async function updatePost(
       boardId: input.boardId,
       isPinned: input.isPinned,
       eta: input.eta ? new Date(input.eta) : input.eta === null ? null : undefined,
+      assigneeMemberId: input.assigneeMemberId === undefined ? undefined : input.assigneeMemberId,
+      fields: input.fields,
     })
     .where(eq(posts.id, id))
   return getPost(ctx, projectId, id)

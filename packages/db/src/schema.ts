@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
   boolean,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -199,6 +200,27 @@ export const companies = pgTable(
   ],
 )
 
+/**
+ * Custom numeric inputs for weighted prioritization (Phase 12). Each field has a `weight`;
+ * a post's score = Σ (post.fields[key] × weight). Model RICE/ICE with negative weights for
+ * cost-like inputs (e.g. Effort = -1). Per-project, keyed by a stable `key`.
+ */
+export const scoreFields = pgTable(
+  'score_fields',
+  {
+    id: pk('scoreField'),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    key: text('key').notNull(),
+    label: text('label').notNull(),
+    weight: doublePrecision('weight').default(1).notNull(),
+    position: integer('position').default(0).notNull(),
+    ...ts,
+  },
+  (t) => [unique('score_fields_project_key_uq').on(t.projectId, t.key)],
+)
+
 // =====================================================================
 // Feedback
 // =====================================================================
@@ -270,6 +292,12 @@ export const posts = pgTable(
     // free-form map (userAgent, locale, platform, screen, plan, …) sent by the embedder.
     appVersion: text('app_version'),
     context: jsonb('context').$type<Json>().default({}).notNull(),
+    // Triage (Phase 12): a teammate owner + custom numeric fields (key→number) that feed the
+    // project's weighted prioritization score. Both admin-only (never on the public payload).
+    assigneeMemberId: text('assignee_member_id').references(() => members.id, {
+      onDelete: 'set null',
+    }),
+    fields: jsonb('fields').$type<Record<string, number>>().default({}).notNull(),
     ...ts,
   },
   (t) => [

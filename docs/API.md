@@ -51,7 +51,7 @@ Better Auth cookie (see §5). The dashboard calls the admin API same-origin. Opt
 ### 2.1 IDs
 Prefixed nanoids — `post_…`, `pk_…`, `hk_…`, `board_…`, `status_…`, `comment_…`,
 `project_…`, `organization_…`, `member_…`, `user_…`, `endUser_…`, `tag_…`,
-`changelog_…`, `webhook_…`, `att_…` (attachment), `co_…` (company).
+`changelog_…`, `webhook_…`, `att_…` (attachment), `co_…` (company), `sf_…` (score field).
 
 ### 2.2 Errors
 Always `HTTP <status>` + body:
@@ -206,13 +206,15 @@ PATCH /:id · DELETE /:id
 
 ### Posts — `/projects/:projectId/posts`
 ```
-GET    /                  list (filters: board, status, tag, appVersion, companyId, plan, minMrr; sort incl. revenue)
+GET    /                  list (filters: board, status, tag, appVersion, companyId, plan, minMrr, assignee; sort incl. revenue, score)
+GET    /?format=csv       same filters → text/csv export (one column per score field)
 POST   /                  { boardId, title, body?, statusId?, locale? }            → 201
 GET    /:id
 GET    /:id/context        → { appVersion, context }   // submission metadata map (admin-only)
 GET    /:id/attachments    → Attachment[]              // screenshots (metadata; bytes via dashboard)
 GET    /:id/customer       → { endUser, company }      // who filed it + their account/MRR
-PATCH  /:id               { title?, body?, statusId?, boardId?, isPinned?, eta? }
+POST   /:id/vote-for       { email?, externalId?, name? }   // vote on behalf of a customer
+PATCH  /:id               { title?, body?, statusId?, boardId?, isPinned?, eta?, assigneeMemberId?, fields? }
 DELETE /:id
 POST   /:id/status        { statusId: "status_…" | null }     // moves on the roadmap, fires integrations
 POST   /:id/pin           toggle pin
@@ -233,6 +235,18 @@ GET /  · POST / { body, parentCommentId?, isInternal? }  · DELETE /:id
 ```
 GET /  · POST / { name, color }  · DELETE /:id
 ```
+
+### Score fields — `/projects/:projectId/score-fields`  (weighted prioritization)
+```
+GET    /                 list fields (key, label, weight)
+POST   /                 { key, label, weight }      → 201
+PATCH  /:id              partial
+DELETE /:id
+```
+A post's **score** = Σ (`post.fields[key]` × `weight`) over the project's fields. Set values via
+`PATCH /posts/:id { fields: { reach: 10, effort: 3 } }`; give cost-like inputs a **negative
+weight** (e.g. `effort: -1`) to model RICE/ICE. Admin post rows carry the computed `score`;
+`?sort=score` ranks by it.
 
 ### Companies — `/projects/:projectId/companies`  (B2B revenue intelligence)
 ```

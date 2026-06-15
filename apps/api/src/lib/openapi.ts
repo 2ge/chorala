@@ -26,6 +26,7 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   Tag: [T.tag, 'output'],
   Company: [T.company, 'output'],
   CompanyWithStats: [T.companyWithStats, 'output'],
+  ScoreField: [T.scoreField, 'output'],
   AdminPostListItem: [T.adminPostListItem, 'output'],
   ChangelogEntry: [T.changelogEntry, 'output'],
   Member: [T.member, 'output'],
@@ -56,6 +57,9 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   TagPostInput: [T.tagPostInput, 'input'],
   CreateTagInput: [T.createTagInput, 'input'],
   UpdateCompanyInput: [T.updateCompanyInput, 'input'],
+  CreateScoreFieldInput: [T.createScoreFieldInput, 'input'],
+  UpdateScoreFieldInput: [T.updateScoreFieldInput, 'input'],
+  VoteForInput: [T.voteForInput, 'input'],
   CreateChangelogInput: [T.createChangelogInput, 'input'],
   UpdateChangelogInput: [T.updateChangelogInput, 'input'],
   CreateApiKeyInput: [T.createApiKeyInput, 'input'],
@@ -318,7 +322,7 @@ const ROUTES: Route[] = [
     tag: 'Posts',
     sec: 'admin',
     summary:
-      'List posts (filters: board, status, appVersion, company, plan, minMrr; sort incl. revenue)',
+      'List posts (filters: board/status/appVersion/company/plan/minMrr/assignee; sort incl. revenue, score; ?format=csv exports)',
     resp: arr('AdminPostListItem'),
   },
   {
@@ -367,6 +371,15 @@ const ROUTES: Route[] = [
     tag: 'Posts',
     sec: 'admin',
     summary: 'The post author’s end-user + company (revenue context)',
+  },
+  {
+    method: 'post',
+    path: '/projects/{projectId}/posts/{id}/vote-for',
+    tag: 'Posts',
+    sec: 'admin',
+    summary: 'Vote on behalf of a customer (by email / externalId)',
+    body: 'VoteForInput',
+    resp: ref('VoteToggleResponse'),
   },
   {
     method: 'patch',
@@ -499,6 +512,42 @@ const ROUTES: Route[] = [
     summary: 'Edit a company (mrr / plan / name / domain)',
     body: 'UpdateCompanyInput',
     resp: ref('Company'),
+  },
+
+  // --- Score fields (weighted prioritization) ---
+  {
+    method: 'get',
+    path: '/projects/{projectId}/score-fields',
+    tag: 'Score fields',
+    sec: 'admin',
+    summary: 'List weighted prioritization fields',
+    resp: arr('ScoreField'),
+  },
+  {
+    method: 'post',
+    path: '/projects/{projectId}/score-fields',
+    tag: 'Score fields',
+    sec: 'admin',
+    summary: 'Create a score field { key, label, weight }',
+    body: 'CreateScoreFieldInput',
+    resp: ref('ScoreField'),
+    status: 201,
+  },
+  {
+    method: 'patch',
+    path: '/projects/{projectId}/score-fields/{id}',
+    tag: 'Score fields',
+    sec: 'admin',
+    summary: 'Update a score field',
+    body: 'UpdateScoreFieldInput',
+    resp: ref('ScoreField'),
+  },
+  {
+    method: 'delete',
+    path: '/projects/{projectId}/score-fields/{id}',
+    tag: 'Score fields',
+    sec: 'admin',
+    summary: 'Delete a score field',
   },
 
   // --- Changelog (admin) ---

@@ -9,6 +9,7 @@ export const ID_PREFIXES = {
   endUser: 'eu',
   board: 'board',
   company: 'co',
+  scoreField: 'sf',
   status: 'status',
   post: 'post',
   postTranslation: 'ptr',

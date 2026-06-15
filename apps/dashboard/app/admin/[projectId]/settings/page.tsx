@@ -1,6 +1,7 @@
 import { env } from '@chorala/config'
-import { integrations, projects as projectSvc } from '@chorala/core'
+import { integrations, projects as projectSvc, scoreFields as scoreFieldSvc } from '@chorala/core'
 import { GithubIntegrationCard } from '@/components/integration-card'
+import { ScoreFieldsManager } from '@/components/score-fields-manager'
 import { Button, Card, Input, Label, Select, Textarea } from '@/components/ui'
 import { updateProjectSettings } from '@/lib/actions'
 import { requireAuthContext } from '@/lib/session'
@@ -15,6 +16,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
   const ctx = await requireAuthContext()
   const project = await projectSvc.getProject(ctx, projectId)
   const ints = await integrations.listIntegrations(ctx, projectId)
+  const scoreFields = await scoreFieldSvc.listScoreFields(ctx, projectId)
   const gh = ints.find((i) => i.type === 'github')?.config as
     | { repo?: string; autoCreate?: string }
     | undefined
@@ -118,6 +120,17 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
           public key above.
         </p>
         <pre className="overflow-x-auto rounded-md bg-ink p-3 text-xs text-paper">{snippet}</pre>
+      </Card>
+
+      <Card className="space-y-3 p-5">
+        <div>
+          <h2 className="text-sm font-semibold">Prioritization scoring</h2>
+          <p className="mt-0.5 text-xs text-ink-faint">
+            Define weighted numeric fields, then score each post on its detail page and sort the
+            board by score.
+          </p>
+        </div>
+        <ScoreFieldsManager projectId={projectId} fields={scoreFields} />
       </Card>
 
       <Card className="p-5">
