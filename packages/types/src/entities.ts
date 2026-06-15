@@ -109,6 +109,9 @@ export const post = z
     commentCount: z.number().int(),
     mergedIntoPostId: prefixedId('post').nullable(),
     eta: isoDate.nullable(),
+    // Submission context (Sentry/Canny style): a first-class, filterable version string.
+    // The free-form `context` map is admin-only and not part of this public entity.
+    appVersion: z.string().nullable(),
   })
   .extend(timestamps.shape)
 

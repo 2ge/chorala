@@ -30,6 +30,10 @@ export const createPostInput = z.object({
   title: z.string().min(2).max(300),
   body: z.string().max(20_000).default(''),
   locale: z.string().optional(),
+  // Structured submission context (Sentry/Canny style). `appVersion` is first-class and
+  // filterable; `metadata` is a free-form map (userAgent, locale, platform, screen, …).
+  appVersion: z.string().max(120).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 export type CreatePostInput = z.infer<typeof createPostInput>
 

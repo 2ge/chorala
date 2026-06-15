@@ -1730,6 +1730,77 @@ export interface paths {
         };
         trace?: never;
     };
+    "/projects/{projectId}/posts/{id}/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Submission context (appVersion + metadata map) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            appVersion?: string | null;
+                            context?: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/projects/{projectId}/posts/{id}/status": {
         parameters: {
             query?: never;
@@ -3415,6 +3486,7 @@ export interface components {
             commentCount: number;
             mergedIntoPostId: string | null;
             eta: string | null;
+            appVersion: string | null;
             createdAt: string;
             updatedAt: string;
         };
@@ -3433,6 +3505,7 @@ export interface components {
             commentCount: number;
             mergedIntoPostId: string | null;
             eta: string | null;
+            appVersion: string | null;
             createdAt: string;
             updatedAt: string;
             hasVoted?: boolean;
@@ -3579,6 +3652,7 @@ export interface components {
                 commentCount: number;
                 mergedIntoPostId: string | null;
                 eta: string | null;
+                appVersion: string | null;
                 createdAt: string;
                 updatedAt: string;
                 hasVoted?: boolean;
@@ -3651,6 +3725,7 @@ export interface components {
                     commentCount: number;
                     mergedIntoPostId: string | null;
                     eta: string | null;
+                    appVersion: string | null;
                     createdAt: string;
                     updatedAt: string;
                     hasVoted?: boolean;
@@ -3687,6 +3762,7 @@ export interface components {
                     commentCount: number;
                     mergedIntoPostId: string | null;
                     eta: string | null;
+                    appVersion: string | null;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -3735,6 +3811,10 @@ export interface components {
             /** @default  */
             body: string;
             locale?: string;
+            appVersion?: string;
+            metadata?: {
+                [key: string]: unknown;
+            };
         };
         CreateCommentInput: {
             body: string;

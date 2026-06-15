@@ -322,6 +322,20 @@ const ROUTES: Route[] = [
     resp: ref('PostDetail'),
   },
   {
+    method: 'get',
+    path: '/projects/{projectId}/posts/{id}/context',
+    tag: 'Posts',
+    sec: 'admin',
+    summary: 'Submission context (appVersion + metadata map)',
+    resp: {
+      type: 'object',
+      properties: {
+        appVersion: { type: 'string', nullable: true },
+        context: { type: 'object', additionalProperties: true },
+      },
+    },
+  },
+  {
     method: 'patch',
     path: '/projects/{projectId}/posts/{id}',
     tag: 'Posts',

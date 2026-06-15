@@ -5,11 +5,18 @@ import { Badge, Button, Card, Input, Label, Select, VotePill } from '@/component
 import { adminCreatePost } from '@/lib/actions'
 import { requireAuthContext } from '@/lib/session'
 
-export default async function PostsPage({ params }: { params: Promise<{ projectId: string }> }) {
+export default async function PostsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ projectId: string }>
+  searchParams: Promise<{ appVersion?: string }>
+}) {
   const { projectId } = await params
+  const { appVersion } = await searchParams
   const ctx = await requireAuthContext()
   const [posts, statuses, boards] = await Promise.all([
-    postSvc.listPosts(ctx, projectId, {}),
+    postSvc.listPosts(ctx, projectId, { appVersion }),
     statusSvc.listStatuses(ctx, projectId),
     boardSvc.listBoards(ctx, projectId),
   ])
@@ -26,6 +33,20 @@ export default async function PostsPage({ params }: { params: Promise<{ projectI
           {posts.length} ideas
         </span>
       </div>
+
+      {appVersion && (
+        <div className="flex items-center gap-3 rounded-xl border border-accent/30 bg-accent-soft px-4 py-2.5 text-sm">
+          <span className="text-ink-soft">
+            Filtered to app version <span className="font-semibold text-accent">v{appVersion}</span>
+          </span>
+          <Link
+            href={`/admin/${projectId}/posts`}
+            className="ml-auto font-medium text-ink-soft transition hover:text-ink"
+          >
+            Clear ✕
+          </Link>
+        </div>
+      )}
 
       <Card className="p-4">
         <form action={adminCreatePost} className="flex flex-wrap items-end gap-3">
@@ -71,6 +92,14 @@ export default async function PostsPage({ params }: { params: Promise<{ projectI
                 </Link>
                 <div className="mt-1 flex items-center gap-2.5 text-xs text-ink-faint">
                   {status && <Badge color={status.color}>{status.name}</Badge>}
+                  {p.appVersion && (
+                    <Link
+                      href={`/admin/${projectId}/posts?appVersion=${encodeURIComponent(p.appVersion)}`}
+                      className="font-mono text-[11px] text-ink-faint transition hover:text-accent"
+                    >
+                      v{p.appVersion}
+                    </Link>
+                  )}
                   <span className="inline-flex items-center gap-1">
                     <svg
                       viewBox="0 0 24 24"

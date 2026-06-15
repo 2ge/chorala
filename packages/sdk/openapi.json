@@ -2086,6 +2086,92 @@
         }
       }
     },
+    "/projects/{projectId}/posts/{id}/context": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Submission context (appVersion + metadata map)",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "appVersion": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "context": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/projects/{projectId}/posts/{id}/status": {
       "post": {
         "tags": [
@@ -4153,6 +4239,16 @@
               }
             ]
           },
+          "appVersion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string"
           },
@@ -4175,6 +4271,7 @@
           "commentCount",
           "mergedIntoPostId",
           "eta",
+          "appVersion",
           "createdAt",
           "updatedAt"
         ],
@@ -4262,6 +4359,16 @@
             ]
           },
           "eta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appVersion": {
             "anyOf": [
               {
                 "type": "string"
@@ -4361,6 +4468,7 @@
           "commentCount",
           "mergedIntoPostId",
           "eta",
+          "appVersion",
           "createdAt",
           "updatedAt"
         ],
@@ -5012,6 +5120,16 @@
                   }
                 ]
               },
+              "appVersion": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
               "createdAt": {
                 "type": "string"
               },
@@ -5102,6 +5220,7 @@
               "commentCount",
               "mergedIntoPostId",
               "eta",
+              "appVersion",
               "createdAt",
               "updatedAt"
             ],
@@ -5407,6 +5526,16 @@
                           }
                         ]
                       },
+                      "appVersion": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "createdAt": {
                         "type": "string"
                       },
@@ -5497,6 +5626,7 @@
                       "commentCount",
                       "mergedIntoPostId",
                       "eta",
+                      "appVersion",
                       "createdAt",
                       "updatedAt"
                     ],
@@ -5616,6 +5746,16 @@
                         }
                       ]
                     },
+                    "appVersion": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "createdAt": {
                       "type": "string"
                     },
@@ -5638,6 +5778,7 @@
                     "commentCount",
                     "mergedIntoPostId",
                     "eta",
+                    "appVersion",
                     "createdAt",
                     "updatedAt"
                   ],
@@ -5861,6 +6002,17 @@
           },
           "locale": {
             "type": "string"
+          },
+          "appVersion": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "metadata": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
           }
         },
         "required": [
@@ -6403,7 +6555,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-Chorala-Key",
-        "description": "Project public key (pk_…)"
+        "description": "Project public key (pk_\u2026)"
       },
       "EndUserToken": {
         "type": "apiKey",
@@ -6414,7 +6566,7 @@
       "ApiKey": {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "hk_…",
+        "bearerFormat": "hk_\u2026",
         "description": "Admin API key"
       },
       "Session": {

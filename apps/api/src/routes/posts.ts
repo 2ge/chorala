@@ -23,6 +23,7 @@ export const postsRoutes = new Hono<AppEnv>()
       await posts.listPosts(c.get('auth'), projectId, {
         boardId: c.req.query('boardId'),
         statusId: c.req.query('statusId'),
+        appVersion: c.req.query('appVersion'),
         search: c.req.query('search'),
         sort: postSort.catch('top').parse(sortRaw),
         includeMerged: c.req.query('includeMerged') === 'true',
@@ -41,6 +42,10 @@ export const postsRoutes = new Hono<AppEnv>()
   )
   .get('/:id', async (c) =>
     c.json(await posts.getPost(c.get('auth'), reqParam(c, 'projectId'), c.req.param('id'))),
+  )
+  // The submission context map (userAgent, platform, plan, …) — admin-only.
+  .get('/:id/context', async (c) =>
+    c.json(await posts.getContext(c.get('auth'), reqParam(c, 'projectId'), c.req.param('id'))),
   )
   .patch('/:id', async (c) =>
     c.json(

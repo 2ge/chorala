@@ -43,6 +43,7 @@ export const postColumns = {
   commentCount: posts.commentCount,
   mergedIntoPostId: posts.mergedIntoPostId,
   eta: posts.eta,
+  appVersion: posts.appVersion,
   createdAt: posts.createdAt,
   updatedAt: posts.updatedAt,
 }
@@ -50,6 +51,7 @@ export const postColumns = {
 type ListOpts = {
   boardId?: string
   statusId?: string
+  appVersion?: string
   search?: string
   sort?: PostSort
   includeMerged?: boolean
@@ -73,6 +75,7 @@ export async function listPosts(ctx: AuthContext, projectId: string, opts: ListO
   const filters = [eq(posts.projectId, projectId)]
   if (opts.boardId) filters.push(eq(posts.boardId, opts.boardId))
   if (opts.statusId) filters.push(eq(posts.statusId, opts.statusId))
+  if (opts.appVersion) filters.push(eq(posts.appVersion, opts.appVersion))
   if (!opts.includeMerged) filters.push(sql`${posts.mergedIntoPostId} is null`)
   if (opts.search) {
     const term = `%${opts.search}%`
@@ -124,6 +127,21 @@ export async function getPost(ctx: AuthContext, projectId: string, id: string) {
     .where(and(eq(posts.id, id), eq(posts.projectId, projectId)))
   if (!row) throw notFound('Post')
   return row
+}
+
+/**
+ * The free-form submission context map (userAgent, locale, platform, screen, plan, …) a
+ * widget can attach to a post. Admin-only — never serialized on the public feed because it
+ * can carry end-user detail. `appVersion` is promoted to a first-class column separately.
+ */
+export async function getContext(ctx: AuthContext, projectId: string, id: string) {
+  await getProject(ctx, projectId)
+  const [row] = await db
+    .select({ appVersion: posts.appVersion, context: posts.context })
+    .from(posts)
+    .where(and(eq(posts.id, id), eq(posts.projectId, projectId)))
+  if (!row) throw notFound('Post')
+  return { appVersion: row.appVersion, context: (row.context ?? {}) as Record<string, unknown> }
 }
 
 async function assertBoardInProject(projectId: string, boardId: string) {

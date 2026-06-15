@@ -15,6 +15,13 @@
       "when": 1781465050773,
       "tag": "0001_spicy_gamora",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781495602211,
+      "tag": "0002_perpetual_mentor",
+      "breakpoints": true
     }
   ]
 }

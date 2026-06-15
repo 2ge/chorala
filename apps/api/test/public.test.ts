@@ -123,6 +123,28 @@ describe('anonymous flow (cookie identity)', () => {
   })
 })
 
+describe('submission context (appVersion + metadata)', () => {
+  test('stores appVersion on the post and accepts a free-form metadata map', async () => {
+    const res = await app.request('/api/v1/public/posts', {
+      method: 'POST',
+      headers: { ...KEY(), 'content-type': 'application/json' },
+      body: JSON.stringify({
+        boardSlug: 'feature-requests',
+        title: 'Crash on export',
+        body: 'repro inside',
+        appVersion: '2.4.1',
+        metadata: { platform: 'web', locale: 'en-GB', plan: 'pro' },
+      }),
+    })
+    expect(res.status).toBe(201)
+    const created = (await res.json()) as { post: { appVersion: string | null } }
+    // appVersion is promoted to a first-class, public field…
+    expect(created.post.appVersion).toBe('2.4.1')
+    // …while the free-form metadata map is never leaked on the public payload.
+    expect(JSON.stringify(created.post)).not.toContain('plan')
+  })
+})
+
 describe('identified flow (host JWT)', () => {
   test('identify upserts an end-user; identified vote shows hasVoted', async () => {
     const jwt = await signUser({

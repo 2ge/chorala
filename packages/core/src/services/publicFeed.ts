@@ -226,6 +226,10 @@ export async function createPublicPost(
     body: input.body,
     originalLocale: input.locale ?? 'en',
     statusId: openStatus?.id,
+    // Structured submission context (Sentry/Canny style). `appVersion` is promoted to a
+    // first-class, filterable column; everything else lands in the admin-only `context` map.
+    appVersion: input.appVersion,
+    context: input.metadata ?? {},
   })
   // AI: embed + dedup + translate (no-op when AI is disabled); fire webhook event.
   await enqueuePostProcessing(id)

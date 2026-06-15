@@ -31,18 +31,31 @@ export default async function PostDetail({
 }) {
   const { projectId, postId } = await params
   const ctx = await requireAuthContext()
-  const [post, statuses, allTags, postTags, thread, allPosts, dedupSuggestions, ints, issue] =
-    await Promise.all([
-      postSvc.getPost(ctx, projectId, postId),
-      statusSvc.listStatuses(ctx, projectId),
-      tagSvc.listTags(ctx, projectId),
-      tagSvc.listPostTags(ctx, projectId, postId),
-      commentSvc.listComments(projectId, postId, { includeInternal: true }),
-      postSvc.listPosts(ctx, projectId, {}),
-      postSvc.getDedupSuggestions(ctx, projectId, postId),
-      integrations.listIntegrations(ctx, projectId),
-      integrations.getPostIssue(ctx, projectId, postId),
-    ])
+  const [
+    post,
+    statuses,
+    allTags,
+    postTags,
+    thread,
+    allPosts,
+    dedupSuggestions,
+    ints,
+    issue,
+    context,
+  ] = await Promise.all([
+    postSvc.getPost(ctx, projectId, postId),
+    statusSvc.listStatuses(ctx, projectId),
+    tagSvc.listTags(ctx, projectId),
+    tagSvc.listPostTags(ctx, projectId, postId),
+    commentSvc.listComments(projectId, postId, { includeInternal: true }),
+    postSvc.listPosts(ctx, projectId, {}),
+    postSvc.getDedupSuggestions(ctx, projectId, postId),
+    integrations.listIntegrations(ctx, projectId),
+    integrations.getPostIssue(ctx, projectId, postId),
+    postSvc.getContext(ctx, projectId, postId),
+  ])
+  const contextEntries = Object.entries(context.context ?? {})
+  const hasContext = !!context.appVersion || contextEntries.length > 0
   const githubConnected = ints.some((i) => i.type === 'github')
   const candidates = allPosts
     .filter((p) => p.id !== postId)
@@ -143,6 +156,34 @@ export default async function PostDetail({
               issue={issue}
             />
           </Card>
+
+          {hasContext && (
+            <Card className="p-5">
+              <SectionLabel>Context</SectionLabel>
+              {context.appVersion && (
+                <Link
+                  href={`/admin/${projectId}/posts?appVersion=${encodeURIComponent(context.appVersion)}`}
+                  className="mb-3 inline-flex"
+                >
+                  <Badge className="border-accent/30 bg-accent-soft text-accent">
+                    v{context.appVersion}
+                  </Badge>
+                </Link>
+              )}
+              {contextEntries.length > 0 && (
+                <dl className="space-y-1.5 text-[13px]">
+                  {contextEntries.map(([k, v]) => (
+                    <div key={k} className="flex gap-2">
+                      <dt className="shrink-0 font-medium text-ink-faint">{k}</dt>
+                      <dd className="min-w-0 break-words text-right text-ink-soft tabular-nums">
+                        {typeof v === 'string' ? v : JSON.stringify(v)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </Card>
+          )}
         </div>
       </div>
     </div>

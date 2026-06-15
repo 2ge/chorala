@@ -233,12 +233,17 @@ export const posts = pgTable(
     }),
     eta: timestamp('eta', { withTimezone: true }),
     metadata: jsonb('metadata').$type<Json>().default({}).notNull(),
+    // Submission context (Sentry/Canny-style): a first-class filterable version + a
+    // free-form map (userAgent, locale, platform, screen, plan, …) sent by the embedder.
+    appVersion: text('app_version'),
+    context: jsonb('context').$type<Json>().default({}).notNull(),
     ...ts,
   },
   (t) => [
     index('posts_board_idx').on(t.boardId),
     index('posts_project_idx').on(t.projectId),
     index('posts_status_idx').on(t.statusId),
+    index('posts_app_version_idx').on(t.projectId, t.appVersion),
     index('posts_embedding_idx').using('hnsw', t.embedding.op('vector_cosine_ops')),
   ],
 )
