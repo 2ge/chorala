@@ -16,6 +16,8 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   // entities (responses)
   Post: [T.post, 'output'],
   LocalizedPost: [T.localizedPost, 'output'],
+  Attachment: [T.attachment, 'output'],
+  AttachmentRef: [T.attachmentRef, 'output'],
   Board: [T.board, 'output'],
   Status: [T.status, 'output'],
   Comment: [T.comment, 'output'],
@@ -34,6 +36,7 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   CreateApiKeyResponse: [T.createApiKeyResponse, 'output'],
   // request inputs
   CreatePostInput: [T.createPostInput, 'input'],
+  CreateAttachmentInput: [T.createAttachmentInput, 'input'],
   CreateCommentInput: [T.createCommentInput, 'input'],
   ChangelogSubscribeInput: [T.changelogSubscribeInput, 'input'],
   IdentifyInput: [T.identifyInput, 'input'],
@@ -107,6 +110,16 @@ const ROUTES: Route[] = [
     summary: 'Submit a post',
     body: 'CreatePostInput',
     resp: ref('LocalizedPost'),
+    status: 201,
+  },
+  {
+    method: 'post',
+    path: '/public/attachments',
+    tag: 'Public',
+    sec: 'public',
+    summary: 'Upload a screenshot (link via createPost attachmentIds)',
+    body: 'CreateAttachmentInput',
+    resp: ref('AttachmentRef'),
     status: 201,
   },
   {
@@ -334,6 +347,14 @@ const ROUTES: Route[] = [
         context: { type: 'object', additionalProperties: true },
       },
     },
+  },
+  {
+    method: 'get',
+    path: '/projects/{projectId}/posts/{id}/attachments',
+    tag: 'Posts',
+    sec: 'admin',
+    summary: 'List a post’s attachments (screenshots)',
+    resp: arr('Attachment'),
   },
   {
     method: 'patch',

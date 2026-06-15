@@ -12,9 +12,20 @@ export type InitOptions = {
   projectKey: string
   apiUrl?: string
   locale?: string
+  /** Host app version — promoted to a first-class, filterable field on every submission. */
+  appVersion?: string
   user?: { jwt?: string }
   view?: View
   settings?: WidgetSettings
+}
+
+export type AttachmentRef = {
+  id: string
+  kind: string
+  mimeType: string
+  byteSize: number
+  width: number | null
+  height: number | null
 }
 
 export type Board = {

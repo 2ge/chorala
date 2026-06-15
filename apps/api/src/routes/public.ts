@@ -1,6 +1,7 @@
-import { endUsers, publicFeed, unauthorized, votes } from '@chorala/core'
+import { endUsers, publicFeed, storage, unauthorized, votes } from '@chorala/core'
 import {
   changelogSubscribeInput,
+  createAttachmentInput,
   createCommentInput,
   createPostInput,
   identifyInput,
@@ -46,6 +47,12 @@ publicRoutes
     const eu = await requireEndUser(c, project)
     const input = createPostInput.parse(await c.req.json())
     return c.json(await publicFeed.createPublicPost(project.id, eu.id, input), 201)
+  })
+  .post('/attachments', async (c) => {
+    const project = c.get('project')
+    const eu = await requireEndUser(c, project)
+    const input = createAttachmentInput.parse(await c.req.json())
+    return c.json(await storage.createPublicAttachment(project.id, eu.id, input), 201)
   })
   .post('/posts/:id/vote', async (c) => {
     const project = c.get('project')

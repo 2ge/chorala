@@ -27,7 +27,12 @@ function detectApiBase(explicit?: string): string {
 function buildApi(): Api | null {
   if (!config) return null
   const apiBase = detectApiBase(config.apiUrl)
-  return createApi({ apiBase, projectKey: config.projectKey, jwt: config.user?.jwt })
+  return createApi({
+    apiBase,
+    projectKey: config.projectKey,
+    jwt: config.user?.jwt,
+    appVersion: config.appVersion,
+  })
 }
 
 function startInstance() {
@@ -126,6 +131,7 @@ if (!config) {
       {
         projectKey: key,
         locale: settings?.locale ?? d?.locale ?? 'auto',
+        appVersion: settings?.appVersion ?? d?.appVersion,
         view: (settings?.view ?? d?.view) as View | undefined,
         user: settings?.user ?? (d?.jwt ? { jwt: d.jwt } : undefined),
         settings: settings?.settings ?? {

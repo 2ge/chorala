@@ -9,7 +9,7 @@ import {
   statusKind,
   webhookEvent,
 } from './common.ts'
-import { comment, endUser, post, postTranslation, status } from './entities.ts'
+import { attachment, comment, endUser, post, postTranslation, status } from './entities.ts'
 
 // =====================================================================
 // Public / widget API (SPEC §8.2)
@@ -34,8 +34,29 @@ export const createPostInput = z.object({
   // filterable; `metadata` is a free-form map (userAgent, locale, platform, screen, …).
   appVersion: z.string().max(120).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
+  // Screenshots/files uploaded via POST /public/attachments, linked to the post on create.
+  attachmentIds: z.array(z.string()).max(10).optional(),
 })
 export type CreatePostInput = z.infer<typeof createPostInput>
+
+/** Upload an attachment (currently a bug-report screenshot) as a data URL. */
+export const createAttachmentInput = z.object({
+  // `data:<mime>;base64,<payload>` — kept small by per-file + per-project byte limits.
+  dataUrl: z.string().startsWith('data:'),
+  kind: z.enum(['screenshot', 'file']).default('screenshot'),
+})
+export type CreateAttachmentInput = z.infer<typeof createAttachmentInput>
+
+/** Returned on upload — the id the widget threads into `createPostInput.attachmentIds`. */
+export const attachmentRef = attachment.pick({
+  id: true,
+  kind: true,
+  mimeType: true,
+  byteSize: true,
+  width: true,
+  height: true,
+})
+export type AttachmentRef = z.infer<typeof attachmentRef>
 
 export const createCommentInput = z.object({
   body: z.string().min(1).max(20_000),

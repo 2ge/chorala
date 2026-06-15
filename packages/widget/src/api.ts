@@ -1,4 +1,6 @@
+import { collectContext } from './context.ts'
 import type {
+  AttachmentRef,
   BoardsResponse,
   ChangelogEntry,
   Comment,
@@ -6,7 +8,12 @@ import type {
   RoadmapResponse,
 } from './types.ts'
 
-export type ApiConfig = { apiBase: string; projectKey: string; jwt?: string }
+export type ApiConfig = {
+  apiBase: string
+  projectKey: string
+  jwt?: string
+  appVersion?: string
+}
 
 export type Api = ReturnType<typeof createApi>
 
@@ -49,11 +56,24 @@ export function createApi(cfg: ApiConfig) {
       }),
     getPost: (id: string, locale?: string) =>
       req<PostDetail>(`/public/posts/${id}${qs({ locale })}`, { headers: headers() }),
-    createPost: (body: { boardSlug: string; title: string; body: string; locale?: string }) =>
+    createPost: (body: {
+      boardSlug: string
+      title: string
+      body: string
+      locale?: string
+      attachmentIds?: string[]
+    }) =>
       req<PostDetail>('/public/posts', {
         method: 'POST',
         headers: headers(true),
-        body: JSON.stringify(body),
+        // Auto-attach submission context + the host-declared app version on every post.
+        body: JSON.stringify({ ...body, appVersion: cfg.appVersion, metadata: collectContext() }),
+      }),
+    uploadScreenshot: (dataUrl: string) =>
+      req<AttachmentRef>('/public/attachments', {
+        method: 'POST',
+        headers: headers(true),
+        body: JSON.stringify({ dataUrl, kind: 'screenshot' }),
       }),
     vote: (id: string, on: boolean) =>
       req<{ voted: boolean; voteCount: number }>(`/public/posts/${id}/vote`, {

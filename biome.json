@@ -46,7 +46,7 @@
       "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } }
     },
     {
-      "includes": ["packages/widget/src/mount.tsx"],
+      "includes": ["packages/widget/src/mount.tsx", "packages/widget/src/Screenshot.tsx"],
       "linter": {
         "rules": {
           "a11y": {

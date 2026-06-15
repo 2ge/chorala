@@ -1,4 +1,4 @@
-import { posts, tags } from '@chorala/core'
+import { posts, storage, tags } from '@chorala/core'
 import {
   adminCreatePostInput,
   changePostStatusInput,
@@ -46,6 +46,16 @@ export const postsRoutes = new Hono<AppEnv>()
   // The submission context map (userAgent, platform, plan, …) — admin-only.
   .get('/:id/context', async (c) =>
     c.json(await posts.getContext(c.get('auth'), reqParam(c, 'projectId'), c.req.param('id'))),
+  )
+  // Attachment metadata (screenshots) for a post — bytes are streamed by the dashboard.
+  .get('/:id/attachments', async (c) =>
+    c.json(
+      await storage.listAttachmentsForPost(
+        c.get('auth'),
+        reqParam(c, 'projectId'),
+        c.req.param('id'),
+      ),
+    ),
   )
   .patch('/:id', async (c) =>
     c.json(

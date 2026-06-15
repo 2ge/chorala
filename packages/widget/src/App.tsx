@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'preact/hooks'
 import type { Api } from './api.ts'
 import { emitEngaged } from './engage.ts'
 import type { Translator } from './i18n.ts'
+import { Screenshot } from './Screenshot.tsx'
 import type { Board, ChangelogEntry, Comment, Post, RoadmapResponse, View } from './types.ts'
 
 type Props = {
@@ -245,8 +246,12 @@ function SubmitForm({
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [boardSlug, setBoardSlug] = useState(boards[0]?.slug ?? '')
+  const [shot, setShot] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+
+  // Bug boards get a screenshot attach control; the context map is sent on every submission.
+  const isBug = boards.find((b) => b.slug === boardSlug)?.kind === 'bug'
 
   const submit = async (e: Event) => {
     e.preventDefault()
@@ -254,7 +259,18 @@ function SubmitForm({
     setBusy(true)
     setErr(null)
     try {
-      await api.createPost({ boardSlug, title: title.trim(), body: body.trim(), locale })
+      let attachmentIds: string[] | undefined
+      if (isBug && shot) {
+        const att = await api.uploadScreenshot(shot)
+        attachmentIds = [att.id]
+      }
+      await api.createPost({
+        boardSlug,
+        title: title.trim(),
+        body: body.trim(),
+        locale,
+        attachmentIds,
+      })
       emitEngaged('feedback')
       onDone()
     } catch (e2) {
@@ -296,7 +312,7 @@ function SubmitForm({
       </div>
       <div class="chorala-field">
         <label>
-          <span>{t('details')}</span>
+          <span>{isBug ? t('describeBug') : t('details')}</span>
           <textarea
             class="chorala-textarea"
             value={body}
@@ -305,6 +321,12 @@ function SubmitForm({
           />
         </label>
       </div>
+      {isBug && (
+        <div class="chorala-field">
+          <span class="chorala-shot-label">{t('screenshot')}</span>
+          <Screenshot t={t} onChange={setShot} />
+        </div>
+      )}
       {err && <div class="chorala-error">{err}</div>}
       <div class="chorala-row">
         <button type="submit" class="chorala-btn" disabled={busy || title.trim().length < 2}>

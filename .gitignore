@@ -34,3 +34,6 @@ pnpm-debug.log*
 # playwright mcp artifacts
 .playwright-mcp/
 *.png
+
+# Local attachment store
+.uploads/

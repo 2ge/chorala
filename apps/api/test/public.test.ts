@@ -1,5 +1,5 @@
 import { env } from '@chorala/config'
-import { db, eq, projects } from '@chorala/db'
+import { attachments, db, eq, projects } from '@chorala/db'
 import { SignJWT } from 'jose'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createApp } from '../src/app.ts'
@@ -142,6 +142,50 @@ describe('submission context (appVersion + metadata)', () => {
     expect(created.post.appVersion).toBe('2.4.1')
     // …while the free-form metadata map is never leaked on the public payload.
     expect(JSON.stringify(created.post)).not.toContain('plan')
+  })
+})
+
+describe('attachments (bug-report screenshots)', () => {
+  // 1×1 transparent PNG
+  const PNG =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+
+  test('uploads a screenshot, links it to a post, and rejects non-images', async () => {
+    const up = await app.request('/api/v1/public/attachments', {
+      method: 'POST',
+      headers: { ...KEY(), 'content-type': 'application/json' },
+      body: JSON.stringify({ dataUrl: PNG, kind: 'screenshot' }),
+    })
+    expect(up.status).toBe(201)
+    const att = (await up.json()) as { id: string; mimeType: string; byteSize: number }
+    expect(att.id).toMatch(/^att_/)
+    expect(att.mimeType).toBe('image/png')
+    expect(att.byteSize).toBeGreaterThan(0)
+
+    // Reuse the anon identity cookie so the linking is correctly scoped to the same end-user.
+    const cookie = cookieFrom(up)
+    const create = await app.request('/api/v1/public/posts', {
+      method: 'POST',
+      headers: { ...KEY(), cookie: cookie as string, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        boardSlug: 'feature-requests',
+        title: 'Button overlaps footer',
+        attachmentIds: [att.id],
+      }),
+    })
+    expect(create.status).toBe(201)
+    const { post } = (await create.json()) as { post: { id: string } }
+
+    const [row] = await db.select().from(attachments).where(eq(attachments.id, att.id))
+    expect(row?.postId).toBe(post.id) // linked on create
+
+    // a non-image data URL is refused
+    const bad = await app.request('/api/v1/public/attachments', {
+      method: 'POST',
+      headers: { ...KEY(), 'content-type': 'application/json' },
+      body: JSON.stringify({ dataUrl: 'data:application/pdf;base64,JVBERi0=' }),
+    })
+    expect(bad.status).toBe(400)
   })
 })
 

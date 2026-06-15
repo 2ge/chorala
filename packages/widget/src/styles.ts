@@ -113,5 +113,19 @@ button { font-family: inherit; cursor: pointer; }
 .chorala-empty { text-align: center; color: var(--chorala-muted); padding: 32px 12px; }
 .chorala-error { color: #ef4444; font-size: 13px; padding: 8px 0; }
 .chorala-comment { padding: 8px 0; border-top: 1px solid var(--chorala-border); font-size: 13px; }
+
+/* Bug-report screenshot capture + annotate */
+.chorala-shot-label { display: block; font-size: 12px; font-weight: 600; color: var(--chorala-muted); margin-bottom: 4px; }
+.chorala-shot { border: 1px dashed var(--chorala-border); border-radius: 10px; padding: 10px; }
+.chorala-shot-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.chorala-shot-upload { position: relative; overflow: hidden; cursor: pointer; }
+.chorala-shot-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.chorala-shot-hint { font-size: 11px; color: var(--chorala-muted); margin: 8px 0 0; }
+.chorala-shot-toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.chorala-chip { background: var(--chorala-surface); color: var(--chorala-fg); border: 1px solid var(--chorala-border);
+  border-radius: 9999px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.chorala-chip.active { background: var(--chorala-primary); color: #fff; border-color: var(--chorala-primary); }
+.chorala-chip.danger { color: #ef4444; }
+.chorala-shot-canvas { display: block; max-width: 100%; border-radius: 8px; border: 1px solid var(--chorala-border); touch-action: none; cursor: crosshair; }
 `
 }

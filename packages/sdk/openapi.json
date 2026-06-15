@@ -263,6 +263,72 @@
         }
       }
     },
+    "/public/attachments": {
+      "post": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Upload a screenshot (link via createPost attachmentIds)",
+        "security": [
+          {
+            "PublicKey": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttachmentRef"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttachmentInput"
+              }
+            }
+          }
+        }
+      }
+    },
     "/public/posts/{id}/vote": {
       "post": {
         "tags": [
@@ -2134,6 +2200,85 @@
                       "type": "object",
                       "additionalProperties": true
                     }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/posts/{id}/attachments": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "List a post\u2019s attachments (screenshots)",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Attachment"
                   }
                 }
               }
@@ -4474,6 +4619,145 @@
         ],
         "additionalProperties": false
       },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^att_[0-9A-Za-z_-]+$"
+          },
+          "projectId": {
+            "type": "string",
+            "pattern": "^proj_[0-9A-Za-z_-]+$"
+          },
+          "postId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^post_[0-9A-Za-z_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "screenshot",
+              "file"
+            ]
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "byteSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "postId",
+          "kind",
+          "mimeType",
+          "byteSize",
+          "width",
+          "height",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "AttachmentRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^att_[0-9A-Za-z_-]+$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "screenshot",
+              "file"
+            ]
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "byteSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "mimeType",
+          "byteSize",
+          "width",
+          "height"
+        ],
+        "additionalProperties": false
+      },
       "Board": {
         "type": "object",
         "properties": {
@@ -6013,11 +6297,38 @@
               "type": "string"
             },
             "additionalProperties": {}
+          },
+          "attachmentIds": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "boardSlug",
           "title"
+        ]
+      },
+      "CreateAttachmentInput": {
+        "type": "object",
+        "properties": {
+          "dataUrl": {
+            "type": "string",
+            "pattern": "^data:.*"
+          },
+          "kind": {
+            "default": "screenshot",
+            "type": "string",
+            "enum": [
+              "screenshot",
+              "file"
+            ]
+          }
+        },
+        "required": [
+          "dataUrl"
         ]
       },
       "CreateCommentInput": {

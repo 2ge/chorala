@@ -30,6 +30,7 @@ import {
 } from '../queues.ts'
 import { createComment, listComments } from './comments.ts'
 import { postColumns } from './posts.ts'
+import { linkAttachmentsToPost } from './storage.ts'
 
 type PostRow = Awaited<ReturnType<typeof getPostRows>>[number]
 
@@ -231,6 +232,10 @@ export async function createPublicPost(
     appVersion: input.appVersion,
     context: input.metadata ?? {},
   })
+  // Link any screenshots uploaded just before submit (scoped to this end-user + project).
+  if (input.attachmentIds?.length) {
+    await linkAttachmentsToPost(projectId, endUserId, input.attachmentIds, id)
+  }
   // AI: embed + dedup + translate (no-op when AI is disabled); fire webhook event.
   await enqueuePostProcessing(id)
   await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: board.id })

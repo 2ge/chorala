@@ -279,3 +279,14 @@ choice. Format: `- [phase] chose X over Y because Z`.
   horizontal scrollable nav bar; post-list rows wrap their pin/status controls onto their own
   line on phones and the status select is width-capped. Verified on desktop (1366) and mobile
   (390) via Playwright across posts, post detail, and theme switching.
+- [phase10] Bug-report attachments use a **local-disk store** (`CHORALA_UPLOAD_DIR`, an absolute
+  path shared by API + dashboard) over object storage — simplest path consistent with the
+  "`docker compose up` self-host" goal (SPEC §2/§5). Cloud can swap the driver later.
+- [phase10] Screenshots upload as a **base64 data URL in JSON** (`POST /public/attachments`)
+  rather than multipart — avoids a body-parser dependency and keeps the widget→API contract a
+  single zod schema. Per-file (5 MB) + per-project (1 GB) byte limits guard against abuse.
+- [phase10] Uploaded bytes are **admin-only** (like the submission `context`): never on the
+  public post payload; served through an auth-gated dashboard route (`/admin-media/[id]`) so the
+  shared on-disk store is never publicly reachable. Only `appVersion` stays first-class/public.
+- [phase10] The widget surfaces the screenshot control **only on `kind=bug` boards**; the
+  auto-collected `context` map (browser/os/url/locale/screen) is attached to every submission.

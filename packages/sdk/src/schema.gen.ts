@@ -202,6 +202,73 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/public/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload a screenshot (link via createPost attachmentIds) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateAttachmentInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttachmentRef"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/public/posts/{id}/vote": {
         parameters: {
             query?: never;
@@ -1762,6 +1829,72 @@ export interface paths {
                                 [key: string]: unknown;
                             };
                         };
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/posts/{id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a post’s attachments (screenshots) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Attachment"][];
                     };
                 };
                 /** @description Bad request */
@@ -3523,6 +3656,28 @@ export interface components {
                 updatedAt: string;
             } | null;
         };
+        Attachment: {
+            id: string;
+            projectId: string;
+            postId: string | null;
+            /** @enum {string} */
+            kind: "screenshot" | "file";
+            mimeType: string;
+            byteSize: number;
+            width: number | null;
+            height: number | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        AttachmentRef: {
+            id: string;
+            /** @enum {string} */
+            kind: "screenshot" | "file";
+            mimeType: string;
+            byteSize: number;
+            width: number | null;
+            height: number | null;
+        };
         Board: {
             id: string;
             projectId: string;
@@ -3815,6 +3970,15 @@ export interface components {
             metadata?: {
                 [key: string]: unknown;
             };
+            attachmentIds?: string[];
+        };
+        CreateAttachmentInput: {
+            dataUrl: string;
+            /**
+             * @default screenshot
+             * @enum {string}
+             */
+            kind: "screenshot" | "file";
         };
         CreateCommentInput: {
             body: string;

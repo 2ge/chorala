@@ -23,6 +23,7 @@ export const ID_PREFIXES = {
   auditLog: 'audit',
   aiJob: 'aijob',
   cluster: 'clust',
+  attachment: 'att',
   user: 'user',
 } as const
 

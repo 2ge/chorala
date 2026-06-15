@@ -248,6 +248,34 @@ export const posts = pgTable(
   ],
 )
 
+/**
+ * Bug-report screenshots (and future file uploads). Bytes live on disk under
+ * CHORALA_UPLOAD_DIR keyed by `storage_key`; only metadata is stored here so we can meter a
+ * per-project quota without bloating the DB. `post_id` is null between upload and post-create.
+ */
+export const attachments = pgTable(
+  'attachments',
+  {
+    id: pk('attachment'),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    postId: text('post_id').references(() => posts.id, { onDelete: 'cascade' }),
+    endUserId: text('end_user_id').references(() => endUsers.id, { onDelete: 'set null' }),
+    kind: text('kind').$type<'screenshot' | 'file'>().default('screenshot').notNull(),
+    mimeType: text('mime_type').notNull(),
+    byteSize: integer('byte_size').notNull(),
+    width: integer('width'),
+    height: integer('height'),
+    storageKey: text('storage_key').notNull(),
+    ...ts,
+  },
+  (t) => [
+    index('attachments_project_idx').on(t.projectId),
+    index('attachments_post_idx').on(t.postId),
+  ],
+)
+
 export const postTranslations = pgTable(
   'post_translations',
   {

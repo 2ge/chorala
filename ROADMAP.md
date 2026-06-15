@@ -61,14 +61,15 @@ mobile SDKs, Kubernetes. Staying feedback‑first *is* the positioning.
 Principle: **each phase ships standalone, builds on the prior, and starts small.** Early
 phases are days of work on our existing schema; later phases are platform investments.
 
-### Phase 10 — Bug‑report capture (finish what we started) · *small*
-The `context` jsonb + first‑class `appVersion` landed 2026‑06‑15. Now make the widget fill them.
-- Auto‑collect Sentry‑style **contexts** client‑side: `browser`, `os`, `url`, `locale`,
-  `screen`, `referrer` → into the `context` map, no host config.
-- **Screenshot + annotate** (highlight/redact) on bug boards; store as a linked attachment,
-  metered against a storage quota (don't inline). Parity with Featurebase's capture engine.
-- A "Report a bug" widget mode (vs "request a feature") that surfaces the context panel we built.
-- *Why first:* highest polish‑per‑hour, directly extends today's work, makes the widget feel pro.
+### Phase 10 — Bug‑report capture (finish what we started) · *small* · ✅ SHIPPED 2026‑06‑15
+The `context` jsonb + first‑class `appVersion` landed 2026‑06‑15; Phase 10 made the widget fill them.
+- ✅ Auto‑collect Sentry‑style **contexts** client‑side (`browser`, `os`, `url`, `locale`,
+  `screen`, `viewport`, `timezone`, `referrer`) into the `context` map on every submission — no host config.
+- ✅ **Screenshot + annotate** (redact/highlight) on bug boards — capture via the Screen Capture
+  API, file pick, or paste; stored as a linked, disk‑backed attachment metered against per‑file
+  (5 MB) + per‑project (1 GB) quotas (not inlined). Admin sees thumbnails on post detail.
+- ✅ Bug boards (`kind=bug`) get the screenshot control + a bug‑framed form; the Context panel
+  renders the auto‑collected map. Host opt‑in for version via `data-app-version` / `Chorala.init({ appVersion })`.
 
 ### Phase 11 — B2B revenue intelligence · *medium, highest sales value*
 Close gap #1 — the thing that makes us sellable to B2B SaaS.

@@ -3,6 +3,7 @@ import {
   integrations,
   posts as postSvc,
   statuses as statusSvc,
+  storage as storageSvc,
   tags as tagSvc,
 } from '@chorala/core'
 import Link from 'next/link'
@@ -42,6 +43,7 @@ export default async function PostDetail({
     ints,
     issue,
     context,
+    attachments,
   ] = await Promise.all([
     postSvc.getPost(ctx, projectId, postId),
     statusSvc.listStatuses(ctx, projectId),
@@ -53,6 +55,7 @@ export default async function PostDetail({
     integrations.listIntegrations(ctx, projectId),
     integrations.getPostIssue(ctx, projectId, postId),
     postSvc.getContext(ctx, projectId, postId),
+    storageSvc.listAttachmentsForPost(ctx, projectId, postId),
   ])
   const contextEntries = Object.entries(context.context ?? {})
   const hasContext = !!context.appVersion || contextEntries.length > 0
@@ -85,6 +88,30 @@ export default async function PostDetail({
               </div>
             </div>
           </Card>
+
+          {attachments.length > 0 && (
+            <Card className="p-6">
+              <SectionLabel>Screenshots</SectionLabel>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {attachments.map((a) => (
+                  <a
+                    key={a.id}
+                    href={`/admin-media/${a.id}?projectId=${projectId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group block overflow-hidden rounded-xl border border-line transition hover:border-accent"
+                  >
+                    {/* biome-ignore lint/performance/noImgElement: admin-only, auth-gated byte stream */}
+                    <img
+                      src={`/admin-media/${a.id}?projectId=${projectId}`}
+                      alt="Bug report screenshot"
+                      className="h-32 w-full bg-ink/[0.03] object-cover transition group-hover:opacity-90"
+                    />
+                  </a>
+                ))}
+              </div>
+            </Card>
+          )}
 
           <Card className="p-6">
             <SectionLabel>Discussion</SectionLabel>

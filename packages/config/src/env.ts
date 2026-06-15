@@ -70,6 +70,13 @@ export const envSchema = z
     // --- Widget / public API ---
     CHORALA_WIDGET_CDN_URL: z.url().default('http://localhost:8787/widget.js'),
     CHORALA_RATE_LIMIT_PUBLIC: z.coerce.number().int().positive().default(60),
+
+    // --- Attachments (bug-report screenshots) ---
+    // Absolute, shared path: API writes, dashboard reads. Must be reachable by both apps.
+    CHORALA_UPLOAD_DIR: z.string().default('/tmp/chorala-uploads'),
+    // Per-file ceiling (5 MB) and per-project storage quota (1 GB) — metered, not inlined.
+    CHORALA_ATTACHMENT_MAX_BYTES: z.coerce.number().int().positive().default(5_000_000),
+    CHORALA_ATTACHMENT_QUOTA_BYTES: z.coerce.number().int().positive().default(1_000_000_000),
   })
   .superRefine((val, ctx) => {
     if (

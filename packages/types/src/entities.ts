@@ -115,6 +115,20 @@ export const post = z
   })
   .extend(timestamps.shape)
 
+export const attachment = z
+  .object({
+    id: prefixedId('att'),
+    projectId: prefixedId('proj'),
+    postId: prefixedId('post').nullable(),
+    kind: z.enum(['screenshot', 'file']),
+    mimeType: z.string(),
+    byteSize: z.number().int(),
+    width: z.number().int().nullable(),
+    height: z.number().int().nullable(),
+    // bytes are served separately (admin-only); storageKey is never serialized to clients
+  })
+  .extend(timestamps.shape)
+
 export const postTranslation = z
   .object({
     id: prefixedId('ptr'),
@@ -264,6 +278,7 @@ export type EndUser = z.infer<typeof endUser>
 export type Board = z.infer<typeof board>
 export type Status = z.infer<typeof status>
 export type Post = z.infer<typeof post>
+export type Attachment = z.infer<typeof attachment>
 export type PostTranslation = z.infer<typeof postTranslation>
 export type Vote = z.infer<typeof vote>
 export type Comment = z.infer<typeof comment>
