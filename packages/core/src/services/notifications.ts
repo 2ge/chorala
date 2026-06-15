@@ -1,5 +1,4 @@
 import { env } from '@chorala/config'
-import { changelogPublishedEmail, notificationEmail } from '@chorala/email'
 import {
   and,
   changelogEntries,
@@ -19,15 +18,14 @@ import {
   statuses,
   votes,
 } from '@chorala/db'
+import { changelogPublishedEmail, notificationEmail } from '@chorala/email'
 import type { AuthContext } from '../context.ts'
 import { enqueueEmail } from '../queues.ts'
 
 type ProjectRef = { id: string; name: string; customDomain: string | null }
 
 function portalUrl(p: ProjectRef): string {
-  return p.customDomain
-    ? `https://${p.customDomain}`
-    : `${env.CHORALA_PUBLIC_URL}/portal/${p.id}`
+  return p.customDomain ? `https://${p.customDomain}` : `${env.CHORALA_PUBLIC_URL}/portal/${p.id}`
 }
 
 async function loadPostAndProject(projectId: string, postId: string) {
@@ -57,10 +55,20 @@ async function inAppForEndUser(endUserId: string, type: string, payload: Record<
 }
 
 /** In-app notification for every member of the project's org (the admin notification centre). */
-async function inAppForOrgMembers(projectId: string, type: string, payload: Record<string, unknown>) {
-  const [project] = await db.select({ orgId: projects.orgId }).from(projects).where(eq(projects.id, projectId))
+async function inAppForOrgMembers(
+  projectId: string,
+  type: string,
+  payload: Record<string, unknown>,
+) {
+  const [project] = await db
+    .select({ orgId: projects.orgId })
+    .from(projects)
+    .where(eq(projects.id, projectId))
   if (!project) return
-  const rows = await db.select({ id: members.id }).from(members).where(eq(members.orgId, project.orgId))
+  const rows = await db
+    .select({ id: members.id })
+    .from(members)
+    .where(eq(members.orgId, project.orgId))
   if (!rows.length) return
   await db.insert(notifications).values(
     rows.map((m) => ({
@@ -82,7 +90,10 @@ export async function fanOutStatusChange(projectId: string, postId: string) {
   const { post, project } = ctx
   let statusName = 'updated'
   if (post.statusId) {
-    const [s] = await db.select({ name: statuses.name }).from(statuses).where(eq(statuses.id, post.statusId))
+    const [s] = await db
+      .select({ name: statuses.name })
+      .from(statuses)
+      .where(eq(statuses.id, post.statusId))
     if (s) statusName = s.name
   }
   const url = portalUrl(project)
@@ -152,7 +163,10 @@ export async function fanOutPostCreated(projectId: string, postId: string) {
 
 /** A changelog entry was published → email all subscribers. */
 export async function fanOutChangelogPublished(projectId: string, changelogId: string) {
-  const [entry] = await db.select().from(changelogEntries).where(eq(changelogEntries.id, changelogId))
+  const [entry] = await db
+    .select()
+    .from(changelogEntries)
+    .where(eq(changelogEntries.id, changelogId))
   const [project] = await db.select().from(projects).where(eq(projects.id, projectId))
   if (!entry || !project || entry.status !== 'published') return
   const subs = await db
@@ -180,7 +194,9 @@ export async function listForMember(ctx: AuthContext, limit = 30) {
   const items = await db
     .select()
     .from(notifications)
-    .where(and(eq(notifications.recipientType, 'member'), eq(notifications.recipientId, ctx.memberId)))
+    .where(
+      and(eq(notifications.recipientType, 'member'), eq(notifications.recipientId, ctx.memberId)),
+    )
     .orderBy(desc(notifications.createdAt))
     .limit(limit)
   const unread = items.filter((n) => !n.readAt).length
