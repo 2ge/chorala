@@ -15,9 +15,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
   const ctx = await requireAuthContext()
   const project = await projectSvc.getProject(ctx, projectId)
   const ints = await integrations.listIntegrations(ctx, projectId)
-  const githubRepo = (
-    ints.find((i) => i.type === 'github')?.config as { repo?: string } | undefined
-  )?.repo
+  const gh = ints.find((i) => i.type === 'github')?.config as
+    | { repo?: string; autoCreate?: string }
+    | undefined
   const widget = project.widgetSettings as { primaryColor?: string; theme?: string; mode?: string }
   const cdn = env.CHORALA_WIDGET_CDN_URL
 
@@ -121,7 +121,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ proje
       </Card>
 
       <Card className="p-5">
-        <GithubIntegrationCard projectId={projectId} repo={githubRepo} />
+        <GithubIntegrationCard
+          projectId={projectId}
+          repo={gh?.repo}
+          autoCreate={gh?.autoCreate ?? 'off'}
+        />
       </Card>
     </div>
   )

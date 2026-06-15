@@ -1,10 +1,18 @@
 'use client'
 
 import { useTransition } from 'react'
-import { Button, Input, Label } from '@/components/ui'
+import { Button, Input, Label, Select } from '@/components/ui'
 import { connectGithub, disconnectGithub } from '@/lib/actions'
 
-export function GithubIntegrationCard({ projectId, repo }: { projectId: string; repo?: string }) {
+export function GithubIntegrationCard({
+  projectId,
+  repo,
+  autoCreate = 'off',
+}: {
+  projectId: string
+  repo?: string
+  autoCreate?: string
+}) {
   const [pending, start] = useTransition()
   const connected = !!repo
 
@@ -61,6 +69,18 @@ export function GithubIntegrationCard({ projectId, repo }: { projectId: string; 
               Stored encrypted at rest.
             </p>
           </div>
+        </div>
+        <div>
+          <Label>Auto-create issues for new posts</Label>
+          <Select name="autoCreate" defaultValue={autoCreate} className="max-w-xs">
+            <option value="off">Off — create issues manually per post</option>
+            <option value="bug">New posts on Bug boards</option>
+            <option value="all">Every new post</option>
+          </Select>
+          <p className="mt-1 text-xs leading-relaxed text-ink-faint">
+            When set, a new feedback post automatically opens a GitHub issue (labelled{' '}
+            <code>chorala</code>). Status changes then comment on and close/reopen it.
+          </p>
         </div>
         <div className="flex gap-2">
           <Button type="submit">{connected ? 'Update' : 'Connect'}</Button>

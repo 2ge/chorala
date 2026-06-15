@@ -87,3 +87,8 @@ export async function enqueueIntegrationSync(
 export async function enqueueNotification(job: string, data: Record<string, unknown>) {
   await safeAdd(QUEUES.notifications, job, data)
 }
+
+/** Auto-create a GitHub issue for a new post (worker decides if the integration opted in). */
+export async function enqueueGithubAutoCreate(projectId: string, postId: string) {
+  await safeAdd(QUEUES.integrations, 'github-autocreate', { projectId, postId })
+}

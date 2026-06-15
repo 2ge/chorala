@@ -1,4 +1,4 @@
-import { and, db, eq, integrations, newId, posts } from '@chorala/db'
+import { and, boards, db, eq, integrations, newId, posts } from '@chorala/db'
 import type { AuthContext } from '../context.ts'
 import { decryptSecret, encryptSecret } from '../crypto.ts'
 import { badRequest, notFound } from '../errors.ts'
@@ -13,7 +13,8 @@ const ghHeaders = (token: string) => ({
   'user-agent': 'chorala',
 })
 
-type GithubConfig = { repo: string }
+export type GithubAutoCreate = 'off' | 'bug' | 'all'
+type GithubConfig = { repo: string; autoCreate?: GithubAutoCreate }
 type IssueLink = { number: number; url: string }
 
 /** List a project's integrations (never returns secrets). */
@@ -29,7 +30,7 @@ export async function listIntegrations(ctx: AuthContext, projectId: string) {
 export async function setGithubIntegration(
   ctx: AuthContext,
   projectId: string,
-  input: { repo: string; token?: string },
+  input: { repo: string; token?: string; autoCreate?: GithubAutoCreate },
 ) {
   await getProject(ctx, projectId)
   if (!/^[\w.-]+\/[\w.-]+$/.test(input.repo)) {
@@ -41,7 +42,11 @@ export async function setGithubIntegration(
     .where(and(eq(integrations.projectId, projectId), eq(integrations.type, 'github')))
   const secret = input.token ? encryptSecret(input.token) : existing?.secret
   if (!secret) throw badRequest('A GitHub token is required to connect')
-  const config: GithubConfig = { repo: input.repo }
+  const config: GithubConfig = {
+    repo: input.repo,
+    autoCreate:
+      input.autoCreate ?? (existing?.config as GithubConfig | undefined)?.autoCreate ?? 'off',
+  }
   if (existing) {
     await db.update(integrations).set({ config, secret }).where(eq(integrations.id, existing.id))
   } else {
@@ -73,16 +78,51 @@ export async function getPostIssue(
   return (post?.metadata as { githubIssue?: IssueLink } | undefined)?.githubIssue ?? null
 }
 
-async function resolveGithub(projectId: string): Promise<{ repo: string; token: string } | null> {
+async function resolveGithub(
+  projectId: string,
+): Promise<{ repo: string; token: string; autoCreate: GithubAutoCreate } | null> {
   const [row] = await db
     .select()
     .from(integrations)
     .where(and(eq(integrations.projectId, projectId), eq(integrations.type, 'github')))
   if (!row?.secret) return null
-  return { repo: (row.config as GithubConfig).repo, token: decryptSecret(row.secret) }
+  const cfg = row.config as GithubConfig
+  return { repo: cfg.repo, token: decryptSecret(row.secret), autoCreate: cfg.autoCreate ?? 'off' }
 }
 
-/** Create a GitHub issue from a post and link it on the post (idempotent). */
+type IssuePost = {
+  title: string
+  body: string
+  voteCount: number
+  metadata: unknown
+}
+
+/** POST the issue to GitHub and link it on the post. Shared by manual + auto-create. */
+async function postIssue(
+  gh: { repo: string; token: string },
+  postId: string,
+  post: IssuePost,
+): Promise<IssueLink> {
+  const res = await fetch(`${GH}/repos/${gh.repo}/issues`, {
+    method: 'POST',
+    headers: ghHeaders(gh.token),
+    body: JSON.stringify({
+      title: post.title,
+      body: `${post.body || '_No description._'}\n\n— ${post.voteCount} vote(s) on Chorala`,
+      labels: ['chorala'],
+    }),
+  })
+  if (!res.ok) throw badRequest(`GitHub error ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  const issue = (await res.json()) as { number: number; html_url: string }
+  const link: IssueLink = { number: issue.number, url: issue.html_url }
+  await db
+    .update(posts)
+    .set({ metadata: { ...(post.metadata as object), githubIssue: link } })
+    .where(eq(posts.id, postId))
+  return link
+}
+
+/** Create a GitHub issue from a post and link it on the post (idempotent). Manual, admin-only. */
 export async function createGithubIssue(
   ctx: AuthContext,
   projectId: string,
@@ -103,24 +143,28 @@ export async function createGithubIssue(
   if (!post) throw notFound('Post')
   const existing = (post.metadata as { githubIssue?: IssueLink }).githubIssue
   if (existing?.url) return existing
+  return postIssue(gh, postId, post)
+}
 
-  const res = await fetch(`${GH}/repos/${gh.repo}/issues`, {
-    method: 'POST',
-    headers: ghHeaders(gh.token),
-    body: JSON.stringify({
-      title: post.title,
-      body: `${post.body || '_No description._'}\n\n— ${post.voteCount} vote(s) on Chorala`,
-      labels: ['chorala'],
-    }),
-  })
-  if (!res.ok) throw badRequest(`GitHub error ${res.status}: ${(await res.text()).slice(0, 200)}`)
-  const issue = (await res.json()) as { number: number; html_url: string }
-  const link: IssueLink = { number: issue.number, url: issue.html_url }
-  await db
-    .update(posts)
-    .set({ metadata: { ...(post.metadata as object), githubIssue: link } })
-    .where(eq(posts.id, postId))
-  return link
+/** Auto-create an issue for a new post if the integration is configured to (system path). */
+export async function autoCreateIssue(projectId: string, postId: string) {
+  const gh = await resolveGithub(projectId)
+  if (!gh || gh.autoCreate === 'off') return
+  const [post] = await db
+    .select({
+      title: posts.title,
+      body: posts.body,
+      voteCount: posts.voteCount,
+      metadata: posts.metadata,
+      boardKind: boards.kind,
+    })
+    .from(posts)
+    .innerJoin(boards, eq(boards.id, posts.boardId))
+    .where(and(eq(posts.id, postId), eq(posts.projectId, projectId)))
+  if (!post) return
+  if (gh.autoCreate === 'bug' && post.boardKind !== 'bug') return
+  if ((post.metadata as { githubIssue?: IssueLink }).githubIssue?.url) return
+  await postIssue(gh, postId, post)
 }
 
 /** Sync a linked issue on status change: comment + close/reopen. Called by the worker. */

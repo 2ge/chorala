@@ -19,6 +19,7 @@ import type { AdminCreatePostInput, PostSort, UpdatePostInput } from '@chorala/t
 import type { AuthContext } from '../context.ts'
 import { badRequest, conflict, notFound } from '../errors.ts'
 import {
+  enqueueGithubAutoCreate,
   enqueueIntegrationSync,
   enqueueNotification,
   enqueuePostProcessing,
@@ -149,6 +150,7 @@ export async function createPost(ctx: AuthContext, projectId: string, input: Adm
   })
   await enqueuePostProcessing(id)
   await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: input.boardId })
+  await enqueueGithubAutoCreate(projectId, id)
   return getPost(ctx, projectId, id)
 }
 

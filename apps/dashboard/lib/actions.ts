@@ -184,6 +184,7 @@ export async function connectGithub(formData: FormData) {
   await integrations.setGithubIntegration(ctx, projectId, {
     repo: String(formData.get('repo')).trim(),
     token: String(formData.get('token') ?? '').trim() || undefined,
+    autoCreate: (String(formData.get('autoCreate') ?? 'off') || 'off') as 'off' | 'bug' | 'all',
   })
   revalidatePath(`${adminPath(projectId)}/settings`)
 }

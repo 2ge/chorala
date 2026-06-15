@@ -69,6 +69,9 @@ const integrationWorker = new Worker(
     if (job.name === 'github-sync') {
       return integrations.syncGithubIssue(job.data.projectId, job.data.postId, job.data.statusKind)
     }
+    if (job.name === 'github-autocreate') {
+      return integrations.autoCreateIssue(job.data.projectId, job.data.postId)
+    }
     return Promise.resolve()
   },
   opts,
