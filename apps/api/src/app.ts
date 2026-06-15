@@ -14,6 +14,7 @@ import { changelogRoutes } from './routes/changelog.ts'
 import { commentsRoutes } from './routes/comments.ts'
 import { companiesRoutes } from './routes/companies.ts'
 import { inboundRoutes } from './routes/inbound.ts'
+import { insightsRoutes } from './routes/insights.ts'
 import { moderationRoutes } from './routes/moderation.ts'
 import { orgRoutes } from './routes/org.ts'
 import { postsRoutes } from './routes/posts.ts'
@@ -117,6 +118,7 @@ export function createApp() {
   api.route('/projects/:projectId/changelog', changelogRoutes)
   api.route('/projects/:projectId/keys', apiKeysRoutes)
   api.route('/projects/:projectId/analytics', analyticsRoutes)
+  api.route('/projects/:projectId/insights', insightsRoutes)
   api.route('/org', orgRoutes)
 
   app.route('/api/v1', api)

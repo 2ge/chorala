@@ -250,6 +250,42 @@ describe('surveys (Phase 16)', () => {
   })
 })
 
+describe('insights + analytics (Phase 19)', () => {
+  test('link an insight to the seed post → it ranks in analytics; CSV exports', async () => {
+    const posts = (await (await app.request(`${base()}/posts`, { headers: auth })).json()) as {
+      id: string
+    }[]
+    const postId = posts[0]!.id
+
+    const add = await app.request(`${base()}/insights`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ postId, quote: 'We would pay for this.', source: 'sales' }),
+    })
+    expect(add.status).toBe(201)
+
+    const list = (await (
+      await app.request(`${base()}/insights?postId=${postId}`, { headers: auth })
+    ).json()) as { id: string }[]
+    expect(list).toHaveLength(1)
+
+    const analytics = (await (
+      await app.request(`${base()}/analytics?timeframe=all`, { headers: auth })
+    ).json()) as {
+      summary: { posts: number }
+      mostEvidenced: { id: string; insightCount: number }[]
+      boardHealth: unknown[]
+    }
+    expect(analytics.summary.posts).toBeGreaterThanOrEqual(1)
+    expect(analytics.mostEvidenced.find((m) => m.id === postId)?.insightCount).toBe(1)
+    expect(analytics.boardHealth.length).toBeGreaterThan(0)
+
+    const csv = await app.request(`${base()}/analytics?timeframe=all&format=csv`, { headers: auth })
+    expect(csv.headers.get('content-type')).toContain('text/csv')
+    expect(await csv.text()).toContain('Board,Total,Open')
+  })
+})
+
 describe('moderation + audit (Phase 17)', () => {
   test('a spammy public post lands in the queue → hide → 200', async () => {
     // public submission via the widget API (spam heuristic flags it)

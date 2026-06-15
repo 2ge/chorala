@@ -74,6 +74,17 @@ export type ApiError = z.infer<typeof apiError>
 
 // --- Surveys (Phase 16) ---
 export const surveyType = z.enum(['nps', 'csat', 'ces', 'rating', 'text', 'choice'])
+
+// Where a customer insight/quote came from (Phase 19 evidence linking).
+export const insightSource = z.enum([
+  'manual',
+  'intercom',
+  'zendesk',
+  'email',
+  'sales',
+  'call',
+  'other',
+])
 export type SurveyType = z.infer<typeof surveyType>
 
 // --- Audience segments (Phase 13) ---

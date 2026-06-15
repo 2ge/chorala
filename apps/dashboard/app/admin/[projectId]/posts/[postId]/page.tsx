@@ -1,5 +1,6 @@
 import {
   comments as commentSvc,
+  insights as insightSvc,
   integrations,
   members as memberSvc,
   posts as postSvc,
@@ -17,6 +18,7 @@ import {
   TagEditor,
 } from '@/components/detail-controls'
 import { GithubIssueButton } from '@/components/github-button'
+import { InsightPanel } from '@/components/insight-panel'
 import { PinButton, StatusSelect } from '@/components/post-controls'
 import { AssigneeSelect, ScoreEditor, VoteForForm } from '@/components/triage-controls'
 import { Badge, Card, VotePill } from '@/components/ui'
@@ -52,6 +54,7 @@ export default async function PostDetail({
     customer,
     members,
     scoreFields,
+    postInsights,
   ] = await Promise.all([
     postSvc.getPost(ctx, projectId, postId),
     statusSvc.listStatuses(ctx, projectId),
@@ -67,6 +70,7 @@ export default async function PostDetail({
     postSvc.getPostCustomer(ctx, projectId, postId),
     memberSvc.listMembers(ctx),
     scoreFieldSvc.listScoreFields(ctx, projectId),
+    insightSvc.listInsights(ctx, projectId, { postId }),
   ])
   const contextEntries = Object.entries(context.context ?? {})
   const hasContext = !!context.appVersion || contextEntries.length > 0
@@ -123,6 +127,15 @@ export default async function PostDetail({
               </div>
             </Card>
           )}
+
+          <Card className="p-6">
+            <SectionLabel>Evidence — customer quotes</SectionLabel>
+            <p className="mb-3 -mt-1 text-xs text-ink-faint">
+              Link what real customers said (and which accounts) to this request — it drives the
+              “most evidenced” ranking in Analytics.
+            </p>
+            <InsightPanel projectId={projectId} postId={postId} insights={postInsights} />
+          </Card>
 
           <Card className="p-6">
             <SectionLabel>Discussion</SectionLabel>

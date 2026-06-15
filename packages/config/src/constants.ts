@@ -26,6 +26,7 @@ export const ID_PREFIXES = {
   webhook: 'wh',
   apiKey: 'key',
   auditLog: 'audit',
+  insight: 'ins',
   aiJob: 'aijob',
   cluster: 'clust',
   attachment: 'att',

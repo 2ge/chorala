@@ -330,9 +330,22 @@ DELETE /:id
 
 ### Analytics — `/projects/:projectId/analytics`
 ```
-GET /?timeframe=30d&boardId=
+GET /?timeframe=30d&format=          timeframe: 7d|30d|90d|all · format=csv to export
 ```
-→ `{ topPosts[], voteVelocity[], clusterThemes[] }`. `timeframe`: `7d|30d|90d|all`.
+→ `{ summary{posts,votes,comments,voters,new*,prev*}, voteVelocity[], postVelocity[],
+statusDistribution[], boardHealth[], topTags[], topPosts[], topByRevenue[], mostEvidenced[],
+clusterThemes[] }`. `summary.new*` vs `prev*` drive trend arrows. `?format=csv` streams the
+summary + board health as a CSV report. All metrics are deterministic SQL (no AI required).
+
+### Insights (evidence linking) — `/projects/:projectId/insights`
+```
+GET  /?postId=                          list quotes (optionally for one post)
+POST /  { postId, quote, source?, customerEmail?, companyId? }   → 201
+DELETE /:id
+```
+Link a customer quote to a post (feature). `source` ∈
+`manual|intercom|zendesk|email|sales|call|other`. Insight counts power the **most-evidenced**
+ranking in analytics — measuring demand by who-said-what (+ account MRR), not just raw votes.
 
 ### AI / Autopilot — `/projects/:projectId`
 ```
@@ -484,5 +497,6 @@ authenticated with an `hk_…` key — 9 tools incl. `search_feedback`, `top_req
 | `memberRole` | `owner`, `admin`, `moderator`, `member` |
 | `moderationAction` | `hide`, `unhide`, `approve` |
 | `surveyType` | `nps`, `csat`, `ces`, `rating`, `text`, `choice` |
+| `insightSource` | `manual`, `intercom`, `zendesk`, `email`, `sales`, `call`, `other` |
 | `integrationType` | `slack`, `linear`, `github`, `discord`, `segment` |
 | `webhookEvent` | `post.created`, `post.status_changed`, `post.merged`, `comment.created`, `changelog.published`, `vote.created` |

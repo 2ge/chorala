@@ -71,6 +71,13 @@
       "when": 1781558082674,
       "tag": "0009_sour_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1781561982889,
+      "tag": "0010_eager_rick_jones",
+      "breakpoints": true
     }
   ]
 }

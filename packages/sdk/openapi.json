@@ -67,6 +67,9 @@
       "name": "Analytics"
     },
     {
+      "name": "Insights"
+    },
+    {
       "name": "AI"
     },
     {
@@ -5344,7 +5347,7 @@
         "tags": [
           "Analytics"
         ],
-        "summary": "Analytics (top posts, velocity, themes)",
+        "summary": "Analytics dashboard (KPIs+trends, board health, velocity, themes). ?format=csv exports.",
         "security": [
           {
             "ApiKey": []
@@ -5373,6 +5376,222 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/insights": {
+      "get": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "List insights (quotes) \u2014 optionally ?postId=",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Insight"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "Link a customer quote to a post",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Insight"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInsightInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/insights/{id}": {
+      "delete": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "Remove an insight",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "400": {
             "description": "Bad request",
@@ -8344,6 +8563,89 @@
         ],
         "additionalProperties": false
       },
+      "Insight": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^ins_[0-9A-Za-z_-]+$"
+          },
+          "projectId": {
+            "type": "string",
+            "pattern": "^proj_[0-9A-Za-z_-]+$"
+          },
+          "postId": {
+            "type": "string",
+            "pattern": "^post_[0-9A-Za-z_-]+$"
+          },
+          "quote": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "intercom",
+              "zendesk",
+              "email",
+              "sales",
+              "call",
+              "other"
+            ]
+          },
+          "customerEmail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "companyId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^co_[0-9A-Za-z_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdByMemberId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^mem_[0-9A-Za-z_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "postId",
+          "quote",
+          "source",
+          "customerEmail",
+          "companyId",
+          "createdByMemberId",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
       "PostDetail": {
         "type": "object",
         "properties": {
@@ -9006,6 +9308,225 @@
       "AnalyticsResponse": {
         "type": "object",
         "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "posts": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "votes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "comments": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "voters": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "newPosts": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "newVotes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "newComments": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "prevPosts": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "prevVotes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "prevComments": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "posts",
+              "votes",
+              "comments",
+              "voters",
+              "newPosts",
+              "newVotes",
+              "newComments",
+              "prevPosts",
+              "prevVotes",
+              "prevComments"
+            ],
+            "additionalProperties": false
+          },
+          "voteVelocity": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "votes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "date",
+                "votes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "postVelocity": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "posts": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "date",
+                "posts"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "statusDistribution": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "kind",
+                "name",
+                "color",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "boardHealth": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "boardId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "total": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "open": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "planned": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "inProgress": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "complete": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "votes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "boardId",
+                "name",
+                "total",
+                "open",
+                "planned",
+                "inProgress",
+                "complete",
+                "votes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "topTags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "name",
+                "color",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
           "topPosts": {
             "type": "array",
             "items": {
@@ -9153,23 +9674,58 @@
               "additionalProperties": false
             }
           },
-          "voteVelocity": {
+          "topByRevenue": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "date": {
+                "id": {
                   "type": "string"
                 },
-                "votes": {
+                "title": {
+                  "type": "string"
+                },
+                "revenue": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "voteCount": {
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 }
               },
               "required": [
-                "date",
-                "votes"
+                "id",
+                "title",
+                "revenue",
+                "voteCount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "mostEvidenced": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "insightCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "insightCount"
               ],
               "additionalProperties": false
             }
@@ -9199,8 +9755,15 @@
           }
         },
         "required": [
-          "topPosts",
+          "summary",
           "voteVelocity",
+          "postVelocity",
+          "statusDistribution",
+          "boardHealth",
+          "topTags",
+          "topPosts",
+          "topByRevenue",
+          "mostEvidenced",
           "clusterThemes"
         ],
         "additionalProperties": false
@@ -9350,6 +9913,46 @@
           "prefix"
         ],
         "additionalProperties": false
+      },
+      "CreateInsightInput": {
+        "type": "object",
+        "properties": {
+          "postId": {
+            "type": "string",
+            "pattern": "^post_[0-9A-Za-z_-]+$"
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "source": {
+            "default": "manual",
+            "type": "string",
+            "enum": [
+              "manual",
+              "intercom",
+              "zendesk",
+              "email",
+              "sales",
+              "call",
+              "other"
+            ]
+          },
+          "customerEmail": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "companyId": {
+            "type": "string",
+            "pattern": "^co_[0-9A-Za-z_-]+$"
+          }
+        },
+        "required": [
+          "postId",
+          "quote"
+        ]
       },
       "CreatePostInput": {
         "type": "object",

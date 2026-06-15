@@ -15,6 +15,7 @@ import {
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import {
   type AuthContext,
+  analytics,
   audit,
   boards,
   canManageOrg,
@@ -23,6 +24,7 @@ import {
   comments as commentSvc,
   companies as companySvc,
   endUsers as endUserSvc,
+  insights,
   integrations,
   moderation,
   posts,
@@ -562,5 +564,57 @@ describe('audit log (Phase 17)', () => {
     // a plain member may not read the org audit trail
     const memberCtx: AuthContext = { kind: 'session', orgId, role: 'member' }
     await expect(audit.listAuditLog(memberCtx)).rejects.toThrow()
+  })
+})
+
+describe('insights + analytics (Phase 19)', () => {
+  test('linking a quote shows up on the post and in "most evidenced"', async () => {
+    const p = await newProject('ins')
+    const eu = await mkUser(p.id)
+    const { post } = await publicFeed.createPublicPost(p.id, eu, {
+      boardSlug: 'feature-requests',
+      title: 'Bulk export',
+      body: 'we need CSV export',
+    })
+    await insights.addInsight(ctx, p.id, {
+      postId: post!.id,
+      quote: 'Without CSV export we cannot adopt this.',
+      source: 'sales',
+      customerEmail: 'buyer@globex.com',
+    })
+    const listed = await insights.listInsights(ctx, p.id, { postId: post!.id })
+    expect(listed).toHaveLength(1)
+    expect(listed[0]!.source).toBe('sales')
+
+    const a = await analytics.getAnalytics(ctx, p.id, { timeframe: 'all' })
+    expect(a.mostEvidenced.find((m) => m.id === post!.id)?.insightCount).toBe(1)
+  })
+
+  test('analytics aggregates votes, board health and status distribution', async () => {
+    const p = await newProject('an')
+    const eu1 = await mkUser(p.id)
+    const eu2 = await mkUser(p.id)
+    const { post } = await publicFeed.createPublicPost(p.id, eu1, {
+      boardSlug: 'feature-requests',
+      title: 'Dark mode',
+      body: '',
+    })
+    await votes.toggleVote(p.id, post!.id, eu1)
+    await votes.toggleVote(p.id, post!.id, eu2)
+
+    const a = await analytics.getAnalytics(ctx, p.id, { timeframe: 'all' })
+    expect(a.summary.posts).toBe(1)
+    expect(a.summary.votes).toBe(2)
+    expect(a.summary.voters).toBe(2)
+    // board health rolls posts up under their board
+    const feature = a.boardHealth.find((b) => b.name === 'Feature Requests')
+    expect(feature?.total).toBe(1)
+    // status distribution counts the open post
+    expect(a.statusDistribution.find((s) => s.kind === 'open')?.count).toBe(1)
+
+    // CSV export carries the headline metrics
+    const csv = await analytics.exportAnalyticsCsv(ctx, p.id, { timeframe: 'all' })
+    expect(csv).toContain('Votes,2')
+    expect(csv).toContain('Board,Total,Open')
   })
 })

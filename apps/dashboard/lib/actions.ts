@@ -6,6 +6,7 @@ import {
   boards,
   changelog,
   comments,
+  insights,
   integrations,
   members,
   moderation,
@@ -19,7 +20,7 @@ import {
   tags,
   votes,
 } from '@chorala/core'
-import type { CreateSurveyInput, SegmentDefinition } from '@chorala/types'
+import type { CreateInsightInput, CreateSurveyInput, SegmentDefinition } from '@chorala/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireAuthContext } from './session'
@@ -162,6 +163,18 @@ export async function dismissPost(projectId: string, id: string) {
   const ctx = await requireAuthContext()
   await posts.dismissPost(ctx, projectId, id)
   revalidatePath(`${adminPath(projectId)}/autopilot`)
+}
+
+// --- Insights / evidence linking (Phase 19) ---
+export async function addInsight(projectId: string, input: CreateInsightInput) {
+  const ctx = await requireAuthContext()
+  await insights.addInsight(ctx, projectId, input)
+  revalidatePath(`${adminPath(projectId)}/posts/${input.postId}`)
+}
+export async function removeInsight(projectId: string, postId: string, id: string) {
+  const ctx = await requireAuthContext()
+  await insights.removeInsight(ctx, projectId, id)
+  revalidatePath(`${adminPath(projectId)}/posts/${postId}`)
 }
 
 // --- Moderation (Phase 17) ---

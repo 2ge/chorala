@@ -176,10 +176,20 @@ flagged ⛔; the rest are fully buildable on the current stack.
 on top of webhooks), **Notion / ClickUp / Azure DevOps / Asana**. Closes the integrations matrix
 every incumbent advertises. (Extends the deferred half of Phase 15.)
 
-### Phase 19 — Analytics & insights
-Theme trends over time, vote velocity, **sentiment**, board‑health and engagement dashboards,
-exportable reports (CSV/PDF), and Productboard‑style **insight linking** (quotes → features).
-Reviewers flag Featurebase's analytics as shallow — this is a wedge.
+### Phase 19 — Analytics & insights · ✅ SHIPPED
+- **Analytics dashboard** — headline KPIs (posts/votes/comments/active voters) with
+  this‑window‑vs‑previous trend arrows, **vote + post velocity** sparklines, a **board‑health**
+  table (open/planned/in‑progress/shipped/votes per board), status distribution, top themes
+  (tag volume), and **top requests by votes, by revenue (MRR), and by evidence** — all
+  deterministic SQL, so it works with `provider=none` (no AI dependency).
+- **Insight linking (quotes → features)** — the Productboard wedge: attach a customer quote
+  (source + email + auto‑linked company/MRR) to any post; the "most evidenced" ranking shows
+  which requests have the most real demand behind them, not just raw votes.
+- **Exportable report** — `GET /analytics?format=csv` (and an admin Export‑CSV button)
+  streams the summary + board‑health as CSV.
+
+Deferred: **AI sentiment** (needs a provider — lands in Phase 20 AI depth) and **PDF** export
+(CSV covers the report need today). See DECISIONS.md.
 
 ### Phase 20 — AI depth (Autopilot v2)
 Sentiment scoring, **auto‑categorise** new feedback to boards/tags (extends clustering),

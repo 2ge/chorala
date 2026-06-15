@@ -4,6 +4,7 @@ import {
   aiJobStatus,
   boardKind,
   changelogStatus,
+  insightSource,
   integrationType,
   isoDate,
   memberRole,
@@ -298,6 +299,19 @@ export const auditLog = z
   })
   .extend(timestamps.shape)
 
+export const insight = z
+  .object({
+    id: prefixedId('ins'),
+    projectId: prefixedId('proj'),
+    postId: prefixedId('post'),
+    quote: z.string(),
+    source: insightSource,
+    customerEmail: z.string().nullable(),
+    companyId: prefixedId('co').nullable(),
+    createdByMemberId: prefixedId('mem').nullable(),
+  })
+  .extend(timestamps.shape)
+
 export const aiJob = z
   .object({
     id: prefixedId('aijob'),
@@ -345,5 +359,6 @@ export type Integration = z.infer<typeof integration>
 export type Webhook = z.infer<typeof webhook>
 export type ApiKey = z.infer<typeof apiKey>
 export type AuditLog = z.infer<typeof auditLog>
+export type Insight = z.infer<typeof insight>
 export type AiJob = z.infer<typeof aiJob>
 export type FeedbackCluster = z.infer<typeof feedbackCluster>

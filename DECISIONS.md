@@ -383,3 +383,15 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase17] **Deferred**: SAML/SCIM admin SSO — it requires registering an app in an external IdP
   (Okta/Azure AD/Google Workspace) and credentials we can't self-provision in this environment,
   same blocker as the OAuth integrations. Better Auth has a SAML/SSO plugin path to slot in later.
+- [phase19] Analytics is 100% deterministic SQL aggregation (counts, window deltas, board-health
+  rollups, revenue-impact via distinct voter-company MRR), NOT AI. This makes the whole dashboard
+  work on this box where the AI provider is `none`; AI cluster themes are shown when the Phase-6
+  worker has produced them but are never required. "Sentiment" (the one AI-flavoured item in the
+  Phase-19 roadmap entry) is deferred to Phase 20 (AI depth) rather than faked.
+- [phase19] Insight linking ("quotes → features", Productboard's wedge) shipped as a first-class
+  `insights` table (quote + source + customerEmail + optional companyId, FK to post). It powers a
+  "most evidenced" analytics ranking — demand measured by who-said-what + account MRR, not just raw
+  votes. Kept admin-only (no public surface) and flat-priced (no per-insight metering).
+- [phase19] Report export is CSV only for now (`?format=csv`, mirroring the existing posts CSV +
+  a Next route handler for the dashboard download button). PDF is deferred — it needs a rendering
+  dependency and CSV already covers "pull the numbers into a deck/sheet"; revisit if asked.

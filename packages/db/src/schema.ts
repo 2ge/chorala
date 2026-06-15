@@ -613,6 +613,36 @@ export const auditLog = pgTable('audit_log', {
   ...ts,
 })
 
+/**
+ * Insights (Phase 19): a customer quote / piece of evidence linked to a post (feature). This is
+ * the Productboard-style "insight linking" — it lets the team count how much real demand backs a
+ * request (who said it, from where, worth how much MRR) instead of just raw vote tallies.
+ */
+export const insights = pgTable(
+  'insights',
+  {
+    id: pk('insight'),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    postId: text('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    quote: text('quote').notNull(),
+    source: text('source')
+      .$type<'manual' | 'intercom' | 'zendesk' | 'email' | 'sales' | 'call' | 'other'>()
+      .default('manual')
+      .notNull(),
+    customerEmail: text('customer_email'),
+    companyId: text('company_id').references(() => companies.id, { onDelete: 'set null' }),
+    createdByMemberId: text('created_by_member_id').references(() => members.id, {
+      onDelete: 'set null',
+    }),
+    ...ts,
+  },
+  (t) => [index('insights_project_idx').on(t.projectId), index('insights_post_idx').on(t.postId)],
+)
+
 export const aiJobs = pgTable('ai_jobs', {
   id: pk('aiJob'),
   projectId: text('project_id')

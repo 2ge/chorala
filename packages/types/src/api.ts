@@ -2,6 +2,7 @@ import { z } from 'zod'
 import {
   boardKind,
   changelogStatus,
+  insightSource,
   integrationType,
   memberRole,
   paginationQuery,
@@ -280,12 +281,65 @@ export const analyticsQuery = z.object({
 })
 export type AnalyticsQuery = z.infer<typeof analyticsQuery>
 
+const series = (key: string) => z.array(z.object({ date: z.string(), [key]: z.number().int() }))
+
 export const analyticsResponse = z.object({
+  // Headline counters — totals plus this-window vs previous-window for trend arrows.
+  summary: z.object({
+    posts: z.number().int(),
+    votes: z.number().int(),
+    comments: z.number().int(),
+    voters: z.number().int(),
+    newPosts: z.number().int(),
+    newVotes: z.number().int(),
+    newComments: z.number().int(),
+    prevPosts: z.number().int(),
+    prevVotes: z.number().int(),
+    prevComments: z.number().int(),
+  }),
+  voteVelocity: series('votes'),
+  postVelocity: series('posts'),
+  statusDistribution: z.array(
+    z.object({ kind: z.string(), name: z.string(), color: z.string(), count: z.number().int() }),
+  ),
+  boardHealth: z.array(
+    z.object({
+      boardId: z.string(),
+      name: z.string(),
+      total: z.number().int(),
+      open: z.number().int(),
+      planned: z.number().int(),
+      inProgress: z.number().int(),
+      complete: z.number().int(),
+      votes: z.number().int(),
+    }),
+  ),
+  topTags: z.array(z.object({ name: z.string(), color: z.string(), count: z.number().int() })),
   topPosts: z.array(z.object({ post: post, voteCount: z.number().int() })),
-  voteVelocity: z.array(z.object({ date: z.string(), votes: z.number().int() })),
+  topByRevenue: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      revenue: z.number().int(),
+      voteCount: z.number().int(),
+    }),
+  ),
+  mostEvidenced: z.array(
+    z.object({ id: z.string(), title: z.string(), insightCount: z.number().int() }),
+  ),
   clusterThemes: z.array(z.object({ label: z.string(), summary: z.string(), count: z.number() })),
 })
 export type AnalyticsResponse = z.infer<typeof analyticsResponse>
+
+// --- Insights (evidence linking, Phase 19) ---
+export const createInsightInput = z.object({
+  postId: prefixedId('post'),
+  quote: z.string().min(1).max(2000),
+  source: insightSource.default('manual'),
+  customerEmail: z.string().email().optional(),
+  companyId: prefixedId('co').optional(),
+})
+export type CreateInsightInput = z.infer<typeof createInsightInput>
 
 // --- Companies (B2B revenue intelligence, Phase 11) ---
 

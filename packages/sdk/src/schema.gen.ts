@@ -4411,7 +4411,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Analytics (top posts, velocity, themes) */
+        /** Analytics dashboard (KPIs+trends, board health, velocity, themes). ?format=csv exports. */
         get: {
             parameters: {
                 query?: never;
@@ -4464,6 +4464,188 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List insights (quotes) — optionally ?postId= */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Insight"][];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Link a customer quote to a post */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateInsightInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Insight"];
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/insights/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove an insight */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -5868,6 +6050,19 @@ export interface components {
             createdAt: string;
             updatedAt: string;
         };
+        Insight: {
+            id: string;
+            projectId: string;
+            postId: string;
+            quote: string;
+            /** @enum {string} */
+            source: "manual" | "intercom" | "zendesk" | "email" | "sales" | "call" | "other";
+            customerEmail: string | null;
+            companyId: string | null;
+            createdByMemberId: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
         PostDetail: {
             post: {
                 id: string;
@@ -5986,6 +6181,47 @@ export interface components {
             }[];
         };
         AnalyticsResponse: {
+            summary: {
+                posts: number;
+                votes: number;
+                comments: number;
+                voters: number;
+                newPosts: number;
+                newVotes: number;
+                newComments: number;
+                prevPosts: number;
+                prevVotes: number;
+                prevComments: number;
+            };
+            voteVelocity: {
+                date: string;
+                votes: number;
+            }[];
+            postVelocity: {
+                date: string;
+                posts: number;
+            }[];
+            statusDistribution: {
+                kind: string;
+                name: string;
+                color: string;
+                count: number;
+            }[];
+            boardHealth: {
+                boardId: string;
+                name: string;
+                total: number;
+                open: number;
+                planned: number;
+                inProgress: number;
+                complete: number;
+                votes: number;
+            }[];
+            topTags: {
+                name: string;
+                color: string;
+                count: number;
+            }[];
             topPosts: {
                 post: {
                     id: string;
@@ -6008,9 +6244,16 @@ export interface components {
                 };
                 voteCount: number;
             }[];
-            voteVelocity: {
-                date: string;
-                votes: number;
+            topByRevenue: {
+                id: string;
+                title: string;
+                revenue: number;
+                voteCount: number;
+            }[];
+            mostEvidenced: {
+                id: string;
+                title: string;
+                insightCount: number;
             }[];
             clusterThemes: {
                 label: string;
@@ -6045,6 +6288,18 @@ export interface components {
             name: string;
             key: string;
             prefix: string;
+        };
+        CreateInsightInput: {
+            postId: string;
+            quote: string;
+            /**
+             * @default manual
+             * @enum {string}
+             */
+            source: "manual" | "intercom" | "zendesk" | "email" | "sales" | "call" | "other";
+            /** Format: email */
+            customerEmail?: string;
+            companyId?: string;
         };
         CreatePostInput: {
             boardSlug: string;

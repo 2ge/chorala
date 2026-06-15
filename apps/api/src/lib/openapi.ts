@@ -35,6 +35,7 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   ChangelogEntry: [T.changelogEntry, 'output'],
   Member: [T.member, 'output'],
   Organization: [T.organization, 'output'],
+  Insight: [T.insight, 'output'],
   // composite responses
   PostDetail: [T.postDetail, 'output'],
   VoteToggleResponse: [T.voteToggleResponse, 'output'],
@@ -43,6 +44,7 @@ const COMPONENTS: Record<string, [ZodAny, Io]> = {
   IdentifyResponse: [T.identifyResponse, 'output'],
   CreateApiKeyResponse: [T.createApiKeyResponse, 'output'],
   // request inputs
+  CreateInsightInput: [T.createInsightInput, 'input'],
   CreatePostInput: [T.createPostInput, 'input'],
   CreateAttachmentInput: [T.createAttachmentInput, 'input'],
   CreateCommentInput: [T.createCommentInput, 'input'],
@@ -754,8 +756,36 @@ const ROUTES: Route[] = [
     path: '/projects/{projectId}/analytics',
     tag: 'Analytics',
     sec: 'admin',
-    summary: 'Analytics (top posts, velocity, themes)',
+    summary:
+      'Analytics dashboard (KPIs+trends, board health, velocity, themes). ?format=csv exports.',
     resp: ref('AnalyticsResponse'),
+  },
+
+  // --- Insights / evidence linking (Phase 19) ---
+  {
+    method: 'get',
+    path: '/projects/{projectId}/insights',
+    tag: 'Insights',
+    sec: 'admin',
+    summary: 'List insights (quotes) — optionally ?postId=',
+    resp: arr('Insight'),
+  },
+  {
+    method: 'post',
+    path: '/projects/{projectId}/insights',
+    tag: 'Insights',
+    sec: 'admin',
+    summary: 'Link a customer quote to a post',
+    body: 'CreateInsightInput',
+    resp: ref('Insight'),
+    status: 201,
+  },
+  {
+    method: 'delete',
+    path: '/projects/{projectId}/insights/{id}',
+    tag: 'Insights',
+    sec: 'admin',
+    summary: 'Remove an insight',
   },
   {
     method: 'get',
