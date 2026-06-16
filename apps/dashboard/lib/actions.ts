@@ -1,6 +1,12 @@
 'use server'
 
-import { askFeedback, createProvider, extractFeatureRequests } from '@chorala/ai'
+import {
+  askFeedback,
+  createProvider,
+  draftReply,
+  extractFeatureRequests,
+  suggestTags,
+} from '@chorala/ai'
 import {
   apiKeys,
   boards,
@@ -163,6 +169,25 @@ export async function dismissPost(projectId: string, id: string) {
   const ctx = await requireAuthContext()
   await posts.dismissPost(ctx, projectId, id)
   revalidatePath(`${adminPath(projectId)}/autopilot`)
+}
+
+// --- AI depth / Autopilot v2 (Phase 20) ---
+export async function draftReplyAction(projectId: string, postId: string): Promise<string> {
+  const ctx = await requireAuthContext()
+  await posts.getPost(ctx, projectId, postId) // scope check
+  return draftReply(createProvider(), postId)
+}
+export async function suggestTagsAction(projectId: string, postId: string) {
+  const ctx = await requireAuthContext()
+  const post = await posts.getPost(ctx, projectId, postId)
+  const suggested = await suggestTags(createProvider(), projectId, `${post.title}\n${post.body}`)
+  const applied = await tags.addPostTags(
+    projectId,
+    postId,
+    suggested.map((t) => t.id),
+  )
+  revalidatePath(`${adminPath(projectId)}/posts/${postId}`)
+  return { suggested, applied }
 }
 
 // --- Insights / evidence linking (Phase 19) ---

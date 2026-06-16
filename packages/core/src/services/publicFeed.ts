@@ -1,3 +1,4 @@
+import { analyzeSentiment } from '@chorala/ai'
 import {
   and,
   asc,
@@ -34,6 +35,7 @@ import { createComment, listComments } from './comments.ts'
 import { detectSpam } from './moderation.ts'
 import { postColumns } from './posts.ts'
 import { linkAttachmentsToPost } from './storage.ts'
+import { autoTagPost } from './tags.ts'
 
 type PostRow = Awaited<ReturnType<typeof getPostRows>>[number]
 
@@ -248,6 +250,10 @@ export async function createPublicPost(
     .orderBy(asc(statuses.position))
 
   const id = newId('post')
+  const text = `${input.title}\n${input.body ?? ''}`
+  // AI depth (Phase 20): deterministic lexicon sentiment at submit time, so every post is scored
+  // even with provider=none. The worker refines it with the LLM when one is configured.
+  const sent = analyzeSentiment(text)
   await db.insert(posts).values({
     id,
     projectId,
@@ -263,13 +269,17 @@ export async function createPublicPost(
     context: input.metadata ?? {},
     // Moderation: cheap spam heuristic flags suspicious submissions for the queue (still
     // visible — a human decides). No auto-hide, so false positives never silence real users.
-    flaggedReason: detectSpam(`${input.title}\n${input.body ?? ''}`),
+    flaggedReason: detectSpam(text),
+    sentiment: sent.score,
+    sentimentLabel: sent.label,
   })
   // Link any screenshots uploaded just before submit (scoped to this end-user + project).
   if (input.attachmentIds?.length) {
     await linkAttachmentsToPost(projectId, endUserId, input.attachmentIds, id)
   }
-  // AI: embed + dedup + translate (no-op when AI is disabled); fire webhook event.
+  // Auto-categorize: attach any existing project tags whose name appears in the text.
+  await autoTagPost(projectId, id, text)
+  // AI: embed + dedup + translate + sentiment refine (no-op when AI is disabled); fire webhook.
   await enqueuePostProcessing(id)
   await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: board.id })
   await enqueueNotification('post-created', { projectId, postId: id })

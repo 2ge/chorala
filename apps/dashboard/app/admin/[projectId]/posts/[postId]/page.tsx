@@ -32,6 +32,22 @@ const SectionLabel = ({ children }: { children: ReactNode }) => (
 
 const money = (n: number) => `$${n.toLocaleString('en-US')}`
 
+// AI depth (Phase 20): sentiment chip from the post's lexicon/LLM score.
+function SentimentBadge({ label }: { label?: string | null }) {
+  if (!label) return null
+  const map: Record<string, { cls: string; icon: string }> = {
+    positive: { cls: 'bg-emerald-500/10 text-emerald-600', icon: '☺' },
+    neutral: { cls: 'bg-ink/[0.06] text-ink-soft', icon: '•' },
+    negative: { cls: 'bg-red-500/10 text-red-600', icon: '☹' },
+  }
+  const s = map[label] ?? map.neutral
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${s?.cls}`}>
+      {s?.icon} {label}
+    </span>
+  )
+}
+
 export default async function PostDetail({
   params,
 }: {
@@ -94,9 +110,12 @@ export default async function PostDetail({
             <div className="flex items-start gap-5">
               <VotePill count={post.voteCount} size="lg" />
               <div className="min-w-0 pt-1">
-                <h1 className="font-display text-2xl leading-tight tracking-[-0.02em]">
-                  {post.title}
-                </h1>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="font-display text-2xl leading-tight tracking-[-0.02em]">
+                    {post.title}
+                  </h1>
+                  <SentimentBadge label={post.sentimentLabel} />
+                </div>
                 <p className="mt-2.5 whitespace-pre-wrap leading-relaxed text-ink-soft">
                   {post.body || '—'}
                 </p>

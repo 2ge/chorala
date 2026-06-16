@@ -224,6 +224,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@chorala/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@chorala/billing':
         specifier: workspace:*
         version: link:../billing

@@ -8,19 +8,26 @@ import {
   newId,
   organizations,
   posts,
+  postTags,
   postTranslations,
   projects,
+  tags,
   votes,
 } from '@chorala/db'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import type { CompleteOptions, LLMProvider } from '../src/index.ts'
 import {
+  analyzeSentiment,
   askFeedback,
+  buildWeeklyDigest,
   dedupPost,
+  draftReply,
   embedPost,
   extractFeatureRequests,
   NoopProvider,
   processPost,
+  scorePostSentiment,
+  suggestTags,
   translatePost,
 } from '../src/index.ts'
 
@@ -210,5 +217,63 @@ describe('autopilot — extraction + ask (Phase 14)', () => {
     expect(res.aiEnabled).toBe(true)
     expect(res.answer).toBeTruthy()
     expect(res.sources.length).toBeGreaterThan(0)
+  })
+})
+
+describe('AI depth — Autopilot v2 (Phase 20)', () => {
+  test('lexicon sentiment labels clearly positive/negative text, neutral otherwise', () => {
+    expect(analyzeSentiment('This is amazing, I love it, works great!').label).toBe('positive')
+    expect(analyzeSentiment('Broken and crashes constantly, terrible and useless').label).toBe(
+      'negative',
+    )
+    expect(analyzeSentiment('Please add an option for the date field').label).toBe('neutral')
+  })
+
+  test('scorePostSentiment writes sentiment to the post (lexicon when AI off)', async () => {
+    const id = newId('post')
+    await db.insert(posts).values({
+      id,
+      projectId,
+      boardId,
+      title: 'The export is broken',
+      body: 'It crashes every time, totally useless and frustrating.',
+      originalLocale: 'en',
+    })
+    const s = await scorePostSentiment(new NoopProvider(), id)
+    expect(s?.label).toBe('negative')
+    const [row] = await db
+      .select({ label: posts.sentimentLabel })
+      .from(posts)
+      .where(eq(posts.id, id))
+    expect(row?.label).toBe('negative')
+  })
+
+  test('suggestTags matches existing tag names in the text (deterministic fallback)', async () => {
+    const tagId = newId('tag')
+    await db.insert(tags).values({ id: tagId, projectId, name: 'mobile', color: '#000' })
+    const picked = await suggestTags(
+      new NoopProvider(),
+      projectId,
+      'The mobile app keeps logging me out',
+    )
+    expect(picked.some((t) => t.id === tagId)).toBe(true)
+    // nothing matches → empty
+    expect(await suggestTags(new NoopProvider(), projectId, 'totally unrelated wording')).toEqual(
+      [],
+    )
+  })
+
+  test('draftReply produces a templated reply when AI is off', async () => {
+    const draft = await draftReply(new NoopProvider(), postC)
+    expect(draft).toContain('Export data to CSV')
+    expect(draft.length).toBeGreaterThan(20)
+  })
+
+  test('buildWeeklyDigest summarizes the week deterministically', async () => {
+    const d = await buildWeeklyDigest(new NoopProvider(), projectId)
+    expect(d.aiEnabled).toBe(false)
+    expect(d.newPosts).toBeGreaterThan(0)
+    expect(d.narrative).toBeTruthy()
+    expect(d.sentiment).toHaveProperty('negative')
   })
 })

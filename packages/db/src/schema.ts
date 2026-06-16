@@ -314,6 +314,10 @@ export const posts = pgTable(
     // moderation queue. Both null = a normal, visible post.
     hiddenAt: timestamp('hidden_at', { withTimezone: true }),
     flaggedReason: text('flagged_reason'),
+    // AI depth (Phase 20): sentiment in [-1, 1] + a 3-way label. Computed deterministically at
+    // submit time (lexicon) and refined by the LLM when a provider is configured.
+    sentiment: doublePrecision('sentiment'),
+    sentimentLabel: text('sentiment_label').$type<'negative' | 'neutral' | 'positive'>(),
     ...ts,
   },
   (t) => [

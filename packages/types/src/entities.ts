@@ -140,6 +140,9 @@ export const post = z
     // Submission context (Sentry/Canny style): a first-class, filterable version string.
     // The free-form `context` map is admin-only and not part of this public entity.
     appVersion: z.string().nullable(),
+    // AI depth (Phase 20): sentiment score in [-1, 1] and a 3-way label (null until scored).
+    sentiment: z.number().nullable().optional(),
+    sentimentLabel: z.enum(['negative', 'neutral', 'positive']).nullable().optional(),
   })
   .extend(timestamps.shape)
 

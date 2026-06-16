@@ -79,3 +79,41 @@ export function notificationEmail(args: { title: string; message: string; url?: 
     ),
   }
 }
+
+/** Weekly digest (Phase 20): "what your users asked for this week". */
+export function weeklyDigestEmail(args: {
+  projectName: string
+  narrative: string
+  newPosts: number
+  newVotes: number
+  topVoted: { title: string; voteCount: number }[]
+  shipped: { title: string }[]
+  url?: string
+}): Email {
+  const li = (s: string) => `<li style="margin:2px 0">${s}</li>`
+  const topHtml = args.topVoted.length
+    ? `<p style="margin:14px 0 4px;font-weight:600">Most wanted</p><ul style="margin:0;padding-left:18px;color:#475569">${args.topVoted
+        .map((p) => li(`${p.title} <span style="color:#94a3b8">▲ ${p.voteCount}</span>`))
+        .join('')}</ul>`
+    : ''
+  const shippedHtml = args.shipped.length
+    ? `<p style="margin:14px 0 4px;font-weight:600">Shipped this week</p><ul style="margin:0;padding-left:18px;color:#475569">${args.shipped
+        .map((p) => li(p.title))
+        .join('')}</ul>`
+    : ''
+  return {
+    subject: `${args.projectName}: your weekly feedback digest`,
+    text:
+      `${args.narrative}\n\n${args.newPosts} new posts · ${args.newVotes} new votes\n` +
+      `${args.topVoted.map((p) => `- ${p.title} (▲ ${p.voteCount})`).join('\n')}` +
+      `${args.url ? `\n\n${args.url}` : ''}`,
+    html: layout(
+      `${args.projectName} · weekly digest`,
+      `<p style="color:#475569">${args.narrative}</p>
+       <p style="color:#0f172a"><strong>${args.newPosts}</strong> new posts ·
+        <strong>${args.newVotes}</strong> new votes</p>
+       ${topHtml}${shippedHtml}
+       ${args.url ? button(args.url, 'Open dashboard') : ''}`,
+    ),
+  }
+}

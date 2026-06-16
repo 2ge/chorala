@@ -4977,6 +4977,197 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/projects/{projectId}/posts/{id}/draft-reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Draft a public reply to a post (Autopilot v2; templated fallback when AI is off) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/posts/{id}/suggest-tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Auto-categorize: suggest + apply matching tags */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{projectId}/digest/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview this week’s feedback digest */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/projects/{projectId}/posts/{id}/approve": {
         parameters: {
             query?: never;
@@ -5729,6 +5920,8 @@ export interface components {
             mergedIntoPostId: string | null;
             eta: string | null;
             appVersion: string | null;
+            sentiment?: number | null;
+            sentimentLabel?: ("negative" | "neutral" | "positive") | null;
             createdAt: string;
             updatedAt: string;
         };
@@ -5748,6 +5941,8 @@ export interface components {
             mergedIntoPostId: string | null;
             eta: string | null;
             appVersion: string | null;
+            sentiment?: number | null;
+            sentimentLabel?: ("negative" | "neutral" | "positive") | null;
             createdAt: string;
             updatedAt: string;
             hasVoted?: boolean;
@@ -5998,6 +6193,8 @@ export interface components {
             mergedIntoPostId: string | null;
             eta: string | null;
             appVersion: string | null;
+            sentiment?: number | null;
+            sentimentLabel?: ("negative" | "neutral" | "positive") | null;
             createdAt: string;
             updatedAt: string;
             revenueImpact: number;
@@ -6080,6 +6277,8 @@ export interface components {
                 mergedIntoPostId: string | null;
                 eta: string | null;
                 appVersion: string | null;
+                sentiment?: number | null;
+                sentimentLabel?: ("negative" | "neutral" | "positive") | null;
                 createdAt: string;
                 updatedAt: string;
                 hasVoted?: boolean;
@@ -6157,6 +6356,8 @@ export interface components {
                     mergedIntoPostId: string | null;
                     eta: string | null;
                     appVersion: string | null;
+                    sentiment?: number | null;
+                    sentimentLabel?: ("negative" | "neutral" | "positive") | null;
                     createdAt: string;
                     updatedAt: string;
                     hasVoted?: boolean;
@@ -6192,6 +6393,11 @@ export interface components {
                 prevPosts: number;
                 prevVotes: number;
                 prevComments: number;
+            };
+            sentiment: {
+                positive: number;
+                neutral: number;
+                negative: number;
             };
             voteVelocity: {
                 date: string;
@@ -6239,6 +6445,8 @@ export interface components {
                     mergedIntoPostId: string | null;
                     eta: string | null;
                     appVersion: string | null;
+                    sentiment?: number | null;
+                    sentimentLabel?: ("negative" | "neutral" | "positive") | null;
                     createdAt: string;
                     updatedAt: string;
                 };

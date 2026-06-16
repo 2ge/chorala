@@ -57,6 +57,24 @@ export async function enqueueClusterThemes(projectId: string) {
   await safeAdd(QUEUES.ai, 'clusterThemes', { projectId })
 }
 
+/**
+ * Register the repeatable weekly-digest job (Mondays 08:00). Called once at worker startup. The
+ * digest is deterministic so this isn't gated on AI — but it only sends mail when the email
+ * transport is configured.
+ */
+export async function scheduleWeeklyDigests() {
+  if (env.NODE_ENV === 'test') return
+  try {
+    await getQueue(QUEUES.ai).add(
+      'weekly-digest',
+      {},
+      { repeat: { pattern: '0 8 * * 1' }, removeOnComplete: 10, removeOnFail: 10 },
+    )
+  } catch (err) {
+    console.warn('[queues] schedule weekly-digest failed (continuing):', (err as Error).message)
+  }
+}
+
 export async function enqueueWebhookEvent(
   projectId: string,
   event: WebhookEvent,

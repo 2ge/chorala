@@ -1,3 +1,4 @@
+import { analyzeSentiment } from '@chorala/ai'
 import {
   aiJobs,
   and,
@@ -31,6 +32,7 @@ import {
 import { recordAudit } from './audit.ts'
 import { getProject } from './projects.ts'
 import { computeScore, scoreWeights } from './scoreFields.ts'
+import { autoTagPost } from './tags.ts'
 
 /** Post columns excluding the (large, internal) embedding vector — never serialized to clients. */
 export const postColumns = {
@@ -49,6 +51,8 @@ export const postColumns = {
   mergedIntoPostId: posts.mergedIntoPostId,
   eta: posts.eta,
   appVersion: posts.appVersion,
+  sentiment: posts.sentiment,
+  sentimentLabel: posts.sentimentLabel,
   createdAt: posts.createdAt,
   updatedAt: posts.updatedAt,
 }
@@ -310,6 +314,7 @@ export async function createPost(ctx: AuthContext, projectId: string, input: Adm
   await getProject(ctx, projectId)
   await assertBoardInProject(projectId, input.boardId)
   const id = newId('post')
+  const sent = analyzeSentiment(`${input.title}\n${input.body}`)
   await db.insert(posts).values({
     id,
     projectId,
@@ -319,6 +324,8 @@ export async function createPost(ctx: AuthContext, projectId: string, input: Adm
     statusId: input.statusId,
     originalLocale: input.locale ?? 'en',
     authorMemberId: ctx.memberId,
+    sentiment: sent.score,
+    sentimentLabel: sent.label,
   })
   await enqueuePostProcessing(id)
   await enqueueWebhookEvent(projectId, 'post.created', { postId: id, boardId: input.boardId })
@@ -346,15 +353,20 @@ export async function createReviewPost(
   if (!board) throw badRequest('Project has no board to ingest into')
 
   const id = newId('post')
+  const title = input.title.slice(0, 300) || 'Untitled feedback'
+  const sent = analyzeSentiment(`${title}\n${input.body}`)
   await db.insert(posts).values({
     id,
     projectId,
     boardId: board.id,
-    title: input.title.slice(0, 300) || 'Untitled feedback',
+    title,
     body: input.body,
     reviewStatus: 'pending',
     source: input.source,
+    sentiment: sent.score,
+    sentimentLabel: sent.label,
   })
+  await autoTagPost(projectId, id, `${title}\n${input.body}`)
   await enqueuePostProcessing(id) // embed + dedup so review shows duplicate suggestions
   return getPost(ctx, projectId, id)
 }

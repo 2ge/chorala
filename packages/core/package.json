@@ -17,6 +17,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@chorala/ai": "workspace:*",
     "@chorala/billing": "workspace:*",
     "@chorala/config": "workspace:*",
     "@chorala/db": "workspace:*",

@@ -191,10 +191,22 @@ every incumbent advertises. (Extends the deferred half of Phase 15.)
 Deferred: **AI sentiment** (needs a provider — lands in Phase 20 AI depth) and **PDF** export
 (CSV covers the report need today). See DECISIONS.md.
 
-### Phase 20 — AI depth (Autopilot v2)
-Sentiment scoring, **auto‑categorise** new feedback to boards/tags (extends clustering),
-AI **smart‑reply** drafting, AI roadmap suggestions, and weekly **AI digests** ("what your users
-asked for this week"). All on the bundled/Ollama provider — still no per‑credit AI tax.
+### Phase 20 — AI depth (Autopilot v2) · ✅ SHIPPED
+Every feature has a **deterministic fallback** so it works with `provider=none`, and upgrades to
+the LLM when one is configured — still no per‑credit AI tax.
+- **Sentiment scoring** — every post is scored (−1..1 + label) at submit time via a feedback‑tuned
+  lexicon; the LLM refines it in the worker when enabled. Shown as a post badge and an analytics
+  breakdown.
+- **Auto‑categorise** — new feedback is auto‑tagged by matching the project's existing tags
+  (deterministic), with an LLM `suggest‑tags` action that picks from the tag list when enabled.
+- **Smart‑reply drafting** — a “✨ Draft reply” button drafts a public reply (templated from
+  title/status/votes without AI; warm + contextual with it).
+- **Weekly digest** — “what your users asked for this week”, composed deterministically (new
+  posts/votes, most‑wanted, shipped, sentiment split) with an optional LLM narrative; a repeatable
+  Monday‑morning worker job emails org admins, plus an on‑demand preview.
+
+Deferred: AI **roadmap suggestions** folds into Phase 22 (roadmap power) where the prioritization
+matrix lives. See DECISIONS.md.
 
 ### Phase 21 — Automation & workflow engine
 A rules engine: on event → tag / assign / set status / notify / sync. Auto‑tagging, SLAs, and

@@ -1,3 +1,4 @@
+import { buildWeeklyDigest, createProvider } from '@chorala/ai'
 import { posts as postSvc } from '@chorala/core'
 import { AskBox, IngestForm, ReviewActions } from '@/components/autopilot'
 import { Badge, Card } from '@/components/ui'
@@ -10,7 +11,10 @@ export default async function AutopilotPage({
 }) {
   const { projectId } = await params
   const ctx = await requireAuthContext()
-  const pending = await postSvc.listPosts(ctx, projectId, { reviewStatus: 'pending', sort: 'new' })
+  const [pending, digest] = await Promise.all([
+    postSvc.listPosts(ctx, projectId, { reviewStatus: 'pending', sort: 'new' }),
+    buildWeeklyDigest(createProvider(), projectId),
+  ])
 
   return (
     <div className="space-y-6">
@@ -21,6 +25,30 @@ export default async function AutopilotPage({
           everything your users have told you.
         </p>
       </div>
+
+      {/* Weekly digest (Phase 20) */}
+      <Card className="p-5">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
+            This week{' '}
+            {digest.aiEnabled && <Badge className="ml-1 bg-accent/10 text-accent">AI</Badge>}
+          </p>
+          <span className="text-xs text-ink-faint">
+            {digest.newPosts} new · {digest.newVotes} votes
+          </span>
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-ink">{digest.narrative}</p>
+        {digest.topVoted.length > 0 && (
+          <ul className="mt-3 space-y-1 text-sm">
+            {digest.topVoted.slice(0, 3).map((p) => (
+              <li key={p.id} className="flex items-center gap-2 text-ink-soft">
+                <span className="font-semibold tabular-nums text-ink">▲ {p.voteCount}</span>
+                {p.title}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       <Card className="p-5">
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">

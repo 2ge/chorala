@@ -297,6 +297,11 @@ export const analyticsResponse = z.object({
     prevVotes: z.number().int(),
     prevComments: z.number().int(),
   }),
+  sentiment: z.object({
+    positive: z.number().int(),
+    neutral: z.number().int(),
+    negative: z.number().int(),
+  }),
   voteVelocity: series('votes'),
   postVelocity: series('posts'),
   statusDistribution: z.array(

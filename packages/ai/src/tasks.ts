@@ -7,17 +7,24 @@ import {
   desc,
   eq,
   feedbackClusters,
+  gte,
   ilike,
   inArray,
+  isNull,
   newId,
   or,
   organizations,
   posts,
+  postTags,
   postTranslations,
   projects,
   sql,
+  statuses,
+  tags,
+  votes,
 } from '@chorala/db'
 import type { LLMProvider } from './provider.ts'
+import { analyzeSentiment, labelFor, type Sentiment } from './sentiment.ts'
 
 const vec = (e: number[]) => `[${e.join(',')}]`
 
@@ -140,11 +147,13 @@ export async function translatePost(provider: LLMProvider, postId: string): Prom
   return done
 }
 
-/** Run embed → dedup → translate for a freshly created/edited post. */
+/** Run embed → dedup → translate → sentiment for a freshly created/edited post. */
 export async function processPost(provider: LLMProvider, postId: string) {
   await embedPost(provider, postId)
   const suggestions = await dedupPost(provider, postId)
   const translated = await translatePost(provider, postId)
+  // Refine the lexicon sentiment set at create-time with the LLM (no-op when disabled).
+  if (provider.enabled) await scorePostSentiment(provider, postId)
   return { suggestions, translated }
 }
 
@@ -396,4 +405,258 @@ export async function draftChangelogFromPosts(
       'Write a concise, friendly product changelog entry in markdown from these shipped items. Start with a short title line.',
     messages: [{ role: 'user', content: list }],
   })
+}
+
+// =====================================================================
+// Phase 20 — AI depth (Autopilot v2). Every task has a deterministic fallback so it works
+// with provider=none, and upgrades to the LLM when one is configured.
+// =====================================================================
+
+/**
+ * Sentiment for a post (Phase 20). Uses the LLM when enabled (richer), else the deterministic
+ * lexicon. Always writes `posts.sentiment` (−1..1) + `posts.sentimentLabel`.
+ */
+export async function scorePostSentiment(
+  provider: LLMProvider,
+  postId: string,
+): Promise<Sentiment | null> {
+  const [post] = await db
+    .select({ title: posts.title, body: posts.body })
+    .from(posts)
+    .where(eq(posts.id, postId))
+  if (!post) return null
+  const text = `${post.title}\n\n${post.body}`
+
+  let result = analyzeSentiment(text)
+  if (provider.enabled) {
+    try {
+      const raw = await provider.complete({
+        system:
+          'You rate the sentiment of a product-feedback message. Return ONLY JSON {"score": <number -1..1>} where -1 is very negative and 1 is very positive.',
+        messages: [{ role: 'user', content: text.slice(0, 4000) }],
+        json: true,
+        temperature: 0,
+      })
+      const parsed = JSON.parse(raw) as { score?: number }
+      if (typeof parsed.score === 'number' && Number.isFinite(parsed.score)) {
+        const score = Math.max(-1, Math.min(1, Math.round(parsed.score * 100) / 100))
+        result = { score, label: labelFor(score) }
+      }
+    } catch {
+      // keep the lexicon result on any model/parse failure
+    }
+  }
+  await db
+    .update(posts)
+    .set({ sentiment: result.score, sentimentLabel: result.label })
+    .where(eq(posts.id, postId))
+  return result
+}
+
+/**
+ * Auto-categorize: suggest which of a project's existing tags fit a piece of text (Phase 20).
+ * Deterministic = the tag's name appears as a word in the text; AI = the model picks from the
+ * tag list. Returns matching tag ids (a subset of the project's tags).
+ */
+export async function suggestTags(
+  provider: LLMProvider,
+  projectId: string,
+  text: string,
+): Promise<{ id: string; name: string }[]> {
+  const projectTags = await db
+    .select({ id: tags.id, name: tags.name })
+    .from(tags)
+    .where(eq(tags.projectId, projectId))
+  if (projectTags.length === 0 || !text.trim()) return []
+
+  const deterministic = () => {
+    const hay = text.toLowerCase()
+    return projectTags.filter((t) => {
+      const name = t.name.toLowerCase()
+      return new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(hay)
+    })
+  }
+
+  if (!provider.enabled) return deterministic()
+  try {
+    const raw = await provider.complete({
+      system:
+        'Pick the tags that apply to this feedback from the provided list. Return ONLY a JSON array of tag names, exactly as given, or [] if none clearly apply.',
+      messages: [
+        {
+          role: 'user',
+          content: `Tags: ${projectTags.map((t) => t.name).join(', ')}\n\nFeedback: ${text.slice(0, 2000)}`,
+        },
+      ],
+      json: true,
+      temperature: 0,
+    })
+    const parsed = JSON.parse(raw) as unknown
+    const names = (Array.isArray(parsed) ? parsed : []).map((n) => String(n).toLowerCase())
+    const picked = projectTags.filter((t) => names.includes(t.name.toLowerCase()))
+    return picked.length > 0 ? picked : deterministic()
+  } catch {
+    return deterministic()
+  }
+}
+
+/**
+ * Smart-reply draft (Phase 20): a suggested admin reply to a post. Templated fallback uses the
+ * post's title/status/votes; the LLM writes a warmer, context-aware reply when enabled.
+ */
+export async function draftReply(provider: LLMProvider, postId: string): Promise<string> {
+  const [post] = await db
+    .select({
+      title: posts.title,
+      body: posts.body,
+      voteCount: posts.voteCount,
+      statusName: statuses.name,
+    })
+    .from(posts)
+    .leftJoin(statuses, eq(statuses.id, posts.statusId))
+    .where(eq(posts.id, postId))
+  if (!post) return ''
+  const status = post.statusName ?? 'open'
+
+  if (!provider.enabled) {
+    return (
+      `Thanks for raising “${post.title}” — and for the ${post.voteCount} ` +
+      `${post.voteCount === 1 ? 'vote' : 'votes'} behind it. ` +
+      `It’s currently marked ${status}. We’ll share an update here as it moves forward. ` +
+      `Anything else you’d want this to cover?`
+    )
+  }
+  const thread = await db
+    .select({ body: comments.body })
+    .from(comments)
+    .where(and(eq(comments.postId, postId), eq(comments.isInternal, false)))
+    .limit(20)
+  return provider.complete({
+    system:
+      'You are a friendly product manager replying publicly to a customer feedback post. Write a warm, specific 2-4 sentence reply. Do not over-promise dates.',
+    messages: [
+      {
+        role: 'user',
+        content: `Title: ${post.title}\nBody: ${post.body}\nStatus: ${status}\nVotes: ${post.voteCount}\nComments:\n${thread.map((c) => `- ${c.body}`).join('\n')}`,
+      },
+    ],
+  })
+}
+
+export type WeeklyDigest = {
+  since: string
+  newPosts: number
+  newVotes: number
+  topVoted: { id: string; title: string; voteCount: number }[]
+  shipped: { id: string; title: string }[]
+  sentiment: { positive: number; neutral: number; negative: number }
+  narrative: string
+  aiEnabled: boolean
+}
+
+/**
+ * Weekly digest (Phase 20): "what your users asked for this week", composed deterministically
+ * from the last 7 days of activity. The LLM adds a one-paragraph narrative when enabled; without
+ * it we generate a sensible template narrative.
+ */
+export async function buildWeeklyDigest(
+  provider: LLMProvider,
+  projectId: string,
+): Promise<WeeklyDigest> {
+  const since = sql`now() - interval '7 days'`
+  const live = and(
+    eq(posts.projectId, projectId),
+    isNull(posts.mergedIntoPostId),
+    isNull(posts.hiddenAt),
+    eq(posts.reviewStatus, 'none'),
+  )
+
+  const [counts] = await db
+    .select({
+      newPosts: sql<number>`count(*) filter (where ${gte(posts.createdAt, since)})::int`,
+      pos: sql<number>`count(*) filter (where ${posts.sentimentLabel} = 'positive')::int`,
+      neu: sql<number>`count(*) filter (where ${posts.sentimentLabel} = 'neutral')::int`,
+      neg: sql<number>`count(*) filter (where ${posts.sentimentLabel} = 'negative')::int`,
+    })
+    .from(posts)
+    .where(live)
+
+  const [voteRow] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(votes)
+    .innerJoin(posts, eq(posts.id, votes.postId))
+    .where(and(eq(posts.projectId, projectId), gte(votes.createdAt, since)))
+
+  const topVoted = await db
+    .select({ id: posts.id, title: posts.title, voteCount: posts.voteCount })
+    .from(posts)
+    .where(and(live, gte(posts.createdAt, since)))
+    .orderBy(desc(posts.voteCount))
+    .limit(5)
+
+  const shipped = await db
+    .select({ id: posts.id, title: posts.title })
+    .from(posts)
+    .innerJoin(statuses, eq(statuses.id, posts.statusId))
+    .where(
+      and(
+        eq(posts.projectId, projectId),
+        eq(statuses.kind, 'complete'),
+        gte(posts.updatedAt, since),
+      ),
+    )
+    .orderBy(desc(posts.updatedAt))
+    .limit(5)
+
+  const sentiment = {
+    positive: Number(counts?.pos ?? 0),
+    neutral: Number(counts?.neu ?? 0),
+    negative: Number(counts?.neg ?? 0),
+  }
+  const newPosts = Number(counts?.newPosts ?? 0)
+  const newVotes = Number(voteRow?.n ?? 0)
+
+  let narrative = ''
+  if (provider.enabled) {
+    try {
+      narrative = (
+        await provider.complete({
+          system:
+            'Write a 2-3 sentence upbeat weekly summary for a product team from these feedback stats. Be specific, no fluff.',
+          messages: [
+            {
+              role: 'user',
+              content: `New posts: ${newPosts}, new votes: ${newVotes}. Top requests: ${topVoted
+                .map((p) => p.title)
+                .join('; ')}. Shipped: ${shipped.map((p) => p.title).join('; ') || 'none'}.`,
+            },
+          ],
+        })
+      ).trim()
+    } catch {
+      narrative = ''
+    }
+  }
+  if (!narrative) {
+    const lead = topVoted[0]
+    narrative =
+      newPosts === 0
+        ? 'A quiet week — no new feedback came in.'
+        : `${newPosts} new ${newPosts === 1 ? 'post' : 'posts'} and ${newVotes} ${
+            newVotes === 1 ? 'vote' : 'votes'
+          } this week.${lead ? ` Most wanted: “${lead.title}”.` : ''}${
+            shipped.length ? ` You shipped ${shipped.length}.` : ''
+          }`
+  }
+
+  return {
+    since: '7d',
+    newPosts,
+    newVotes,
+    topVoted,
+    shipped,
+    sentiment,
+    narrative,
+    aiEnabled: provider.enabled,
+  }
 }

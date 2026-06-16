@@ -6,4 +6,5 @@ export {
   OllamaProvider,
   OpenAIProvider,
 } from './providers.ts'
+export * from './sentiment.ts'
 export * from './tasks.ts'

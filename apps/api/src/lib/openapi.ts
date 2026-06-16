@@ -828,6 +828,27 @@ const ROUTES: Route[] = [
   },
   {
     method: 'post',
+    path: '/projects/{projectId}/posts/{id}/draft-reply',
+    tag: 'AI',
+    sec: 'admin',
+    summary: 'Draft a public reply to a post (Autopilot v2; templated fallback when AI is off)',
+  },
+  {
+    method: 'post',
+    path: '/projects/{projectId}/posts/{id}/suggest-tags',
+    tag: 'AI',
+    sec: 'admin',
+    summary: 'Auto-categorize: suggest + apply matching tags',
+  },
+  {
+    method: 'get',
+    path: '/projects/{projectId}/digest/preview',
+    tag: 'AI',
+    sec: 'admin',
+    summary: 'Preview this week’s feedback digest',
+  },
+  {
+    method: 'post',
     path: '/projects/{projectId}/posts/{id}/approve',
     tag: 'Posts',
     sec: 'admin',

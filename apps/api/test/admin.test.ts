@@ -250,6 +250,63 @@ describe('surveys (Phase 16)', () => {
   })
 })
 
+describe('AI depth — Autopilot v2 (Phase 20)', () => {
+  test('draft-reply, suggest-tags, digest preview + sentiment all work (AI off)', async () => {
+    const posts = (await (await app.request(`${base()}/posts`, { headers: auth })).json()) as {
+      id: string
+      sentimentLabel: string | null
+    }[]
+    const postId = posts[0]!.id
+    // every post is sentiment-scored at create time (deterministic lexicon)
+    expect(posts.every((p) => p.sentimentLabel !== undefined)).toBe(true)
+
+    // smart-reply: templated draft mentions the post
+    const reply = await app.request(`${base()}/posts/${postId}/draft-reply`, {
+      method: 'POST',
+      headers: auth,
+    })
+    expect(reply.status).toBe(200)
+    const { draft, aiEnabled } = (await reply.json()) as { draft: string; aiEnabled: boolean }
+    expect(aiEnabled).toBe(false)
+    expect(draft.length).toBeGreaterThan(10)
+
+    // auto-categorize: create a tag, then suggest-tags applies it to a matching post
+    await app.request(`${base()}/tags`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ name: 'export', color: '#abc' }),
+    })
+    await app.request(`${base()}/posts`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ boardId, title: 'Please add CSV export', body: 'export everything' }),
+    })
+    const all = (await (await app.request(`${base()}/posts`, { headers: auth })).json()) as {
+      id: string
+      title: string
+    }[]
+    const exportPost = all.find((p) => p.title.includes('CSV export'))!
+    const sug = await app.request(`${base()}/posts/${exportPost.id}/suggest-tags`, {
+      method: 'POST',
+      headers: auth,
+    })
+    expect(sug.status).toBe(200)
+    expect(((await sug.json()) as { suggested: unknown[] }).suggested.length).toBeGreaterThan(0)
+
+    // weekly digest preview
+    const digest = await app.request(`${base()}/digest/preview`, { headers: auth })
+    expect(digest.status).toBe(200)
+    const d = (await digest.json()) as { narrative: string; sentiment: { negative: number } }
+    expect(d.narrative).toBeTruthy()
+
+    // analytics carries the sentiment breakdown
+    const analytics = (await (
+      await app.request(`${base()}/analytics?timeframe=all`, { headers: auth })
+    ).json()) as { sentiment: { positive: number; neutral: number; negative: number } }
+    expect(analytics.sentiment).toHaveProperty('neutral')
+  })
+})
+
 describe('insights + analytics (Phase 19)', () => {
   test('link an insight to the seed post → it ranks in analytics; CSV exports', async () => {
     const posts = (await (await app.request(`${base()}/posts`, { headers: auth })).json()) as {

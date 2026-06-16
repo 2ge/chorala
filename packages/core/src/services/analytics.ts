@@ -47,6 +47,10 @@ export async function getAnalytics(ctx: AuthContext, projectId: string, query: A
       total: sql<number>`count(*)::int`,
       cur: days ? winCount('posts.created_at', days, null) : sql<number>`count(*)::int`,
       prev: days ? winCount('posts.created_at', days * 2, days) : sql<number>`0`,
+      // Sentiment split (Phase 20) across live posts.
+      pos: sql<number>`count(*) filter (where ${posts.sentimentLabel} = 'positive')::int`,
+      neu: sql<number>`count(*) filter (where ${posts.sentimentLabel} = 'neutral')::int`,
+      neg: sql<number>`count(*) filter (where ${posts.sentimentLabel} = 'negative')::int`,
     })
     .from(posts)
     .where(live)
@@ -222,6 +226,11 @@ export async function getAnalytics(ctx: AuthContext, projectId: string, query: A
       prevPosts: num(postAgg?.prev),
       prevVotes: num(voteAgg?.prev),
       prevComments: num(commentAgg?.prev),
+    },
+    sentiment: {
+      positive: num(postAgg?.pos),
+      neutral: num(postAgg?.neu),
+      negative: num(postAgg?.neg),
     },
     voteVelocity,
     postVelocity,

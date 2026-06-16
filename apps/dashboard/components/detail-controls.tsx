@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { type FormEvent, useState, useTransition } from 'react'
 import { Badge, Button, Card, Select, Textarea } from '@/components/ui'
-import { addComment, mergePost, setPostTags } from '@/lib/actions'
+import { addComment, draftReplyAction, mergePost, setPostTags } from '@/lib/actions'
 
 type Tag = { id: string; name: string; color: string }
 
@@ -70,6 +70,7 @@ export function CommentForm({ projectId, postId }: { projectId: string; postId: 
   const [body, setBody] = useState('')
   const [internal, setInternal] = useState(false)
   const [pending, start] = useTransition()
+  const [drafting, startDraft] = useTransition()
 
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -77,6 +78,12 @@ export function CommentForm({ projectId, postId }: { projectId: string; postId: 
     start(async () => {
       await addComment(projectId, postId, body.trim(), internal)
       setBody('')
+    })
+  }
+  function draft() {
+    startDraft(async () => {
+      const text = await draftReplyAction(projectId, postId)
+      if (text) setBody(text)
     })
   }
   return (
@@ -95,9 +102,14 @@ export function CommentForm({ projectId, postId }: { projectId: string; postId: 
           />
           Internal note
         </label>
-        <Button type="submit" size="sm" disabled={pending || !body.trim()}>
-          {pending ? 'Saving…' : 'Comment'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button type="button" size="sm" variant="outline" disabled={drafting} onClick={draft}>
+            {drafting ? 'Drafting…' : '✨ Draft reply'}
+          </Button>
+          <Button type="submit" size="sm" disabled={pending || !body.trim()}>
+            {pending ? 'Saving…' : 'Comment'}
+          </Button>
+        </div>
       </div>
     </form>
   )

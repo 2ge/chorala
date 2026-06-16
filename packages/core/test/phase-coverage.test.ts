@@ -33,6 +33,7 @@ import {
   segments,
   storage,
   surveys,
+  tags,
   votes,
 } from '../src/index.ts'
 
@@ -552,6 +553,25 @@ describe('roles & moderation (Phase 17)', () => {
     expect((await commentSvc.listComments(p.id, post!.id)).length).toBe(0)
     // still reachable for moderators with includeHidden
     expect((await commentSvc.listComments(p.id, post!.id, { includeHidden: true })).length).toBe(1)
+  })
+})
+
+describe('AI depth at submit time (Phase 20)', () => {
+  test('a public post is sentiment-scored and auto-tagged on submit', async () => {
+    const p = await newProject('aidepth')
+    // a tag the text will match
+    await tags.createTag(ctx, p.id, { name: 'mobile', color: '#000' })
+    const eu = await mkUser(p.id)
+    const { post } = await publicFeed.createPublicPost(p.id, eu, {
+      boardSlug: 'feature-requests',
+      title: 'The mobile app is broken and crashes',
+      body: 'It is terrible and useless, crashes constantly.',
+    })
+    // sentiment scored deterministically at create time
+    expect(post!.sentimentLabel).toBe('negative')
+    // auto-tagged because "mobile" appears in the text
+    const applied = await tags.listPostTags(ctx, p.id, post!.id)
+    expect(applied.some((t) => t.name === 'mobile')).toBe(true)
   })
 })
 

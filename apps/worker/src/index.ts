@@ -1,9 +1,15 @@
 import { createHmac } from 'node:crypto'
-import { clusterThemes, createProvider, processPost, summarizePost } from '@chorala/ai'
-import { env } from '@chorala/config'
-import { integrations, notifications, QUEUE_PREFIX } from '@chorala/core'
-import { and, db, eq, webhooks } from '@chorala/db'
-import { sendEmail } from '@chorala/email'
+import {
+  buildWeeklyDigest,
+  clusterThemes,
+  createProvider,
+  processPost,
+  summarizePost,
+} from '@chorala/ai'
+import { env, isEmailEnabled } from '@chorala/config'
+import { integrations, notifications, QUEUE_PREFIX, scheduleWeeklyDigests } from '@chorala/core'
+import { and, db, eq, inArray, members, projects, users, webhooks } from '@chorala/db'
+import { sendEmail, weeklyDigestEmail } from '@chorala/email'
 import { type ConnectionOptions, type Job, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 
@@ -11,6 +17,38 @@ const redis = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null })
 const connection = redis as unknown as ConnectionOptions
 const provider = createProvider()
 const opts = { connection, prefix: QUEUE_PREFIX, concurrency: 5 }
+
+/** Build + email the weekly digest to every project's org admins (deterministic; AI optional). */
+async function runWeeklyDigests() {
+  const allProjects = await db
+    .select({ id: projects.id, name: projects.name, orgId: projects.orgId })
+    .from(projects)
+  for (const project of allProjects) {
+    const digest = await buildWeeklyDigest(provider, project.id)
+    if (digest.newPosts === 0 && digest.shipped.length === 0) continue
+    if (!isEmailEnabled()) {
+      console.log(`[digest] ${project.name}: ${digest.narrative} (email disabled — not sent)`)
+      continue
+    }
+    const admins = await db
+      .select({ email: users.email })
+      .from(members)
+      .innerJoin(users, eq(users.id, members.userId))
+      .where(and(eq(members.orgId, project.orgId), inArray(members.role, ['owner', 'admin'])))
+    const mail = weeklyDigestEmail({
+      projectName: project.name,
+      narrative: digest.narrative,
+      newPosts: digest.newPosts,
+      newVotes: digest.newVotes,
+      topVoted: digest.topVoted,
+      shipped: digest.shipped,
+      url: `${env.CHORALA_PUBLIC_URL}/admin/${project.id}/analytics`,
+    })
+    for (const a of admins) {
+      if (a.email) await sendEmail({ to: a.email, ...mail })
+    }
+  }
+}
 
 // --- AI jobs ---
 const aiWorker = new Worker(
@@ -23,6 +61,8 @@ const aiWorker = new Worker(
         return clusterThemes(provider, job.data.projectId)
       case 'summarize':
         return summarizePost(provider, job.data.postId)
+      case 'weekly-digest':
+        return runWeeklyDigests()
       default:
         return null
     }
@@ -109,6 +149,11 @@ for (const [name, worker] of [
     console.error(`[worker:${name}] job ${job?.id} failed:`, err.message),
   )
 }
+
+// Register the repeatable weekly-digest job (idempotent on the repeat key).
+scheduleWeeklyDigests().catch((err) =>
+  console.warn('[worker] could not schedule weekly digest:', err.message),
+)
 
 console.log(
   `✓ chorala-worker running — ai provider: ${provider.name}, email: ${env.CHORALA_EMAIL_TRANSPORT}`,

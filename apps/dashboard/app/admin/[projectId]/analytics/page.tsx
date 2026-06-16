@@ -134,6 +134,18 @@ export default async function AnalyticsPage({
         )}
       </Card>
 
+      {/* Sentiment */}
+      <Card className="p-5">
+        <CardTitle>Sentiment</CardTitle>
+        <StatusBar
+          dist={[
+            { kind: 'positive', name: 'Positive', color: '#10b981', count: a.sentiment.positive },
+            { kind: 'neutral', name: 'Neutral', color: '#94a3b8', count: a.sentiment.neutral },
+            { kind: 'negative', name: 'Negative', color: '#ef4444', count: a.sentiment.negative },
+          ]}
+        />
+      </Card>
+
       {/* Status distribution + tags */}
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Card className="p-5">

@@ -41,6 +41,52 @@ export async function deleteTag(ctx: AuthContext, projectId: string, id: string)
   return { id, deleted: true }
 }
 
+/**
+ * Auto-categorize (Phase 20): attach any of the project's existing tags whose name appears as a
+ * word in `text` to `postId`. Deterministic (no AI) and idempotent — used at submit time so new
+ * feedback lands pre-tagged. Returns the tag ids that were applied.
+ */
+export async function autoTagPost(projectId: string, postId: string, text: string) {
+  const hay = (text ?? '').toLowerCase()
+  if (!hay.trim()) return []
+  const projectTags = await db
+    .select({ id: tags.id, name: tags.name })
+    .from(tags)
+    .where(eq(tags.projectId, projectId))
+  const matched = projectTags.filter((t) => {
+    const name = t.name.toLowerCase()
+    return new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(hay)
+  })
+  if (matched.length === 0) return []
+  const existing = await db
+    .select({ tagId: postTags.tagId })
+    .from(postTags)
+    .where(eq(postTags.postId, postId))
+  const have = new Set(existing.map((r) => r.tagId))
+  const toAdd = matched.filter((t) => !have.has(t.id))
+  if (toAdd.length > 0) {
+    await db.insert(postTags).values(toAdd.map((t) => ({ postId, tagId: t.id })))
+  }
+  return matched.map((t) => t.id)
+}
+
+/** Additively attach tags to a post (ignores ones already present). Validates project ownership. */
+export async function addPostTags(projectId: string, postId: string, tagIds: string[]) {
+  if (tagIds.length === 0) return []
+  const valid = await db.select({ id: tags.id }).from(tags).where(eq(tags.projectId, projectId))
+  const validIds = new Set(valid.map((t) => t.id))
+  const existing = await db
+    .select({ tagId: postTags.tagId })
+    .from(postTags)
+    .where(eq(postTags.postId, postId))
+  const have = new Set(existing.map((r) => r.tagId))
+  const toAdd = tagIds.filter((id) => validIds.has(id) && !have.has(id))
+  if (toAdd.length > 0) {
+    await db.insert(postTags).values(toAdd.map((tagId) => ({ postId, tagId })))
+  }
+  return toAdd
+}
+
 /** Replace a post's tag set (validates all tags belong to the project). */
 export async function setPostTags(
   ctx: AuthContext,

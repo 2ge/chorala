@@ -5969,6 +5969,205 @@
         }
       }
     },
+    "/projects/{projectId}/posts/{id}/draft-reply": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Draft a public reply to a post (Autopilot v2; templated fallback when AI is off)",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/posts/{id}/suggest-tags": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Auto-categorize: suggest + apply matching tags",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/digest/preview": {
+      "get": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Preview this week\u2019s feedback digest",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/projects/{projectId}/posts/{id}/approve": {
       "post": {
         "tags": [
@@ -6877,6 +7076,31 @@
               }
             ]
           },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sentimentLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "negative",
+                  "neutral",
+                  "positive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string"
           },
@@ -7000,6 +7224,31 @@
             "anyOf": [
               {
                 "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sentimentLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "negative",
+                  "neutral",
+                  "positive"
+                ]
               },
               {
                 "type": "null"
@@ -8303,6 +8552,31 @@
               }
             ]
           },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sentimentLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "negative",
+                  "neutral",
+                  "positive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string"
           },
@@ -8750,6 +9024,31 @@
                   }
                 ]
               },
+              "sentiment": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sentimentLabel": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "negative",
+                      "neutral",
+                      "positive"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
               "createdAt": {
                 "type": "string"
               },
@@ -9175,6 +9474,31 @@
                           }
                         ]
                       },
+                      "sentiment": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "sentimentLabel": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "negative",
+                              "neutral",
+                              "positive"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "createdAt": {
                         "type": "string"
                       },
@@ -9373,6 +9697,32 @@
               "prevPosts",
               "prevVotes",
               "prevComments"
+            ],
+            "additionalProperties": false
+          },
+          "sentiment": {
+            "type": "object",
+            "properties": {
+              "positive": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "neutral": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "negative": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "positive",
+              "neutral",
+              "negative"
             ],
             "additionalProperties": false
           },
@@ -9633,6 +9983,31 @@
                         }
                       ]
                     },
+                    "sentiment": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "sentimentLabel": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "negative",
+                            "neutral",
+                            "positive"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "createdAt": {
                       "type": "string"
                     },
@@ -9756,6 +10131,7 @@
         },
         "required": [
           "summary",
+          "sentiment",
           "voteVelocity",
           "postVelocity",
           "statusDistribution",

@@ -395,3 +395,23 @@ choice. Format: `- [phase] chose X over Y because Z`.
 - [phase19] Report export is CSV only for now (`?format=csv`, mirroring the existing posts CSV +
   a Next route handler for the dashboard download button). PDF is deferred — it needs a rendering
   dependency and CSV already covers "pull the numbers into a deck/sheet"; revisit if asked.
+- [phase20] Every Autopilot-v2 feature has a deterministic fallback so it works (and is
+  testable/demoable) with provider=none, the state on this host. Sentiment uses a feedback-tuned
+  lexicon (tanh-squashed word counts → −1..1 + 3-way label); auto-categorize matches the project's
+  existing tag names as whole words; smart-reply is a templated reply from title/status/votes;
+  the weekly digest is composed from SQL aggregates. The LLM, when configured, *refines* each
+  (sentiment re-scored in the worker pipeline, suggest-tags/draft-reply/digest-narrative via
+  complete()) — it never gates the feature. Keeps SPEC §2 graceful-degradation + no per-credit tax.
+- [phase20] Sentiment is computed SYNCHRONOUSLY at post-create time in core (cheap, no network) so
+  every post is scored even when AI is off and the worker pipeline (gated on isAiEnabled) never
+  runs. This required core → @chorala/ai (acyclic: ai depends only on db+config). Stored as
+  posts.sentiment + posts.sentiment_label (migration 0011); existing rows backfilled with the
+  lexicon.
+- [phase20] Auto-tagging applies only the project's EXISTING tags (never invents new ones) and is
+  additive + idempotent — safe to run on every submit. Board auto-assignment was NOT built: the
+  public submit form already picks a board, and silently moving posts between boards is the kind of
+  surprising automation SPEC warns against (cf. never auto-merge). suggest-tags is the AI upgrade.
+- [phase20] The weekly digest runs as a BullMQ repeatable job (cron '0 8 * * 1', registered once at
+  worker startup) that emails org owners/admins — but only when the email transport is configured;
+  with transport=none it logs. The digest BUILDER is verified via GET /digest/preview + tests; the
+  cron firing itself isn't unit-tested (BullMQ scheduling is infra, not our logic).

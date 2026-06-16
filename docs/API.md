@@ -355,7 +355,15 @@ POST /changelog/draft              { postIds: [...] } → drafted changelog entr
 POST /ingest                       { source, text, author?, url? }  → AI extracts feature
                                      requests as PENDING posts (Autopilot) → 201 { created[] }
 POST /ask                          { question } → { answer, sources[], aiEnabled }
+POST /posts/:id/draft-reply        → { draft, aiEnabled }   smart-reply (templated if AI off)
+POST /posts/:id/suggest-tags       → { suggested[], applied[], aiEnabled }   auto-categorize
+GET  /digest/preview               → this week's digest { narrative, newPosts, topVoted[], … }
 ```
+**Autopilot v2 (Phase 20)**: every post is sentiment-scored at submit time (a feedback-tuned
+lexicon, refined by the LLM when enabled) → `post.sentiment` (−1..1) + `post.sentimentLabel`
+(`negative|neutral|positive`); analytics carries a `sentiment` breakdown. New feedback is
+auto-tagged from the project's existing tags. `draft-reply` / `suggest-tags` / `digest` all work
+without a provider and upgrade with one. A repeatable Monday job emails admins the weekly digest.
 **Ingest** turns a raw support conversation into feedback. `source` ∈
 `intercom|zendesk|slack|email|manual`; real connectors are thin webhooks that POST here.
 Extracted posts land in `review_status="pending"` — **hidden from the public board** and the
